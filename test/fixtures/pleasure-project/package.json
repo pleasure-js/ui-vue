@@ -1,0 +1,27 @@
+{
+  "name": "pleasure-dummy-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --preserve-symlinks index.js",
+    "dev": "NODE_ENV=development nuxt"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "element-ui": "^2.7.2",
+    "koa": "^2.7.0",
+    "koa-body": "^4.1.0",
+    "koa-router": "^7.4.0",
+    "lodash": "^4.17.11",
+    "md5": "^2.2.1",
+    "mongoose": "^5.4.19",
+    "mongoose-autopopulate": "^0.9.1",
+    "mongoose-beautiful-unique-validation": "^7.1.1",
+    "nuxt": "^2.6.2",
+    "nuxt-pleasure": "file:../../../../../../../../nuxt-pleasure"
+  },
+  "devDependencies": {
+    "ava": "^1.4.1"
+  }
+}
