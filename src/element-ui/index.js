@@ -1,6 +1,7 @@
+import './element-ui.pcss'
 import PleasureSelect from './select.vue'
 
-export function install(Vue) {
+export function install (Vue) {
   Vue.mixin({
     components: {
       PleasureSelect

@@ -11,8 +11,12 @@
         <option value="">
           [ {{ $t(placeholder) }} ]
         </option>
-        <option v-for="option in realOptions" :value="option.value" :selected="selected === theValue(option.value)"
-                :key="option.value">
+        <option
+          v-for="option in realOptions"
+          :value="option.value"
+          :selected="selected === theValue(option.value)"
+          :key="option.value"
+        >
           {{ $t(option.label) }}
         </option>
         <option value=":other:" v-if="otherAvailable">
@@ -66,6 +70,7 @@
 
   /**
    * @vue-prop {String} [otherLabel=label.other] - Label to be displayed when 'other' value selected.
+   * @vue-prop {Object[]|String[]} [options] - Options available.
    */
   export default {
     props: {
@@ -286,7 +291,7 @@
       width: 100%;
       border: none;
       height: 40px;
-      background: #fff;
+      background: var(--pleasure-input-background);
       box-sizing: border-box;
       text-indent: 10px;
       padding: 0 20px;
@@ -296,7 +301,7 @@
     &.focused {
       .el-input__suffix {
         .el-input__icon {
-          color: var(--pleasure-icon-color) !important;
+          color: var(--pleasure-input-color-icon) !important;
         }
       }
     }

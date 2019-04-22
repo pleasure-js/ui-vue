@@ -1,0 +1,332 @@
+/*
+Element UI customization for Pleasure
+ */
+
+.pleasure {
+  select {
+    padding: 0 5px;
+  }
+
+  .el-form-item__label {
+    color: var(--pleasure-input-color-label);
+  }
+
+  .el-input__icon {
+    color: var(--pleasure-input-color-icon);
+  }
+
+  *:-webkit-autofill,
+  *:-webkit-autofill:hover,
+  *:-webkit-autofill:focus,
+  *:-webkit-autofill:active {
+    &::selection {
+      background: var(--pleasure-input-background-select) !important;
+      color: var(--pleasure-input-color-select) !important;
+    }
+  }
+
+  input, .el-input__inner, select, .el-textarea__inner {
+    caret-color: var(--pleasure-input-color-caret);
+    background: var(--pleasure-input-background);
+    color: var(--pleasure-input-color);
+    border: var(--pleasure-input-border);
+
+    &::placeholder {
+      color: var(--pleasure-input-color-placeholder);
+    }
+
+    &:hover {
+      background: var(--pleasure-input-background-over);
+      color: var(--pleasure-input-color-over);
+    }
+
+    &:focus, &.el-input__inner--focus {
+      background: var(--pleasure-input-background-focus);
+      color: var(--pleasure-input-color-focus);
+    }
+
+    &::selection {
+      background: var(--pleasure-input-background-select) !important;
+      color: var(--pleasure-input-color-select) !important;
+    }
+  }
+
+  .solid {
+    input, .el-input__inner, select, .el-textarea__inner {
+      background: var(--pleasure-input-background-solid) !important;
+      color: var(--pleasure-input-color-solid) !important;
+
+      &::placeholder {
+        color: var(--pleasure-input-color-placeholder-solid)
+      }
+    }
+  }
+
+  .el-input:not(.force-input), .el-textarea:not(.force-input) {
+    input, .el-input__inner, select, .el-textarea__inner, textarea {
+      &[readonly] {
+        pointer-events: none;
+        background-color: transparent !important;
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+
+    textarea {
+      padding-top: 10px;
+      padding-bottom: 10px;
+
+      &[readonly] {
+        pointer-events: none;
+        resize: none;
+      }
+    }
+  }
+
+  .el-form-item {
+    &.focus {
+      /*
+      .el-form-item__label {
+        color: var(--pleasure-input-color-label-focus);
+      }
+      */
+
+      .el-input__icon {
+        color: var(--pleasure-input-color-icon-focus);
+      }
+    }
+
+    &.over {
+      /*
+      .el-form-item__label {
+        color: var(--pleasure-input-label-color-over);
+      }
+      */
+
+      .el-input__icon {
+        color: var(--pleasure-input-color-icon-over);
+      }
+    }
+  }
+}
+
+.el-dropdown-menu__item:not(.is-disabled), .el-dropdown-menu__item {
+  background: var(--pleasure-dropdown-background-button);
+  color: var(--pleasure-dropdown-color-button);
+
+  &:hover, &:focus {
+    background: var(--pleasure-dropdown-background-button-over);
+    color: var(--pleasure-dropdown-color-button-over);
+  }
+}
+
+.el-popper {
+  border: none;
+  background: var(--pleasure-dropdown-background);
+
+  &[x-placement^="bottom"] {
+    .popper__arrow {
+      border-bottom: none !important;
+
+      &:after {
+        border-bottom-color: var(--pleasure-dropdown-background) !important;
+      }
+    }
+  }
+
+  &[x-placement^="top"] {
+    .popper__arrow {
+      border-top: none !important;
+
+      &:after {
+        border-top-color: var(--pleasure-dropdown-background) !important;
+      }
+    }
+  }
+
+  &[x-placement^="left"] {
+    .popper__arrow {
+      border-left: none !important;
+
+      &:after {
+        border-left-color: var(--pleasure-dropdown-background) !important;
+      }
+    }
+  }
+
+  &[x-placement^="right"] {
+    .popper__arrow {
+      border-right: none !important;
+
+      &:after {
+        border-right-color: var(--pleasure-dropdown-background) !important;
+      }
+    }
+  }
+
+  .el-popper.el-date-picker {
+    border: none;
+    background: var(--pleasure-calendar-background);
+  }
+
+  /*
+  .el-tabs__nav {
+    margin: 0 auto;
+    position: relative;
+    float: none;
+
+    .el-tabs__item {
+      color: map-get($color, gray);
+    }
+  }
+  */
+
+  [v-cloak] {
+    display: none;
+  }
+
+  /*
+  .gray-pale {
+    color: map-get($color, gray-pale)
+  }
+
+  .gray {
+    color: map-get($color, gray)
+  }
+
+  .gray-light {
+    color: map-get($color, gray-light)
+  }
+  */
+
+  .light {
+    font-weight: 300;
+  }
+
+  .full-btn {
+    display: block;
+    position: relative;
+    width: 100%;
+  }
+
+  .full-btn + .full-btn {
+    margin: 1em 0 0 0;
+  }
+
+  .el-button {
+    border: none !important;
+
+    &.el-button--default {
+      background: var(--pleasure-button-background-cancel);
+      color: var(--pleasure-button-color-cancel);
+
+      &:hover, &:focus {
+        background: var(--pleasure-button-background-cancel-over);
+        color: var(--pleasure-button-color-cancel-over);
+      }
+    }
+
+    &.el-button--primary {
+      background: var(--pleasure-button-background-action);
+      color: var(--pleasure-button-color-action);
+
+      &:hover, &:focus {
+        background: var(--pleasure-button-background-action-over);
+        color: var(--pleasure-button-color-action-over);
+      }
+    }
+  }
+
+  .el-message-box {
+    border: none;
+    background: var(--pleasure-notification-background);
+
+    .el-button.el-button--default {
+      background: var(--pleasure-notification-button-background-cancel);
+      color: var(--pleasure-notification-button-color-cancel);
+    }
+
+    .el-message-box__header {
+      background: var(--pleasure-notification-background-title);
+
+      .el-message-box__title {
+        color: var(--pleasure-notification-color-title);
+      }
+    }
+
+    .el-button {
+      &.el-button--primary {
+        background: var(--pleasure-notification-button-background-action);
+        color: var(--pleasure-notification-button-color-action);
+      }
+    }
+  }
+
+  .el-button {
+    &[disabled] {
+      background: var(--pleasure-button-background-disabled) !important;
+      color: var(--pleasure-button-color-disabled) !important;
+    }
+  }
+
+  .el-icon-close {
+    color: var(--pleasure-notification-button-color-close) !important;
+  }
+
+  .add-btn, .delete-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    font-size: 1em;
+    padding: 12px;
+    box-shadow: 0, 0, 12px, 3px, rgba(var(--pleasure-palette-real-black), .2);
+    z-index: 1000;
+    background: var(--pleasure-pleasure-btn-add-background) !important;
+    color: var(--pleasure-pleasure-btn-add-color) !important;
+    border: none;
+    transition: transform .3s 0s easeOutBack;
+
+    &:hover {
+      transform: scale(1.2)
+    }
+
+    &.abs {
+      position: absolute;
+    }
+
+    html.client-app & {
+      bottom: calc(30px + constant(safe-area-inset-bottom) + constant(safe-area-inset-top));
+      bottom: calc(30px + env(safe-area-inset-bottom) + env(safe-area-inset-top));
+    }
+  }
+
+  .delete-btn {
+    left: 80px;
+    background: var(--pleasure-pleasure-btn-remove-background);
+    color: var(--pleasure-pleasure-btn-remove-color);
+  }
+
+  .el-notification {
+    margin-top: 64px;
+    border: none;
+    background: var(--pleasure-notification-background);
+
+    .el-notification__title {
+      color: var(--pleasure-notification-title-color);
+    }
+  }
+
+  .el-table__empty-text {
+    margin-top: calc(-1 * var(--pleasure-headbar-height) + 43px);
+  }
+
+  .el-form {
+    width: 100%;
+  }
+
+  .el-form-item__content {
+    .el-input__prefix {
+      max-height: 40px;
+    }
+  }
+}
