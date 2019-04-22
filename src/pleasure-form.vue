@@ -2,6 +2,7 @@
   <div class="pleasure-form">
     <component
       :is="formComponent"
+      :key="formId"
     >
       <slot />
     </component>
@@ -10,10 +11,17 @@
 <script>
   export default {
     props: {
-
+      formId: {
+        type: String,
+        required: true
+      },
+      disabled: {
+        type: Boolean,
+        default: false
+      }
     },
     computed: {
-      formComponent() {
+      formComponent () {
         return 'el-form'
       }
     }

@@ -96,5 +96,8 @@ export const getters = {
   },
   settings (state) {
     return state.settings
+  },
+  user (state) {
+    return state.user
   }
 }

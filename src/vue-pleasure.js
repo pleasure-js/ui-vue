@@ -8,7 +8,6 @@ import VueI18n from 'vue-i18n'
 
 export function install (Vue, { app, store, noCoerce = false } = {}) {
   if (!store) {
-    console.log(`VUEX store NOT provided`)
     Vue.use(Vuex)
     store = new Vuex.Store({
       modules: {
@@ -17,7 +16,6 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     })
     // throw new Error('Please provide vuex store.')
   } else {
-    console.log(`VUEX store provided`)
     // register your own vuex module
     store.registerModule('pleasure', PleasureStore)
   }
@@ -58,19 +56,30 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
   if (!process.server) {
     const storageCache = new BrowserStorageCache()
 
+    const sessionChanged = async () => {
+      storageCache.clearAll()
+      await store.dispatch('pleasure/syncEntities')
+    }
+
     // Vue.$pleasure = pleasureClient
     pleasureClient
       .cache(storageCache)
 
     pleasureClient
-      .on('logout', () => {
-        storageCache.clearAll()
-      })
+      .on('logout', sessionChanged)
+
+    pleasureClient
+      .on('login', sessionChanged)
   }
 
   pleasureClient
     .on('login', (user) => {
       store.commit('pleasure/setUser', user)
+    })
+
+  pleasureClient
+    .on('logout', () => {
+      store.commit('pleasure/setUser', null)
     })
 
   if (!noCoerce) {
@@ -89,15 +98,24 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     },
     computed: {
       $pleasure () {
+        const $this = this
         return {
+          error (message) {
+            $this.$message({
+              message,
+              type: 'error'
+            })
+          },
           api: pleasureClient,
-          settings: this.$store.getters['pleasure/settings'],
-          dropdown: this.$store.getters['pleasure/dropdown'],
-          entities: this.$store.getters['pleasure/entities']
+          settings: store.getters['pleasure/settings'],
+          dropdown: store.getters['pleasure/dropdown'],
+          entities: store.getters['pleasure/entities'],
+          user: store.getters['pleasure/user']
         }
       }
     }
   })
+
   if (!process.server) {
     store.dispatch('pleasure/syncEntities')
   }

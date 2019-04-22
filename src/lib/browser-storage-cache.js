@@ -43,7 +43,7 @@ export class BrowserStorageCache {
   }
 
   res ({ id, req, res }) {
-    if (typeof res === 'undefined') {
+    if (typeof res === 'undefined' || req.method !== 'get') {
       return
     }
 

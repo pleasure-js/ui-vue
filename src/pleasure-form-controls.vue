@@ -8,27 +8,37 @@
       :loading="loading"
       type="primary"
       native-type="submit"
-      @click.native.prevent="submit"
+      @click.native.prevent="actionCallback"
     >
       {{ actionLabel | lang }}
     </el-button>
-    <!--
-        <el-button
-          v-if="cancelable"
-          class="full-btn"
-          @click.native.prevent="closePrompt(true)"
-        >
-          {{ $t(form.dismiss) }}
-        </el-button>
-    -->
+    <el-button
+      v-if="cancelable"
+      class="full-btn"
+      @click.native.prevent="cancelCallback"
+    >
+      {{ cancelLabel }}
+    </el-button>
   </div>
 </template>
 <script>
   export default {
     props: {
+      actionCallback: {
+        type: Function,
+        default () {}
+      },
+      cancelCallback: {
+        type: Function,
+        default () {}
+      },
       actionLabel: {
         type: String,
         default: 'Create'
+      },
+      cancelLabel: {
+        type: String,
+        default: 'Cancel'
       },
       formVisible: {
         type: Boolean,

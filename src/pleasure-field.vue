@@ -1,10 +1,11 @@
 <template>
   <div class="pleasure-field">
     <component
-      :is="fieldComponent"
+      :is="fieldType"
       v-bind="$props"
       :name="field.path"
-      @input="$emit('input', $event)"
+      :placeholder="field.path"
+      @input="$emit('input', $event || null)"
     />
   </div>
 </template>
@@ -25,6 +26,17 @@
       }
     },
     computed: {
+      fieldType () {
+        // Arrays -> 'select'
+        if (
+          (this.field.enumValues && this.field.enumValues.length > 0) ||
+          this.field.instance === 'Array'
+        ) {
+          return 'pleasure-select'
+        }
+
+        return 'el-input'
+      },
       fieldComponent () {
         if (this.$pleasure.settings.ui === 'element-ui') {
           return 'el-input'
