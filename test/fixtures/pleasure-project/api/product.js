@@ -14,8 +14,8 @@ module.exports = {
       default: 0
     }
   },
-  schemaCreated (schema) {
-    schema.index({ name: 'text' })
+  schemaCreated ({mongooseSchema}) {
+    mongooseSchema.index({ name: 'text' })
   },
   access: {
     create ({ user }) {

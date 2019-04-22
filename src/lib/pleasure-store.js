@@ -1,6 +1,8 @@
 import pleasureClient from 'pleasure/src/ui/lib/pleasure-client'
 import Vue from 'vue'
 import objectHash from 'object-hash'
+import defaults from 'lodash/defaults'
+import forOwn from 'lodash/forOwn'
 
 export const namespaced = true
 
@@ -34,6 +36,11 @@ export const mutations = {
     Vue.set(state, 'entitiesSync', entitiesSync)
   },
   setEntitiesSchema (state, entitiesSchema) {
+    forOwn(entitiesSchema, (entity, entityName) => {
+      forOwn(entity, (field, fieldName) => {
+        defaults(field, { $pleasure: {} })
+      })
+    })
     Vue.set(state, 'entitiesSchema', entitiesSchema)
   },
   setDropdown (state, { dropdownName, results }) {

@@ -9,7 +9,11 @@ module.exports = {
   schema: {
     fullName: {
       type: String,
-      required: true
+      required: true,
+      $pleasure: {
+        label: 'Full Name',
+        placeholder: 'Full Name'
+      }
     },
     email: {
       type: String,
@@ -20,19 +24,31 @@ module.exports = {
           return isEmail(v)
         },
         message: `error.invalid-email`
+      },
+      $pleasure: {
+        label: 'E-mail',
+        placeholder: 'E-mail address'
       }
     },
     level: {
       type: String,
       enum: ['admin', 'customer'],
-      default: 'customer'
+      default: 'customer',
+      $pleasure: {
+        label: 'Level',
+        placeholder: 'User Level'
+      }
     },
     password: {
       type: String,
-      required: true
+      required: true,
+      $pleasure: {
+        label: 'Password',
+        placeholder: 'Password'
+      }
     }
   },
-  schemaCreated (mongooseSchema) {
+  schemaCreated ({mongooseSchema}) {
     mongooseSchema.pre('save', function (next) {
       if (this.isModified('password')) {
         if (this.password && this.password.length < 6) {

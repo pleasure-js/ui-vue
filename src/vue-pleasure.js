@@ -5,6 +5,7 @@ import { BrowserStorageCache } from './lib/browser-storage-cache'
 import CoercePropsMixin from 'vue-coerce-props'
 import Vuex from 'vuex'
 import VueI18n from 'vue-i18n'
+import './pleasure.pcss'
 
 export function install (Vue, { app, store, noCoerce = false } = {}) {
   if (!store) {

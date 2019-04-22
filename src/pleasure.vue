@@ -11,6 +11,7 @@
       >
         <pleasure-field-container
           v-for="field in schema"
+          :field="field"
           :key="`${formId}-${field.path}`"
         >
           <pleasure-field
@@ -137,12 +138,16 @@
             return
           }
 
-          field = Object.assign({}, field, {
-            component: 'el-input'
-          })
+          /*
+                    field = Object.assign({}, field, {
+                      component: 'el-input'
+                    })
+          */
 
+          console.log({ field })
           schema.push(defaults(field, {
-            path: fieldName
+            path: fieldName,
+            $pleasure: {} // legacy
           }))
         })
 
@@ -188,8 +193,3 @@
     }
   }
 </script>
-<style lang="postcss">
-  body {
-    background: var(--pleasure-page-background);
-  }
-</style>

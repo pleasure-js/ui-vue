@@ -1,15 +1,16 @@
 <template>
   <div class="pleasure-field">
     <component
-      :is="fieldType"
-      v-bind="$props"
+      :is="fieldComponent"
+      v-bind="theProps"
       :name="field.path"
-      :placeholder="field.path"
       @input="$emit('input', $event || null)"
     />
   </div>
 </template>
 <script>
+  import get from 'lodash/get'
+
   export default {
     props: {
       formValues: {
@@ -22,27 +23,39 @@
       },
       field: {
         type: Object,
-        default: null
+        required: true
       }
     },
     computed: {
-      fieldType () {
+      theProps () {
+        const childProps = {}
+        if (this.componentType === 'array') {
+          Object.assign(childProps, {
+            options: this.field.enumValues
+          })
+        }
+
+        return Object.assign({}, this.$props, childProps, get(this.field, '$pleasure', {}))
+      },
+      componentType () {
         // Arrays -> 'select'
         if (
           (this.field.enumValues && this.field.enumValues.length > 0) ||
           this.field.instance === 'Array'
         ) {
-          return 'pleasure-select'
-        }
-
-        return 'el-input'
-      },
-      fieldComponent () {
-        if (this.$pleasure.settings.ui === 'element-ui') {
-          return 'el-input'
+          return 'array'
         }
 
         return 'input'
+      },
+      fieldComponent () {
+        switch (this.componentType) {
+          case 'array':
+            return 'pleasure-select'
+
+          default:
+            return 'el-input'
+        }
       }
     }
   }

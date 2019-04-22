@@ -133,8 +133,12 @@
       }
     },
     methods: {
-      $t (t) {
-        return t
+      theLabel (label) {
+        const altLabels = [`labels.${label}`, label]
+        if (this.i18nScope) {
+          altLabels.unshift(`${this.i18nScope}.label.${label}`)
+        }
+        return this.plsi18n(altLabels, label)
       },
       theValue (value) {
         if (typeof value === 'object') {

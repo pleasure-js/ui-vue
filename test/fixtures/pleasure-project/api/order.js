@@ -20,14 +20,41 @@ module.exports = {
     user: {
       type: ObjectId,
       ref: 'user'
-    },
+    }
   },
-  schemaCreated (schema) {
-    schema.virtual('total').get(function () {
+  schemaCreated ({mongooseSchema}) {
+    mongooseSchema.virtual('total').get(function () {
       return this.products.reduce((total, { price, quantity }) => {
         return total + (price * quantity)
       }, 0)
     })
+  },
+  methods: {
+    queue: {
+      // [POST] order/queue
+      create ({ newEntry, ctx }) {
+
+      },
+      // [GET] order/queue/:id
+      read ({ newEntry, id, ctx }) {
+
+      },
+      // [PATCH] order/queue/:id
+      update ({ newEntry, id, ctx }) {
+
+      },
+      // [DELETE] order/queue/:id
+      delete ({ id, ctx }) {
+
+      }
+    },
+    // list-them-all
+    listThemAll: {
+      // list-them-all/:id
+      read ({ id, ctx }) {
+
+      }
+    }
   },
   access: {
     create ({ user, appendEntry }) {
