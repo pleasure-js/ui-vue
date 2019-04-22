@@ -4,6 +4,8 @@ const vue = require('rollup-plugin-vue')
 const postCss = require('rollup-plugin-postcss')
 const commonjs = require('rollup-plugin-commonjs')
 const postCssVariables = require('postcss-css-variables')
+const postCssExtend = require('postcss-extend')
+const postCssEasings = require('postcss-easings')
 const postCssNested = require('postcss-nested')
 const postCssHexRgba = require('postcss-hexrgba')
 const postCssColorFuntion = require('postcss-color-function')
@@ -11,6 +13,7 @@ const postCssCalc = require('postcss-calc')
 const postCssPresetEnv = require('postcss-preset-env')
 const Dot = require('dot-object')
 const merge = require('deepmerge')
+const { get, kebabCase, mapKeys } = require('lodash')
 
 const banner = `/*!
  * ${name} v${version}
@@ -20,6 +23,8 @@ const banner = `/*!
 
 const dot = new Dot('-')
 
+const pcssVars = mapKeys(dot.dot(require('./postcss.variables.js')), (v, k) => kebabCase(k).replace(/-default$/, ''))
+
 const getPlugins = ({ exportCss = false, minified = false } = {}) => {
   const plugs = []
   plugs.push(commonjs())
@@ -28,16 +33,18 @@ const getPlugins = ({ exportCss = false, minified = false } = {}) => {
       extract: exportCss,
       minimize: minified,
       plugins: [
-        postCssNested(),
-        postCssHexRgba(),
-        postCssColorFuntion(),
-        postCssCalc(),
         postCssPresetEnv({
           stage: 4
         }),
+        postCssNested(),
+        postCssExtend(),
+        postCssEasings(),
         postCssVariables({
-          variables: dot.dot(require('./postcss.variables.js'))
-        })
+          variables: pcssVars
+        }),
+        postCssHexRgba(),
+        postCssColorFuntion(),
+        postCssCalc()
       ]
     })
   )
