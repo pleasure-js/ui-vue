@@ -1,12 +1,13 @@
 {
   "name": "vue-pleasure",
   "version": "1.0.0",
-  "main": "dist/vue-pleasure.js",
+  "main": "dist/vue-pleasure.cjs.js",
   "module": "dist/vue-pleasure.esm.js",
   "author": "Martin Rafael Gonzalez <tin@devtin.io>",
   "license": "MIT",
   "scripts": {
     "build": "rollup -c rollup.config.js",
+    "build:jsdocs": "rm -rf docs/jsdocs && jsdoc src -r -c jsdoc.json -d docs/jsdocs -t node_modules/docdash && mkdir -p docs/assets && cp assets/logo.svg docs/assets/logo.svg && rm -rf docs/jsdocs/styles/* && cp assets/docs-assets/jsdoc.css docs/jsdocs/styles && cp assets/docs-assets/prettify.css docs/jsdocs/styles",
     "build:live": "nodemon -w src -w rollup.config.js --exec yarn build",
     "lint": "eslint 'src/**/*.{js,vue}'"
   },
@@ -14,6 +15,8 @@
     "@vue/test-utils": "^1.0.0-beta.29",
     "ava": "^1.4.1",
     "babel-eslint": "^10.0.1",
+    "docdash": "devtin/docdash",
+    "dot-object": "^1.7.1",
     "element-ui": "^2.7.2",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
@@ -28,14 +31,29 @@
     "mocha": "^6.1.3",
     "mocha-webpack": "^1.1.0",
     "nodemon": "^1.18.11",
+    "postcss-calc": "^7.0.1",
+    "postcss-color-function": "^4.1.0",
+    "postcss-css-variables": "^0.12.0",
+    "postcss-hexrgba": "^1.0.1",
+    "postcss-loader": "^3.0.0",
+    "postcss-nested": "^4.1.2",
+    "postcss-preset-env": "^6.6.0",
+    "postcss-responsive-type": "^1.0.0",
     "rollup": "^1.10.0",
+    "rollup-plugin-babel-minify": "^8.0.0",
     "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-postcss": "^2.0.3",
     "rollup-plugin-vue": "^5.0.0",
     "vue-template-compiler": "^2.6.10"
   },
   "dependencies": {
+    "deepmerge": "^3.2.0",
+    "md5": "^2.2.1",
+    "mustache": "^3.0.1",
+    "object-hash": "^1.3.1",
     "vue": "^2.6.10",
     "vue-coerce-props": "^1.0.0",
-    "vue-i18n": "^8.10.0"
+    "vue-i18n": "^8.10.0",
+    "vuex": "^3.1.0"
   }
 }
