@@ -1,33 +1,13 @@
 <template>
   <div class="tests">
-    <profile></profile>
     <pleasure
-      v-if="!$pleasure.user"
-      :cancelable="false"
-      action-label="Login"
-      :custom-schema="loginSchema"
-      :login="true"
-      :value="login"
-      key="login"
-    ></pleasure>
-    <pleasure
-      v-if="$pleasure.user"
-      method="update"
       entity="user"
-      action-label="Update"
-      :cancelable="false"
-      :entry-id="$pleasure.user._id"
-      key="create"
+      key="create-user"
     ></pleasure>
   </div>
 </template>
 <script>
-  import Profile from '~/components/profile.vue'
-
   export default {
-    components: {
-      Profile
-    },
     data () {
       return {
         login: {
