@@ -7,6 +7,11 @@ import Vuex from 'vuex'
 import VueI18n from 'vue-i18n'
 import './pleasure.pcss'
 
+/**
+ * @module vue-pleasure
+ * @desc Implements a set of tools for {@link https://vuejs.org/ Vue.js} to use along the {@link pleasure/api The Pleasure Api}
+ */
+
 export function install (Vue, { app, store, noCoerce = false } = {}) {
   if (!store) {
     Vue.use(Vuex)
@@ -84,13 +89,11 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     })
 
   if (!noCoerce) {
+    console.log(`enabling coerce`)
     Vue.mixin(CoercePropsMixin)
   }
 
   Vue.mixin({
-    components: {
-      pleasure
-    },
     filters: {
       lang (text) {
         // return app.i18n(text)
@@ -114,6 +117,12 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
           user: store.getters['pleasure/user']
         }
       }
+    }
+  })
+
+  Vue.mixin({
+    components: {
+      pleasure
     }
   })
 

@@ -5,24 +5,28 @@
     <pleasure-form
       :disabled="disabled"
       :form-id="formId"
+      :i18n-scope="i18nScope"
     >
       <template
         v-if="loaded"
       >
         <pleasure-field-container
           v-for="field in schema"
-          :field="field"
           :key="`${formId}-${field.path}`"
+          :i18n-scope="i18nScope"
+          :field="field"
         >
           <pleasure-field
             v-model="values[field.path]"
             :field="field"
+            :i18n-scope="i18nScope"
             :form-values="values"
           />
         </pleasure-field-container>
       </template>
+      <slot />
       <pleasure-form-controls
-        v-if="loaded"
+        v-if="loaded && withControls"
         :v-bind="$props"
         :action-label="actionLabel"
         :cancel-label="cancelLabel"
@@ -36,6 +40,8 @@
 </template>
 <script>
   import forOwn from 'lodash/forOwn'
+  import kebabCase from 'lodash/kebabCase'
+  import startCase from 'lodash/startCase'
   import PleasureForm from './pleasure-form.vue'
   import PleasureFieldContainer from './pleasure-field-container.vue'
   import PleasureField from './pleasure-field.vue'
@@ -49,11 +55,39 @@
   const { randomUniqueId } = utils
 
   /**
+   * @module vue-pleasure/pleasure
+   * @desc A component to render entities. It implements seamlessly with the defined {@link pleasure/PleasureEntity PleasureEntities}
+   *
+   * @see {@link pleasure/PleasureEntity}
    * @vue-prop {String} formName - Name to be assigned to the <form> element.
    * @vue-prop {String} [method=create] - Pleasure method.
    * @vue-prop {String} [entity] - Name of the `entity`.
    * @vue-prop {Boolean} [partialUpdate=false] - Whether to update the entry completely or partially.
    * @vue-prop {Object} [customSchema=null] - Alternatively provide a customSchema to render.
+   * @vue-prop {Boolean} [withControls=true] - Whether to display the control buttons at the bottom or not.
+   *
+   * @vue-prop {Boolean} [autoFieldI18n=true] - Whether to auto parse the `placeholder` and `label` fields. It would
+   * look for the first appearance between the composition `${i18nScope}.placeholder.${field.path}`,
+   * `${i18nScope}.label.${field.path}`, and last but not least, `${i18nScope}.${field.path}` and will auto replace the
+   * values in `field.placeholder` and `field.label`.
+   *
+   * @vue-prop {String} [i18nScope] - Scope where to try to resolve i18n abbreviations from `label`, `placeholder` and
+   * error messages. Defaults to the name of the `entity` if any.
+   *
+   * @vue-prop {Boolean} [autoLabelI18n=true] - Whether to auto parse the `label` property of the field. When true,
+   * it would look for the first appearance between: `${i18nScope}.label.${field.$pleasure.label}`,
+   * `labels.${field.$pleasure.label}`, and last but not least, `labels.${field.$pleasure.label}` and will auto replace
+   * the value in `field.$pleasure.label` with the one found, if any.
+   *
+   * @vue-prop {Boolean} [autoPlaceholderI18n=true] - Whether to auto parse the `placeholder` property of the field.
+   * When true, it would look for the first appearance between: `${i18nScope}.label.${field.$pleasure.placeholder}`,
+   * `placeholders.${field.$pleasure.placeholder}`, and last but not least, `labels.${field.$pleasure.placeholder}` and
+   * will auto replace the value in `field.$pleasure.placeholder` with the one found, if any.
+   *
+   * @vue-prop {Boolean} [guessLabel=true] - When `true`, when no label was provided, it will use a `startCase` version
+   * of the `field.path` automatically.
+   * @vue-prop {Boolean} [guessPlaceholder=true] - When `true`, when no placeholder was provided, it will use a
+   * startCase version of the `field.path` automatically.
    */
   export default {
     components: {
@@ -63,9 +97,38 @@
       PleasureFormControls
     },
     props: {
+      guessLabel: {
+        type: Boolean,
+        default: true
+      },
+      guessPlaceholder: {
+        type: Boolean,
+        default: true
+      },
       actionLabel: {
         type: String,
         default: 'Create'
+      },
+      autoLabelI18n: {
+        type: Boolean,
+        default: true
+      },
+      autoPlaceholderI18n: {
+        type: Boolean,
+        default: true
+      },
+      withControls: {
+        type: Boolean,
+        default: true
+      },
+      i18nScope: {
+        type: String,
+        default: null,
+        coerce (...args) {
+          console.log(`coercing`, ...args)
+          console.log(`coercing>>>`, this.i18nScope, this.entity)
+          return this.i18nScope ? this.i18nScope : (this.entity || 'default')
+        }
       },
       cancelLabel: {
         type: String,
@@ -138,20 +201,18 @@
             return
           }
 
-          /*
-                    field = Object.assign({}, field, {
-                      component: 'el-input'
-                    })
-          */
-
-          console.log({ field })
-          schema.push(defaults(field, {
-            path: fieldName,
-            $pleasure: {} // legacy
-          }))
+          schema.push(this.toPleasureField(defaults(field, { path: fieldName })))
         })
 
         return schema
+      }
+    },
+    watch: {
+      values: {
+        handler (v) {
+          this.$emit('input', v)
+        },
+        deep: true
       }
     },
     async mounted () {
@@ -167,6 +228,48 @@
     methods: {
       onCancel () {
 
+      },
+      toPleasureField (field) {
+        const isDeepKebabCased = v => {
+          return /^[a-z][a-z.-]+[a-z]$/.test(v)
+        }
+        const i18nLabel = kebabCase(field.path)
+
+        const placeholder = [
+          this.i18nScope ? `${this.i18nScope}.placeholder.${i18nLabel}` : null,
+          this.i18nScope ? `${this.i18nScope}.${i18nLabel}` : null,
+          `placeholders.${i18nLabel}`
+        ].filter(v => !!v)
+
+        const label = [
+          this.i18nScope ? `${this.i18nScope}.label.${i18nLabel}` : null,
+          this.i18nScope ? `${this.i18nScope}.${i18nLabel}` : null,
+          `labels.${i18nLabel}`
+        ].filter(v => !!v)
+
+        const legacy = {
+          $pleasure: {}
+        }
+
+        field = defaults(field, legacy)
+
+        if (!field.$pleasure.label && this.guessLabel) {
+          field.$pleasure.label = startCase(field.path)
+        }
+
+        if (!field.$pleasure.placeholder && this.guessPlaceholder) {
+          field.$pleasure.placeholder = startCase(field.path)
+        }
+
+        if (this.autoLabelI18n) {
+          field.$pleasure.label = this.plsi18n(label, field.$pleasure.label)
+        }
+
+        if (this.autoPlaceholderI18n) {
+          field.$pleasure.placeholder = this.plsi18n(placeholder, field.$pleasure.placeholder)
+        }
+
+        return field
       },
       performSubmit () {
         switch (this.method) {

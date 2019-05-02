@@ -1,6 +1,7 @@
 <template>
   <div class="pleasure-form">
     <component
+      @input="$emit('input', $event)"
       :is="formComponent"
       :key="formId"
     >
@@ -11,6 +12,10 @@
 <script>
   export default {
     props: {
+      i18nScope: {
+        type: String,
+        default: null
+      },
       formId: {
         type: String,
         required: true

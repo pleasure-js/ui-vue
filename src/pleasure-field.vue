@@ -13,6 +13,10 @@
 
   export default {
     props: {
+      i18nScope: {
+        type: String,
+        default: null
+      },
       formValues: {
         type: Object,
         default: undefined
@@ -40,7 +44,10 @@
       componentType () {
         // Arrays -> 'select'
         if (
-          (this.field.enumValues && this.field.enumValues.length > 0) ||
+          (
+            this.field.enumValues &&
+            this.field.enumValues.length > 0
+          ) ||
           this.field.instance === 'Array'
         ) {
           return 'array'

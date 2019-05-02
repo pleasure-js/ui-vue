@@ -13,6 +13,10 @@
 <script>
   export default {
     props: {
+      i18nScope: {
+        type: String,
+        default: null
+      },
       field: {
         type: Object,
         required: true

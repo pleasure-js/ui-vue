@@ -2,22 +2,22 @@
   <div :class="{'pleasure-select-container': true, focused: focused }">
     <template v-if="!readonly && !otherActive">
       <select
+        :key="key"
         class="pleasure-select"
         :name="name"
-        :key="key"
         @focus="focused = true"
         @blur="focused = false"
         @change="selected = $event.target.value">
         <option value="">
-          [ {{ $t(placeholder) }} ]
+          [ {{ placeholder }} ]
         </option>
         <option
           v-for="option in realOptions"
+          :key="option.value"
           :value="option.value"
           :selected="selected === theValue(option.value)"
-          :key="option.value"
         >
-          {{ $t(option.label) }}
+          {{ theLabel(option.label) }}
         </option>
         <option value=":other:" v-if="otherAvailable">
           {{ $t(otherLabel) }}
@@ -26,15 +26,15 @@
     </template>
     <el-input
       v-if="otherActive && !readonly"
+      ref="manual-input"
       clearable
+      :placeholder="$t(otherPlaceholder)"
+      :value="selected"
       @input="selected = $event"
       @clear="otherActive = false"
       @keyup.esc="otherActive = false"
       @focus="focused = true"
       @blur="focused = false"
-      :placeholder="$t(otherPlaceholder)"
-      ref="manual-input"
-      :value="selected"
     ></el-input>
     <el-input
       v-if="readonly"
@@ -69,11 +69,27 @@
   }
 
   /**
+   * @module vue-pleasure/select
+   * @desc A component to render lists by providing `Arrays`, or values from other entities@.
    * @vue-prop {String} [otherLabel=label.other] - Label to be displayed when 'other' value selected.
-   * @vue-prop {Object[]|String[]} [options] - Options available.
+   *
+   * @vue-prop {Object[]|String[]} [options] - List of available options. See property `optionsMap` for advanced use.
+   *
+   *  In case of a `String` it would look for a dropdown list with the name of `options`. See {@link store/dropdown}.
+   *
+   * In case of an `Array` of `String's`, all of the `String` values will be listed.
+   *
+   * In case of an `Array` of `Objects`, options would be rendered using the dropdown's `Array` value and parsed by
+   * `optionMap`
+   *
+   * @vue-prop {Object[]|String[]} [path] - List of available options. See property `optionsMap` for advanced use.
    */
   export default {
     props: {
+      i18nScope: {
+        type: String,
+        default: null
+      },
       otherLabel: {
         type: String,
         default: 'label.other'
@@ -86,8 +102,14 @@
         type: Boolean,
         default: false
       },
-      pleasureValues: Object,
-      find: Object,
+      pleasureValues: {
+        type: Object,
+        default: null
+      },
+      find: {
+        type: Object,
+        default: null
+      },
       readonly: {
         type: Boolean,
         default: false
@@ -104,9 +126,18 @@
         type: [String, Object, Array],
         default: null
       },
-      name: String,
-      placeholder: String,
-      labelResolve: Function,
+      name: {
+        type: String,
+        default: null
+      },
+      placeholder: {
+        type: String,
+        default: null
+      },
+      labelResolve: {
+        type: Function,
+        default: null
+      },
       optionsMap: {
         type: Object,
         default () {
@@ -159,7 +190,7 @@
         }
 
         if (typeof options === 'string') {
-          options = this.$store.getters['db/dropdowns'][options]
+          options = this.$store.getters['pleasure/dropdown'][options]
 
           if (this.path) {
             options = get(options, this.path)

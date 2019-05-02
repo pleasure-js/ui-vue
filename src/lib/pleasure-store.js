@@ -8,7 +8,7 @@ export const namespaced = true
 
 export const state = {
   entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
-  entitiesSchema: null,
+  entitiesSchema: {},
   dropdown: {},
   settings: process.env.$pleasure.settings,
   dropdownLoading: [],
@@ -36,8 +36,8 @@ export const mutations = {
     Vue.set(state, 'entitiesSync', entitiesSync)
   },
   setEntitiesSchema (state, entitiesSchema) {
-    forOwn(entitiesSchema, (entity, entityName) => {
-      forOwn(entity, (field, fieldName) => {
+    forOwn(entitiesSchema, (entity) => {
+      forOwn(entity, (field) => {
         defaults(field, { $pleasure: {} })
       })
     })
@@ -48,6 +48,16 @@ export const mutations = {
     Vue.set(state.dropdown, dropdownName, results)
   }
 }
+
+/**
+ * @function store/dropdown
+ * @params {Object} options
+ * @param options.entity
+ * @param listOptions
+ * @param name
+ * @param force
+ * @return {Promise<*>}
+ */
 
 export const actions = {
   async locale ({ commit }, locale) {

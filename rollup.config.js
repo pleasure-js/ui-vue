@@ -54,7 +54,6 @@ const getPlugins = ({ exportCss = false, minified = false } = {}) => {
   if (minified) {
     plugs.push(minify(merge({
       comments: false,
-      banner,
       bannerNewLine: true
     }, typeof minified === 'object' ? minified : {})))
   }
@@ -75,7 +74,8 @@ module.exports = [
       {
         file: 'dist/vue-pleasure.js',
         name: 'VuePleasure',
-        format: 'iife'
+        format: 'iife',
+        banner
       }
     ],
     plugins: vuePleasureCss
@@ -84,12 +84,14 @@ module.exports = [
     input: 'src/vue-pleasure.js',
     output: [
       {
-        file: 'dist/vue-pleasure.cjs.js',
-        format: 'cjs'
+        file: 'dist/vue-pleasure.common.js',
+        format: 'cjs',
+        banner
       },
       {
         file: 'dist/vue-pleasure.esm.js',
-        format: 'esm'
+        format: 'esm',
+        banner
       }
     ],
     plugins
@@ -100,7 +102,8 @@ module.exports = [
       {
         file: 'dist/vue-pleasure.element-ui.js',
         name: 'ElementUiPleasure',
-        format: 'iife'
+        format: 'iife',
+        banner
       }
     ],
     plugins: vuePleasureElementCss
@@ -109,12 +112,14 @@ module.exports = [
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/vue-pleasure.element-ui.cjs.js',
-        format: 'cjs'
+        file: 'dist/vue-pleasure.element-ui.common.js',
+        format: 'cjs',
+        banner
       },
       {
         file: 'dist/vue-pleasure.element-ui.esm.js',
-        format: 'esm'
+        format: 'esm',
+        banner
       }
     ],
     plugins
@@ -125,7 +130,8 @@ module.exports = [
       {
         file: 'dist/vue-pleasure.min.js',
         format: 'iife',
-        name: 'VuePleasure'
+        name: 'VuePleasure',
+        banner
       }
     ],
     plugins: vuePleasureMin
@@ -136,7 +142,8 @@ module.exports = [
       {
         file: 'dist/vue-pleasure.element-ui.min.js',
         format: 'iife',
-        name: 'ElementUiPleasure'
+        name: 'ElementUiPleasure',
+        banner
       }
     ],
     plugins: vuePleasureElementMin

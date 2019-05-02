@@ -1,15 +1,21 @@
 {
   "name": "vue-pleasure",
   "version": "1.0.0",
-  "main": "dist/vue-pleasure.cjs.js",
+  "main": "dist/vue-pleasure.common.js",
   "module": "dist/vue-pleasure.esm.js",
   "author": "Martin Rafael Gonzalez <tin@devtin.io>",
   "license": "MIT",
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "build:jsdocs": "rm -rf docs/jsdocs && jsdoc src -r -c jsdoc.json -d docs/jsdocs -t node_modules/docdash && mkdir -p docs/assets && cp assets/logo.svg docs/assets/logo.svg && rm -rf docs/jsdocs/styles/* && cp assets/docs-assets/jsdoc.css docs/jsdocs/styles && cp assets/docs-assets/prettify.css docs/jsdocs/styles",
-    "build:live": "nodemon -w src -w rollup.config.js --exec yarn build",
+    "serve:docs": "light-server -s docs -o",
+    "dev:refresh": "yarn build && yarn build:jsdocs",
+    "dev:live": "nodemon --legacy-watch --watch src --watch rollup.config.js --watch postcss.variables.js --exec yarn dev:refresh",
+    "build:live": "nodemon --legacy-watch --watch src --watch rollup.config.js --watch postcss.variables.js --exec yarn build",
     "lint": "eslint 'src/**/*.{js,vue}'"
+  },
+  "nodemonConfig": {
+    "ext": "js,json,vue,pcss,css,md"
   },
   "devDependencies": {
     "@vue/test-utils": "^1.0.0-beta.29",
