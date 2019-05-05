@@ -176,7 +176,7 @@
     data () {
       return {
         componentWrapper: 'el-form-item',
-        values: merge({}, this.value),
+        values: merge.all([this.values || {}, this.value]),
         formId: randomUniqueId(),
         entryRead: false,
         disabled: false
@@ -213,6 +213,11 @@
           this.$emit('input', v)
         },
         deep: true
+      }
+    },
+    async asyncData () {
+      return {
+        values: this.entryId ? await this.$pleasure.api.read(this.entity, this.entryId) : {}
       }
     },
     async mounted () {

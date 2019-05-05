@@ -105,5 +105,22 @@ module.exports = {
       // only admins can list users
       return user && user.level === 'admin'
     }
+  },
+  redux: {
+    access: {
+      // called every time an entry that belongs to this entity is updated
+      // must return an array indicating what groups of users should be notified
+      // true for all, false for none
+      // defaults to true
+      update({ entry }) {
+        return true
+      }
+    },
+    payload: {
+      update ({ group, entry }) {
+        // console.log(`entry.$updated >>>`, entry.$before, entry.$after)
+        return entry._id
+      }
+    }
   }
 }

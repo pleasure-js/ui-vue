@@ -105,6 +105,7 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
         const $this = this
         return {
           error (message) {
+            console.log(`error`, message)
             $this.$message({
               message,
               type: 'error'
@@ -115,9 +116,32 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
           dropdown: store.getters['pleasure/dropdown'],
           entities: store.getters['pleasure/entities'],
           user: store.getters['pleasure/user']
-        }
+        })
       }
     }
+  })
+
+  const updateProfile = (newUser) => {
+    store.dispatch('pleasure/changeUserProfile', newUser)
+  }
+
+  const logout = () => {
+    store.dispatch('pleasure/logout')
+  }
+
+  pleasureClient.on('login', user => {
+    pleasureClient.user(user._id).on('update', updateProfile)
+    pleasureClient.user(user._id).on('remove', logout)
+  })
+
+  pleasureClient.on('logout', user => {
+    console.log(`logoiut`, { user })
+    if (!user) {
+      return
+    }
+    console.log(`loggin out user`, { user })
+    pleasureClient.user(user._id).off('update', updateProfile)
+    pleasureClient.user(user._id).off('remove', logout)
   })
 
   Vue.mixin({

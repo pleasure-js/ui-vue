@@ -60,6 +60,9 @@ export const mutations = {
  */
 
 export const actions = {
+  changeUserProfile ({ commit }, user) {
+    return commit('setUser', user)
+  },
   async locale ({ commit }, locale) {
     commit('setlocale', locale)
   },
@@ -82,6 +85,9 @@ export const actions = {
     commit('setDropdown', { dropdownName, results })
     commit('removeDropdownLoading', id)
     return results
+  },
+  logout () {
+    return pleasureClient.logout()
   },
   async syncEntities ({ commit, state }, { force = false } = {}) {
     if (!force && state.entitiesSync !== 0) {

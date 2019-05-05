@@ -3,6 +3,15 @@
     {{$pleasure.user.fullName}} - <a @click="$pleasure.api.logout()">Logout</a>
   </div>
 </template>
+<script>
+  export default {
+    methods: {
+      logout () {
+        return this.$pleasure.api.logout()
+      }
+    }
+  }
+</script>
 <style lang="postcss">
   .pleasure-profile {
     padding: 20px 10px;
