@@ -1,6 +1,6 @@
 <template>
   <div class="pleasure-profile" v-if="$pleasure.user">
-    {{$pleasure.user.fullName}} - <a @click="$pleasure.api.logout()">Logout</a>
+    {{$pleasure.user.fullName}} - <a @click="logout">Logout</a>
   </div>
 </template>
 <script>
