@@ -124,33 +124,8 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     }
   })
 
-  const updateProfile = (newUser) => {
-    store.dispatch('pleasure/changeUserProfile', newUser)
-  }
-
-  const logout = () => {
-    store.dispatch('pleasure/logout')
-  }
-
-  pleasureClient.on('login', user => {
-    pleasureClient.user(user._id).on('update', updateProfile)
-    pleasureClient.user(user._id).on('remove', logout)
-  })
-
-  pleasureClient.on('logout', user => {
-    console.log(`logoiut`, { user })
-    if (!user) {
-      return
-    }
-    console.log(`loggin out user`, { user })
-    pleasureClient.user(user._id).off('update', updateProfile)
-    pleasureClient.user(user._id).off('remove', logout)
-  })
-
-  Vue.mixin({
-    components: {
-      pleasure
-    }
+  pleasureClient.on('profile-update', user => {
+    store.dispatch('pleasure/changeUserProfile', user)
   })
 
   if (!process.server) {
