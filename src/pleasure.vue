@@ -88,6 +88,9 @@
    * of the `field.path` automatically.
    * @vue-prop {Boolean} [guessPlaceholder=true] - When `true`, when no placeholder was provided, it will use a
    * startCase version of the `field.path` automatically.
+   *
+   * @vue-prop {Boolean} [autoload=true] - Determines whether the values of the entry (if any) should be automatically
+   * pulled from the server when the component is mounted.
    */
   export default {
     components: {
@@ -171,6 +174,10 @@
       login: {
         type: Boolean,
         default: false
+      },
+      autoload: {
+        type: Boolean,
+        default: true
       }
     },
     data () {
@@ -184,7 +191,7 @@
     },
     computed: {
       loaded () {
-        return this.schema && this.entryRead
+        return this.schema && (!this.autoload || (this.autoload && this.entryRead))
       },
       schema () {
         if (!this.customSchema && (!this.entity || !this.$pleasure.entities || !this.$pleasure.entities[this.entity])) {
@@ -215,12 +222,11 @@
         deep: true
       }
     },
-    async asyncData () {
-      return {
-        values: this.entryId ? await this.$pleasure.api.read(this.entity, this.entryId) : {}
-      }
-    },
     async mounted () {
+      if (!this.autoload) {
+        return
+      }
+
       if (this.entryId) {
         try {
           this.$set(this, 'values', await this.$pleasure.api.read(this.entity, this.entryId))
@@ -228,6 +234,7 @@
           this.$pleasure.error(err.message)
         }
       }
+
       this.entryRead = true
     },
     methods: {
