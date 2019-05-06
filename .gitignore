@@ -3,4 +3,4 @@ node_modules
 dist
 yarn*
 test/fixtures/project
-
+docs

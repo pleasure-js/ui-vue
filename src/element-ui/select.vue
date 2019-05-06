@@ -198,7 +198,7 @@
         }
 
         realOptions = Array.isArray(options) ? options.map(fixValues) : map(options, fixValues)
-        console.log({ realOptions })
+        // console.log({ realOptions })
         // realOptions = options.map(fixValues)
 
         let value = this.value
@@ -231,7 +231,7 @@
       },
       setReadOnlyLabel () {
         const { selected } = this
-        console.log({ selected })
+        // console.log({ selected })
 
         if (typeof selected === 'string' && this.realOptions.length > 0) {
           console.log(`here`, { selected })

@@ -98,7 +98,7 @@ export const actions = {
     let entities
 
     try {
-      entities = await pleasureClient.entities()
+      entities = await pleasureClient.getEntities()
     } catch (err) {
       commit('setEntitiesSync', 0)
       console.log(`Could not retrieve entities`, err.message)

@@ -108,7 +108,6 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
         const $this = this
         return {
           error (message) {
-            console.log(`error`, message)
             $this.$message({
               message,
               type: 'error'
@@ -119,7 +118,7 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
           dropdown: store.getters['pleasure/dropdown'],
           entities: store.getters['pleasure/entities'],
           user: store.getters['pleasure/user']
-        })
+        }
       }
     }
   })

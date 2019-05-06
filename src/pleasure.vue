@@ -48,7 +48,6 @@
   import PleasureFormControls from './pleasure-form-controls.vue'
   import defaults from 'lodash/defaults'
   import get from 'lodash/get'
-  import objectHash from 'object-hash'
   import utils from 'pleasure/src/lib/utils'
   import merge from 'deepmerge'
 
@@ -88,6 +87,7 @@
    *
    * @vue-prop {Boolean} [guessLabel=true] - When `true`, when no label was provided, it will use a `startCase` version
    * of the `field.path` automatically.
+   *
    * @vue-prop {Boolean} [guessPlaceholder=true] - When `true`, when no placeholder was provided, it will use a
    * startCase version of the `field.path` automatically.
    *
@@ -250,9 +250,11 @@
 
       },
       toPleasureField (field) {
+/*
         const isDeepKebabCased = v => {
           return /^[a-z][a-z.-]+[a-z]$/.test(v)
         }
+*/
         const i18nLabel = kebabCase(field.path)
 
         const placeholder = [
