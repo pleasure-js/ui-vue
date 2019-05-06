@@ -95,11 +95,15 @@ module.exports = {
       return access
     },
     update ({ user }) {
-      const access = basicUpdateAccess()
+      const access = []
 
       // only admins can set a user level
-      if (user && user.level === 'admin') {
-        access.push('level')
+      if (user) {
+        access.push(...basicUpdateAccess())
+        
+        if (user.level === 'admin') {
+          access.push('level')
+        }
       }
 
       return access
@@ -116,13 +120,13 @@ module.exports = {
       // true for all, false for none
       // defaults to true
       update({ entry }) {
-        return true
+        return false
       }
     },
     payload: {
       update ({ group, entry }) {
         // console.log(`entry.$updated >>>`, entry.$before, entry.$after)
-        return entry._id
+        return entry
       }
     }
   }
