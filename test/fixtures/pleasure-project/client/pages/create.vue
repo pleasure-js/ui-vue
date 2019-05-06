@@ -2,6 +2,7 @@
   <div class="tests">
     <pleasure
       entity="user"
+      :omit="['level']"
       key="create-user"
     ></pleasure>
   </div>

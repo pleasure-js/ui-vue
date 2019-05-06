@@ -71,6 +71,8 @@
    * `${i18nScope}.label.${field.path}`, and last but not least, `${i18nScope}.${field.path}` and will auto replace the
    * values in `field.placeholder` and `field.label`.
    *
+   * @vue-prop {String[]} [omit] - Fields to omit from the entity schema.
+   *
    * @vue-prop {String} [i18nScope] - Scope where to try to resolve i18n abbreviations from `label`, `placeholder` and
    * error messages. Defaults to the name of the `entity` if any.
    *
@@ -100,6 +102,12 @@
       PleasureFormControls
     },
     props: {
+      omit: {
+        type: Array,
+        default () {
+          return []
+        }
+      },
       guessLabel: {
         type: Boolean,
         default: true
@@ -203,7 +211,7 @@
 
         forOwn(entitySchema, (field, fieldName) => {
           // skip if it's virtual or starts with an underscore
-          if (/^_/.test(fieldName) || get(field, 'options.options.virtual')) {
+          if (/^_/.test(fieldName) || get(field, 'options.options.virtual') || this.omit.indexOf(fieldName) >= 0) {
             console.log(`skipping`, { fieldName })
             return
           }
