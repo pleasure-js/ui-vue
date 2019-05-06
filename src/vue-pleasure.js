@@ -94,6 +94,9 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 
   Vue.mixin({
+    components: {
+      pleasure
+    },
     filters: {
       lang (text) {
         // return app.i18n(text)
