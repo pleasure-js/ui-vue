@@ -6,80 +6,83 @@ const basicReadAccess = () => ['_id', 'fullName', 'email', 'level']
 const basicUpdateAccess = () => ['fullName', 'email', 'password']
 
 module.exports = {
-  schema: {
-    fullName: {
-      type: String,
-      required: true,
-      $pleasure: {
-        label: 'Full Name',
-        placeholder: 'Full Name'
-      }
-    },
-    email: {
-      type: String,
-      unique: true,
-      required: true,
-      validate: {
-        validator (v) {
-          return isEmail(v)
-        },
-        message: `error.invalid-email`
+  model: {
+    schema: {
+      fullName: {
+        type: String,
+        required: true,
+        $pleasure: {
+          label: 'Full Name',
+          placeholder: 'Full Name'
+        }
       },
-      $pleasure: {
-        label: 'E-mail',
-        placeholder: 'E-mail address'
+      email: {
+        type: String,
+        unique: true,
+        required: true,/*
+        validate: {
+          validator (v) {
+            return isEmail(v)
+          },
+          message: `error.invalid-email`
+        },*/
+        $pleasure: {
+          label: 'E-mail',
+          placeholder: 'E-mail address'
+        }
+      },
+      level: {
+        type: String,
+        enum: ['admin', 'customer'],
+        default: 'customer',
+        $pleasure: {
+          label: 'Level',
+          placeholder: 'User Level'
+        }
+      },
+      password: {
+        type: String,
+        required: true,
+        $pleasure: {
+          label: 'Password',
+          placeholder: 'Password'
+        }
       }
     },
-    level: {
-      type: String,
-      enum: ['admin', 'customer'],
-      default: 'customer',
-      $pleasure: {
-        label: 'Level',
-        placeholder: 'User Level'
-      }
-    },
-    password: {
-      type: String,
-      required: true,
-      $pleasure: {
-        label: 'Password',
-        placeholder: 'Password'
-      }
-    }
-  },
-  schemaCreated ({mongooseSchema}) {
-    mongooseSchema.pre('save', function (next) {
-      if (this.isModified('password')) {
-        if (this.password && this.password.length < 6) {
-          throw new Error(`Password too short.`)
+    schemaCreated (mongooseSchema) {
+      mongooseSchema.pre('save', function (next) {
+        if (this.isModified('password')) {
+          if (this.password && this.password.length < 6) {
+            throw new Error(`Password too short.`)
+          }
+
+          this.password = md5(this.password)
+        }
+        next()
+      })
+
+      mongooseSchema.statics.login = async function ({ email, password }) {
+        const InvalidCredentials = new Error(`error.invalid-credentials`)
+
+        if (!email || !password) {
+          throw InvalidCredentials
         }
 
-        this.password = md5(this.password)
+        const user = await this.findOne({ email, password: md5(password) })
+
+        if (!user) {
+          throw InvalidCredentials
+        }
+
+        // this will be signed and returned as an accessToken using JWT.
+        return user.toObject()
       }
-      next()
-    })
-
-    mongooseSchema.statics.login = async function ({ email, password }) {
-      const InvalidCredentials = new Error(`error.invalid-credentials`)
-
-      if (!email || !password) {
-        throw InvalidCredentials
-      }
-
-      const user = await this.findOne({ email, password: md5(password) })
-
-      if (!user) {
-        throw InvalidCredentials
-      }
-
-      // this will be signed and returned as an accessToken using JWT.
-      return user.toObject()
     }
   },
   access: {
     read ({ user, id }) {
-      return user && (user.level === 'admin' || user._id === id) ? ['_id', 'fullName', 'level', 'email'] : false
+      return true
+      // return user && (user.level === 'admin' || user._id === id) ? ['_id', 'fullName', 'level', 'email'] : false
     },
     create ({ user }) {
       const access = basicCreateAccess()

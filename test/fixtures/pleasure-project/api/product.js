@@ -1,21 +1,23 @@
 module.exports = {
-  schema: {
-    name: String,
-    description: String,
-    categories: {
-      type: Array,
+  model: {
+    schema: {
+      name: String,
+      description: String,
+      categories: {
+        type: Array
+      },
+      price: {
+        type: Number,
+        default: 0
+      },
+      stock: {
+        type: Number,
+        default: 0
+      }
     },
-    price: {
-      type: Number,
-      default: 0
-    },
-    stock: {
-      type: Number,
-      default: 0
+    schemaCreated (mongooseSchema) {
+      mongooseSchema.index({ name: 'text' })
     }
-  },
-  schemaCreated ({mongooseSchema}) {
-    mongooseSchema.index({ name: 'text' })
   },
   access: {
     create ({ user }) {
