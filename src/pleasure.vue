@@ -24,7 +24,7 @@
           />
         </pleasure-field-container>
       </template>
-      <slot />
+      <slot/>
       <pleasure-form-controls
         v-if="loaded && withControls"
         :v-bind="$props"
@@ -48,10 +48,7 @@
   import PleasureFormControls from './pleasure-form-controls.vue'
   import defaults from 'lodash/defaults'
   import get from 'lodash/get'
-  import utils from 'pleasure/src/lib/utils'
   import merge from 'deepmerge'
-
-  const { randomUniqueId } = utils
 
   /**
    * @module vue-pleasure/pleasure
@@ -192,7 +189,7 @@
       return {
         componentWrapper: 'el-form-item',
         values: merge.all([this.values || {}, this.value]),
-        formId: randomUniqueId(),
+        formId: 'an-id',// randomUniqueId(),
         entryRead: false,
         disabled: false
       }
@@ -250,23 +247,23 @@
 
       },
       toPleasureField (field) {
-/*
-        const isDeepKebabCased = v => {
-          return /^[a-z][a-z.-]+[a-z]$/.test(v)
-        }
-*/
+        /*
+                const isDeepKebabCased = v => {
+                  return /^[a-z][a-z.-]+[a-z]$/.test(v)
+                }
+        */
         const i18nLabel = kebabCase(field.path)
 
         const placeholder = [
-          this.i18nScope ? `${this.i18nScope}.placeholder.${i18nLabel}` : null,
-          this.i18nScope ? `${this.i18nScope}.${i18nLabel}` : null,
-          `placeholders.${i18nLabel}`
+          this.i18nScope ? `${ this.i18nScope }.placeholder.${ i18nLabel }` : null,
+          this.i18nScope ? `${ this.i18nScope }.${ i18nLabel }` : null,
+          `placeholders.${ i18nLabel }`
         ].filter(v => !!v)
 
         const label = [
-          this.i18nScope ? `${this.i18nScope}.label.${i18nLabel}` : null,
-          this.i18nScope ? `${this.i18nScope}.${i18nLabel}` : null,
-          `labels.${i18nLabel}`
+          this.i18nScope ? `${ this.i18nScope }.label.${ i18nLabel }` : null,
+          this.i18nScope ? `${ this.i18nScope }.${ i18nLabel }` : null,
+          `labels.${ i18nLabel }`
         ].filter(v => !!v)
 
         const legacy = {

@@ -1,5 +1,5 @@
 import pleasure from './pleasure.vue'
-import pleasureClient from 'pleasure/src/ui/lib/pleasure-client'
+import pleasureClient from 'pleasure-client'
 import * as PleasureStore from './lib/pleasure-store.js'
 import { BrowserStorageCache } from './lib/browser-storage-cache'
 import CoercePropsMixin from 'vue-coerce-props'

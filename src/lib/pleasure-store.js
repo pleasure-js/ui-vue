@@ -1,4 +1,4 @@
-import pleasureClient from 'pleasure/src/ui/lib/pleasure-client'
+import pleasureClient from 'pleasure-client'
 import Vue from 'vue'
 import objectHash from 'object-hash'
 import defaults from 'lodash/defaults'
