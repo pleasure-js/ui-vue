@@ -4,7 +4,6 @@ import * as PleasureStore from './lib/pleasure-store.js'
 import { BrowserStorageCache } from './lib/browser-storage-cache'
 import CoercePropsMixin from 'vue-coerce-props'
 import Vuex from 'vuex'
-import VueI18n from 'vue-i18n'
 import './pleasure.pcss'
 
 /**

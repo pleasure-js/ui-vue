@@ -20,7 +20,6 @@ var Vue = _interopDefault(require('vue'));
 var objectHash = _interopDefault(require('object-hash'));
 var CoercePropsMixin = _interopDefault(require('vue-coerce-props'));
 var Vuex = _interopDefault(require('vuex'));
-require('vue-i18n');
 
 //
 //

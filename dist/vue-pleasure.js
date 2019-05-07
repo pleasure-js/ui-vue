@@ -3,7 +3,7 @@
  * (c) 2018-2019 Martin Rafael Gonzalez <tin@devtin.io>
  * Released under the MIT License.
  */
-var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, defaults, merge, pleasureClient, Vue, objectHash, CoercePropsMixin, Vuex, vueI18n) {
+var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, defaults, merge, pleasureClient, Vue, objectHash, CoercePropsMixin, Vuex) {
   'use strict';
 
   forOwn = forOwn && forOwn.hasOwnProperty('default') ? forOwn['default'] : forOwn;
@@ -17,7 +17,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, defau
   objectHash = objectHash && objectHash.hasOwnProperty('default') ? objectHash['default'] : objectHash;
   CoercePropsMixin = CoercePropsMixin && CoercePropsMixin.hasOwnProperty('default') ? CoercePropsMixin['default'] : CoercePropsMixin;
   Vuex = Vuex && Vuex.hasOwnProperty('default') ? Vuex['default'] : Vuex;
-  vueI18n = vueI18n && vueI18n.hasOwnProperty('default') ? vueI18n['default'] : vueI18n;
 
   //
   //
@@ -1265,4 +1264,4 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, defau
 
   return exports;
 
-}({}, forOwn, kebabCase, startCase, get$1, defaults, merge, pleasureClient, Vue, objectHash, CoercePropsMixin, Vuex, vueI18n));
+}({}, forOwn, kebabCase, startCase, get$1, defaults, merge, pleasureClient, Vue, objectHash, CoercePropsMixin, Vuex));

@@ -14,7 +14,6 @@ import Vue from 'vue';
 import objectHash from 'object-hash';
 import CoercePropsMixin from 'vue-coerce-props';
 import Vuex from 'vuex';
-import 'vue-i18n';
 
 //
 //
