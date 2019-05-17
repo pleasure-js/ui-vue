@@ -272,19 +272,19 @@
 
         field = defaults(field, legacy)
 
-        if (!field.$pleasure.label && this.guessLabel) {
+        if (!field.$pleasure.hasOwnProperty('label') && this.guessLabel) {
           field.$pleasure.label = startCase(field.path)
         }
 
-        if (!field.$pleasure.placeholder && this.guessPlaceholder) {
+        if (!field.$pleasure.hasOwnProperty('placeholder') && this.guessPlaceholder) {
           field.$pleasure.placeholder = startCase(field.path)
         }
 
-        if (this.autoLabelI18n) {
+        if (!field.$pleasure.hasOwnProperty('label') && this.autoLabelI18n) {
           field.$pleasure.label = this.plsi18n(label, field.$pleasure.label)
         }
 
-        if (this.autoPlaceholderI18n) {
+        if (!field.$pleasure.hasOwnProperty('placeholder') && this.autoPlaceholderI18n) {
           field.$pleasure.placeholder = this.plsi18n(placeholder, field.$pleasure.placeholder)
         }
 
