@@ -1,0 +1,522 @@
+{
+  "dev": true,
+  "srcDir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/client",
+  "head": {
+    "meta": {
+      "link": {
+        "rel": "stylesheet",
+        "href": "https://fonts.googleapis.com/css?family=Open+Sans"
+      }
+    },
+    "link": [],
+    "style": [],
+    "script": []
+  },
+  "vue": {
+    "config": {
+      "productionTip": true,
+      "devtools": true,
+      "silent": false,
+      "performance": true
+    }
+  },
+  "css": [
+    "@/assets/style.pcss",
+    "/Users/tin/Sites/pleasure-ui-nuxt/node_modules/element-ui/lib/theme-chalk/display.css",
+    "/Users/tin/Sites/pleasure-ui-nuxt/node_modules/element-ui/packages/theme-chalk/lib/index.css"
+  ],
+  "modules": [
+    [
+      "pleasure-ui-nuxt",
+      {
+        "root": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project",
+        "name": "pleasure-dummy-project",
+        "config": {
+          "mode": "tier",
+          "api": {
+            "prefix": "/api",
+            "port": 3000,
+            "collectionListLimit": 100,
+            "collectionMaxListLimit": 300,
+            "mongodb": {
+              "host": "localhost",
+              "port": 27017,
+              "database": "pleasure-dummy-project",
+              "username": null,
+              "password": null,
+              "driverOptions": {
+                "autoIndex": true,
+                "reconnectTries": 1.7976931348623157e+308,
+                "reconnectInterval": 500,
+                "poolSize": 5,
+                "useNewUrlParser": true
+              }
+            },
+            "entitiesPath": "api",
+            "entitiesUri": "/entities"
+          },
+          "pleasureClient": {
+            "baseURL": "http://localhost:3000/api",
+            "entitiesUri": "/entities",
+            "authEndpoint": "/token",
+            "revokeEndpoint": "/revoke",
+            "timeout": 15000
+          },
+          "nuxtPleasure": {
+            "postCssVariables": {
+              "theme": {
+                "profile": {
+                  "background": "green"
+                }
+              }
+            }
+          }
+        },
+        "pleasureRoot": "/Users/tin/Sites/pleasure"
+      }
+    ]
+  ],
+  "modulesDir": [
+    "/Users/tin/Sites/pleasure-ui-nuxt/node_modules",
+    "/Users/tin/Sites/pleasure-ui-vue/node_modules",
+    "/Users/tin/Sites/pleasure-client/node_modules",
+    "/Users/tin/Sites/pleasure/cli/node_modules",
+    "/Users/tin/Sites/pleasure/node_modules",
+    "/Users/tin/Sites/node_modules",
+    "/Users/tin/node_modules",
+    "/Users/node_modules",
+    "/node_modules"
+  ],
+  "__normalized__": true,
+  "globalName": "nuxt",
+  "rootDir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project",
+  "fetch": {
+    "server": true,
+    "client": true
+  },
+  "plugins": [
+    {
+      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.nuxt-i18n-plugin.3a3e91c4.js"
+    },
+    {
+      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.pleasure-ui-nuxt-plugin.542e85da.js"
+    },
+    {
+      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.nuxt-element-ui-pleasure-plugin.d5ed2a46.js"
+    },
+    {
+      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.setup-element-ui.49236372.js"
+    }
+  ],
+  "devModules": [
+    "@nuxt/loading-screen"
+  ],
+  "layouts": {},
+  "ErrorPage": null,
+  "loading": {
+    "color": "black",
+    "failedColor": "red",
+    "height": "2px",
+    "throttle": 200,
+    "duration": 5000,
+    "continuous": false,
+    "rtl": false,
+    "css": true
+  },
+  "loadingIndicator": {
+    "name": "default",
+    "color": "black",
+    "color2": "#F5F5F5",
+    "background": "white",
+    "dev": true,
+    "loading": "Loading..."
+  },
+  "transition": {
+    "name": "page",
+    "mode": "out-in",
+    "appear": false,
+    "appearClass": "appear",
+    "appearActiveClass": "appear-active",
+    "appearToClass": "appear-to"
+  },
+  "layoutTransition": {
+    "name": "layout",
+    "mode": "out-in"
+  },
+  "test": false,
+  "debug": true,
+  "env": {
+    "$pleasure": {
+      "locales": {
+        "en": {
+          "messages": {
+            "glossary": "Hello",
+            "loading": "Loading"
+          },
+          "entities": {
+            "label": {
+              "product": "Products!"
+            }
+          }
+        },
+        "es": {
+          "messages": {
+            "glossary": "Hola",
+            "loading": "Cargando"
+          }
+        }
+      }
+    },
+    "$pleasure.settings": {
+      "ui": "element-ui"
+    },
+    "$pleasure.mode": "tier",
+    "$pleasure.api": {
+      "prefix": "/api",
+      "port": 3000,
+      "collectionListLimit": 100,
+      "collectionMaxListLimit": 300,
+      "mongodb": {
+        "host": "localhost",
+        "port": 27017,
+        "database": "pleasure-dummy-project",
+        "username": null,
+        "password": null,
+        "driverOptions": {
+          "autoIndex": true,
+          "reconnectTries": 1.7976931348623157e+308,
+          "reconnectInterval": 500,
+          "poolSize": 5,
+          "useNewUrlParser": true
+        }
+      },
+      "entitiesPath": "api",
+      "entitiesUri": "/entities"
+    },
+    "$pleasure.pleasureClient": {
+      "baseURL": "http://localhost:3000/api",
+      "entitiesUri": "/entities",
+      "authEndpoint": "/token",
+      "revokeEndpoint": "/revoke",
+      "timeout": 15000
+    },
+    "$pleasure.nuxtPleasure": {
+      "postCssVariables": {
+        "theme": {
+          "profile": {
+            "background": "green"
+          }
+        }
+      }
+    }
+  },
+  "mode": "universal",
+  "globals": {},
+  "serverMiddleware": [
+    {
+      "path": "/_loading"
+    }
+  ],
+  "_nuxtConfigFile": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js",
+  "buildDir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt",
+  "dir": {
+    "assets": "assets",
+    "layouts": "layouts",
+    "middleware": "middleware",
+    "pages": "pages",
+    "static": "static",
+    "store": "store"
+  },
+  "extensions": [
+    "js",
+    "mjs",
+    "ts"
+  ],
+  "styleExtensions": [
+    "css",
+    "pcss",
+    "postcss",
+    "styl",
+    "stylus",
+    "scss",
+    "sass",
+    "less"
+  ],
+  "ignorePrefix": "-",
+  "ignore": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/-*.*"
+  ],
+  "generate": {
+    "dir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/dist",
+    "routes": [],
+    "exclude": [],
+    "concurrency": 500,
+    "interval": 0,
+    "subFolders": true,
+    "fallback": "200.html"
+  },
+  "watch": [
+    "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
+  ],
+  "watchers": {
+    "webpack": {},
+    "chokidar": {
+      "ignoreInitial": true
+    }
+  },
+  "hooks": null,
+  "build": {
+    "quiet": false,
+    "analyze": false,
+    "profile": false,
+    "extractCSS": false,
+    "cssSourceMap": true,
+    "ssr": true,
+    "parallel": false,
+    "cache": false,
+    "standalone": false,
+    "publicPath": "/_nuxt/",
+    "filenames": {},
+    "loaders": {
+      "file": {},
+      "fontUrl": {
+        "limit": 1000
+      },
+      "imgUrl": {
+        "limit": 1000
+      },
+      "pugPlain": {},
+      "vue": {
+        "transformAssetUrls": {
+          "video": "src",
+          "source": "src",
+          "object": "src",
+          "embed": "src"
+        },
+        "productionMode": false
+      },
+      "css": {
+        "sourceMap": true
+      },
+      "cssModules": {
+        "localIdentName": "[local]_[hash:base64:5]",
+        "sourceMap": true
+      },
+      "less": {
+        "sourceMap": true
+      },
+      "sass": {
+        "indentedSyntax": true,
+        "sourceMap": true
+      },
+      "scss": {
+        "sourceMap": true
+      },
+      "stylus": {
+        "sourceMap": true
+      },
+      "ts": {
+        "transpileOnly": true,
+        "appendTsSuffixTo": [
+          {}
+        ]
+      },
+      "tsx": {
+        "transpileOnly": true,
+        "appendTsxSuffixTo": [
+          {}
+        ]
+      },
+      "vueStyle": {
+        "sourceMap": true
+      }
+    },
+    "typescript": {
+      "typeCheck": true
+    },
+    "styleResources": {},
+    "plugins": [],
+    "terser": {},
+    "hardSource": false,
+    "optimizeCSS": false,
+    "optimization": {
+      "runtimeChunk": "single",
+      "minimize": false,
+      "splitChunks": {
+        "chunks": "all",
+        "automaticNameDelimiter": ".",
+        "cacheGroups": {}
+      }
+    },
+    "splitChunks": {
+      "layouts": false,
+      "pages": true,
+      "commons": true
+    },
+    "babel": {
+      "configFile": false,
+      "babelrc": false,
+      "cacheDirectory": true
+    },
+    "transpile": [
+      {}
+    ],
+    "postcss": {
+      "preset": {
+        "stage": 2
+      },
+      "plugins": {
+        "postcss-nested": true,
+        "postcss-preset-env": {
+          "stage": 4
+        },
+        "postcss-css-variables": {
+          "variables": {
+            "theme-profile-background": "green"
+          }
+        },
+        "postcss-hexrgba": true,
+        "postcss-color-function": true,
+        "postcss-calc": true
+      }
+    },
+    "html": {
+      "minify": {
+        "collapseBooleanAttributes": true,
+        "decodeEntities": true,
+        "minifyCSS": true,
+        "minifyJS": true,
+        "processConditionalComments": true,
+        "removeEmptyAttributes": true,
+        "removeRedundantAttributes": true,
+        "trimCustomFragments": true,
+        "useShortDoctype": true
+      }
+    },
+    "templates": [
+      {
+        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/setup-element-ui.js",
+        "dst": "lib.setup-element-ui.49236372.js"
+      },
+      {
+        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/nuxt-element-ui-pleasure-plugin.js",
+        "dst": "lib.nuxt-element-ui-pleasure-plugin.d5ed2a46.js"
+      },
+      {
+        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/pleasure-ui-nuxt-plugin.js",
+        "dst": "lib.pleasure-ui-nuxt-plugin.542e85da.js"
+      },
+      {
+        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/nuxt-i18n-plugin.js",
+        "dst": "lib.nuxt-i18n-plugin.3a3e91c4.js"
+      }
+    ],
+    "watch": [],
+    "devMiddleware": {},
+    "hotMiddleware": {},
+    "stats": {
+      "excludeAssets": [
+        {},
+        {},
+        {}
+      ]
+    },
+    "friendlyErrors": true,
+    "_publicPath": "/_nuxt/"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "error_404": "This page could not be found",
+    "server_error": "Server error",
+    "nuxtjs": "Nuxt.js",
+    "back_to_home": "Back to the home page",
+    "server_error_details": "An error occurred in the application and your page could not be served. If you are the application owner, check your logs for details.",
+    "client_error": "Error",
+    "client_error_details": "An error occurred while rendering the page. Check developer tools console for details."
+  },
+  "modes": {
+    "universal": {
+      "build": {
+        "ssr": true
+      },
+      "render": {
+        "ssr": true
+      }
+    },
+    "spa": {
+      "build": {
+        "ssr": false
+      },
+      "render": {
+        "ssr": false
+      }
+    }
+  },
+  "render": {
+    "bundleRenderer": {
+      "runInNewContext": true
+    },
+    "resourceHints": true,
+    "ssr": true,
+    "http2": {
+      "push": false,
+      "shouldPush": null,
+      "pushAssets": null
+    },
+    "static": {
+      "prefix": true
+    },
+    "compressor": {
+      "threshold": 0
+    },
+    "etag": {
+      "weak": false
+    },
+    "csp": false,
+    "dist": {
+      "index": false,
+      "maxAge": "1y"
+    },
+    "fallback": {
+      "dist": {},
+      "static": {
+        "skipUnknown": true,
+        "handlers": {
+          ".htm": false,
+          ".html": false
+        }
+      }
+    }
+  },
+  "router": {
+    "mode": "history",
+    "base": "/",
+    "routes": [],
+    "routeNameSplitter": "-",
+    "middleware": [],
+    "linkActiveClass": "nuxt-link-active",
+    "linkExactActiveClass": "nuxt-link-exact-active",
+    "linkPrefetchedClass": false,
+    "scrollBehavior": null,
+    "parseQuery": false,
+    "stringifyQuery": false,
+    "fallback": false,
+    "prefetchLinks": true
+  },
+  "server": {
+    "https": false,
+    "port": 3000,
+    "host": "localhost",
+    "timing": false
+  },
+  "cli": {
+    "badgeMessages": []
+  },
+  "_nuxtConfigFiles": [
+    "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
+  ],
+  "appTemplatePath": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/views/app.template.html",
+  "store": true
+}

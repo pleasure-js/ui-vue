@@ -100,7 +100,7 @@ module.exports = {
       // only admins can set a user level
       if (user) {
         access.push(...basicUpdateAccess())
-        
+
         if (user.level === 'admin') {
           access.push('level')
         }
@@ -113,7 +113,7 @@ module.exports = {
       return user && user.level === 'admin'
     }
   },
-  redux: {
+  flux: {
     access: {
       // called every time an entry that belongs to this entity is updated
       // must return an array indicating what groups of users should be notified

@@ -1,8 +1,10 @@
-import pleasureClient from 'pleasure-client'
+import { instance } from 'pleasure-api-client'
 import Vue from 'vue'
 import objectHash from 'object-hash'
 import defaults from 'lodash/defaults'
 import forOwn from 'lodash/forOwn'
+
+const pleasureApiClient = instance()
 
 export const namespaced = true
 
@@ -81,13 +83,13 @@ export const actions = {
     }
 
     commit('setDropdownLoading', id)
-    const results = await pleasureClient.list(entity, listOptions)
+    const results = await pleasureApiClient.list(entity, listOptions)
     commit('setDropdown', { dropdownName, results })
     commit('removeDropdownLoading', id)
     return results
   },
   logout () {
-    return pleasureClient.logout()
+    return pleasureApiClient.logout()
   },
   async syncEntities ({ commit, state }, { force = false } = {}) {
     if (!force && state.entitiesSync !== 0) {
@@ -98,7 +100,7 @@ export const actions = {
     let entities
 
     try {
-      entities = await pleasureClient.getEntities()
+      entities = await pleasureApiClient.getEntities()
     } catch (err) {
       commit('setEntitiesSync', 0)
       console.log(`Could not retrieve entities`, err.message)

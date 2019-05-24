@@ -1,10 +1,12 @@
 import pleasure from './pleasure.vue'
-import pleasureClient from 'pleasure-client'
+import { PleasureApiClient } from 'pleasure-api-client'
 import * as PleasureStore from './lib/pleasure-store.js'
 import { BrowserStorageCache } from './lib/browser-storage-cache'
 import CoercePropsMixin from 'vue-coerce-props'
 import Vuex from 'vuex'
 import './pleasure.pcss'
+
+const pleasureApiClient = PleasureApiClient.instance()
 
 /**
  * @module vue-pleasure
@@ -66,23 +68,23 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
       await store.dispatch('pleasure/syncEntities')
     }
 
-    // Vue.$pleasure = pleasureClient
-    pleasureClient
+    // Vue.$pleasure = pleasureApiClient
+    pleasureApiClient
       .cache(storageCache)
 
-    pleasureClient
+    pleasureApiClient
       .on('logout', sessionChanged)
 
-    pleasureClient
+    pleasureApiClient
       .on('login', sessionChanged)
   }
 
-  pleasureClient
+  pleasureApiClient
     .on('login', (user) => {
       store.commit('pleasure/setUser', user)
     })
 
-  pleasureClient
+  pleasureApiClient
     .on('logout', () => {
       store.commit('pleasure/setUser', null)
     })
@@ -112,7 +114,7 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
               type: 'error'
             })
           },
-          api: pleasureClient,
+          api: pleasureApiClient,
           settings: store.getters['pleasure/settings'],
           dropdown: store.getters['pleasure/dropdown'],
           entities: store.getters['pleasure/entities'],
@@ -122,7 +124,8 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     }
   })
 
-  pleasureClient.on('profile-update', user => {
+  pleasureApiClient.on('profile-update', user => {
+    console.log(`updating profile`, { user })
     store.dispatch('pleasure/changeUserProfile', user)
   })
 

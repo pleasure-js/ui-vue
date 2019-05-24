@@ -4,7 +4,7 @@ module.exports = {
       theme: {
         profile: {
           // todo: see if it can be reloaded
-          background: `red`, // can be accessed via var(--theme-profile-background) in any postcss scope
+          background: `green`, // can be accessed via var(--theme-profile-background) in any postcss scope
         }
       }
     }

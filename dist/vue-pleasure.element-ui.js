@@ -510,10 +510,213 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
       undefined
     );
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+
+  var script$1 = {
+    props: {
+      field: {
+        type: Object,
+        required: true
+      }
+    },
+    computed: {
+      item () {
+        return this.field.values.map((v) => {
+          return {
+            label: v,
+            value: v
+          }
+        })
+      }
+    },
+    data () {
+      return {
+        value: []
+      }
+    }
+  };
+
+  /* script */
+  const __vue_script__$1 = script$1;
+
+  /* template */
+  var __vue_render__$1 = function() {
+    var _vm = this;
+    var _h = _vm.$createElement;
+    var _c = _vm._self._c || _h;
+    return _c(
+      "el-select",
+      {
+        attrs: { multiple: "", placeholder: "Select" },
+        on: {
+          input: function($event) {
+            return _vm.$emit("input", $event)
+          }
+        },
+        model: {
+          value: _vm.value,
+          callback: function($$v) {
+            _vm.value = $$v;
+          },
+          expression: "value"
+        }
+      },
+      _vm._l(_vm.options, function(item) {
+        return _c("el-option", {
+          key: item.value,
+          attrs: { label: item.label, value: item.value }
+        })
+      }),
+      1
+    )
+  };
+  var __vue_staticRenderFns__$1 = [];
+  __vue_render__$1._withStripped = true;
+
+    /* style */
+    const __vue_inject_styles__$1 = undefined;
+    /* scoped */
+    const __vue_scope_id__$1 = undefined;
+    /* module identifier */
+    const __vue_module_identifier__$1 = undefined;
+    /* functional template */
+    const __vue_is_functional_template__$1 = false;
+    /* style inject */
+    
+    /* style inject SSR */
+    
+
+    
+    var PleasureMultipleSelect = normalizeComponent_1(
+      { render: __vue_render__$1, staticRenderFns: __vue_staticRenderFns__$1 },
+      __vue_inject_styles__$1,
+      __vue_script__$1,
+      __vue_scope_id__$1,
+      __vue_is_functional_template__$1,
+      __vue_module_identifier__$1,
+      undefined,
+      undefined
+    );
+
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+
+  const availableHours = [];
+
+  const pm = ['AM', 'PM'];
+
+  pm.forEach(amPm => {
+    for (let i = 1; i <= 12; i++) {
+      availableHours.push(`${ i }${ amPm }`);
+    }
+  });
+
+  var script$2 = {
+    props: {
+      value: {
+        type: Object,
+        default () {
+          return {}
+        }
+      }
+    },
+    data () {
+      return {
+        schema: {
+          date: {
+            component: 'Date',
+            $pleasure: {
+              label: ''
+            }
+          },
+          time: {
+            enumValues: availableHours,
+            $pleasure: {
+              label: ''
+            }
+          }
+        }
+      }
+    }
+  };
+
+  /* script */
+  const __vue_script__$2 = script$2;
+
+  /* template */
+  var __vue_render__$2 = function() {
+    var _vm = this;
+    var _h = _vm.$createElement;
+    var _c = _vm._self._c || _h;
+    return _c(
+      "div",
+      { staticClass: "pleasure-date-time" },
+      [
+        _c("pleasure", {
+          attrs: { "custom-schema": _vm.schema, "with-controls": false },
+          on: {
+            input: function($event) {
+              return _vm.$emit("input", $event)
+            }
+          }
+        })
+      ],
+      1
+    )
+  };
+  var __vue_staticRenderFns__$2 = [];
+  __vue_render__$2._withStripped = true;
+
+    /* style */
+    const __vue_inject_styles__$2 = undefined;
+    /* scoped */
+    const __vue_scope_id__$2 = undefined;
+    /* module identifier */
+    const __vue_module_identifier__$2 = undefined;
+    /* functional template */
+    const __vue_is_functional_template__$2 = false;
+    /* style inject */
+    
+    /* style inject SSR */
+    
+
+    
+    var PleasureDateTime = normalizeComponent_1(
+      { render: __vue_render__$2, staticRenderFns: __vue_staticRenderFns__$2 },
+      __vue_inject_styles__$2,
+      __vue_script__$2,
+      __vue_scope_id__$2,
+      __vue_is_functional_template__$2,
+      __vue_module_identifier__$2,
+      undefined,
+      undefined
+    );
+
   function install (Vue) {
     Vue.mixin({
       components: {
-        PleasureSelect
+        PleasureMultipleSelect,
+        PleasureSelect,
+        PleasureDateTime
       }
     });
   }

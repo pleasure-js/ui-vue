@@ -10,6 +10,7 @@
 </template>
 <script>
   import get from 'lodash/get'
+  import kebabCase from 'lodash/kebabCase'
 
   export default {
     props: {
@@ -22,12 +23,23 @@
         default: undefined
       },
       value: {
-        type: [Number, Boolean, String, Object, Array],
+        type: [Number, Boolean, String, Object, Array, Date],
         default: null
       },
       field: {
         type: Object,
         required: true
+      }
+    },
+    data () {
+      return {
+        defaultProps: {
+          'el-slider': {
+            range: true,
+            showStops: true,
+            max: 10
+          }
+        }
       }
     },
     computed: {
@@ -39,26 +51,42 @@
           })
         }
 
-        return Object.assign({}, this.$props, childProps, get(this.field, '$pleasure', {}))
+        console.log(`default props for ${ this.componentType }`, this.defaultProps[this.fieldComponent])
+        return Object.assign({}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get(this.field, '$pleasure', {}))
       },
       componentType () {
+        const componentType = get(this.field, '$pleasure.component', get(this.field, 'component'))
         // Arrays -> 'select'
         if (
-          (
-            this.field.enumValues &&
-            this.field.enumValues.length > 0
-          ) ||
-          this.field.instance === 'Array'
+          !componentType &&
+          ((
+              this.field.enumValues &&
+              this.field.enumValues.length > 0
+            ) ||
+            this.field.instance === 'Array')
         ) {
           return 'array'
         }
 
-        return 'input'
+        return kebabCase(componentType || 'input')
       },
       fieldComponent () {
+        console.log(`componentType`, this.componentType)
         switch (this.componentType) {
           case 'array':
             return 'pleasure-select'
+
+          case 'multiple-select':
+            return 'pleasure-multiple-select'
+
+          case 'date':
+            return 'el-date-picker'
+
+          case 'date-time':
+            return 'pleasure-date-time'
+
+          case 'range':
+            return 'el-slider'
 
           default:
             return 'el-input'

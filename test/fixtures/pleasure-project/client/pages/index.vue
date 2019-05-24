@@ -25,6 +25,12 @@
   import Profile from '~/components/profile.vue'
 
   export default {
+    mounted () {
+      // console.log(this.$pleasure.api.product.on('create'))
+      this.$pleasure.api.product.on('create', function (product) {
+        // console.log({ product })
+      })
+    },
     components: {
       Profile
     },

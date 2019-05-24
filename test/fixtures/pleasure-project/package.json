@@ -5,11 +5,10 @@
   "license": "MIT",
   "scripts": {
     "start": "node --preserve-symlinks index.js",
-    "dev": "NODE_ENV=development nuxt"
+    "dev": "NODE_ENV=development pls app dev"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
-    "pleasure": "devtin/pleasure"
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
     "ava": "^1.4.1"

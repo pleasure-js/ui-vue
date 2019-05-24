@@ -1,6 +1,6 @@
 <template>
   <div
-    class="pleasure"
+    :class="{ pleasure: true, 'multiple-lines': multipleLines }"
   >
     <pleasure-form
       :disabled="disabled"
@@ -90,6 +90,13 @@
    *
    * @vue-prop {Boolean} [autoload=true] - Determines whether the values of the entry (if any) should be automatically
    * pulled from the server when the component is mounted.
+   *
+   * @vue-prop {Boolean} [multipleLines=true] - Determines whether the fields should be multiple lines or not. (label next
+   * to field or not).
+   *
+   * @vue-prop {Object} [appendValues={}] - Whatever data being sent will be overridden with this one.
+   *
+   * @vue-prop {String} [controller] - Alternatively the controller of the entity to hit with the collected data.
    */
   export default {
     components: {
@@ -104,6 +111,14 @@
         default () {
           return []
         }
+      },
+      multipleLines: {
+        type: Boolean,
+        default: true
+      },
+      controller: {
+        type: String,
+        default: null
       },
       guessLabel: {
         type: Boolean,
@@ -183,6 +198,12 @@
       autoload: {
         type: Boolean,
         default: true
+      },
+      appendValues: {
+        type: Object,
+        default() {
+          return {}
+        }
       }
     },
     data () {
@@ -222,7 +243,7 @@
     watch: {
       values: {
         handler (v) {
-          this.$emit('input', v)
+          this.$emit('input', Object.assign({}, v, this.appendValues))
         },
         deep: true
       }
@@ -291,12 +312,17 @@
         return field
       },
       performSubmit () {
+        const values = Object.assign({}, this.values, this.appendValues)
+        if (this.controller) {
+          return this.$pleasure.api.controller(this.entity, this.controller, values)
+        }
+
         switch (this.method) {
           case 'create':
-            return this.$pleasure.api.create(this.entity, this.values)
+            return this.$pleasure.api.create(this.entity, values)
 
           case 'update':
-            return this.$pleasure.api.update(this.entity, this.entryId, this.values)
+            return this.$pleasure.api.update(this.entity, this.entryId, values)
         }
       },
       async onSubmit () {
@@ -306,7 +332,7 @@
             await this.$pleasure.api.login(this.values)
           } else {
             // other operations
-            await this.performSubmit()
+            this.emit('result', await this.performSubmit())
           }
         } catch (err) {
           this.$pleasure.error(err.message)

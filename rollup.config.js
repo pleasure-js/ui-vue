@@ -61,18 +61,18 @@ const getPlugins = ({ exportCss = false, minified = false } = {}) => {
   return plugs
 }
 
-const vuePleasureCss = getPlugins({ exportCss: `dist/vue-pleasure.css` })
-const vuePleasureMin = getPlugins({ exportCss: `dist/vue-pleasure.min.css`, minified: true })
-const vuePleasureElementCss = getPlugins({ exportCss: `dist/vue-pleasure.element-ui.css` })
-const vuePleasureElementMin = getPlugins({ exportCss: `dist/vue-pleasure.element-ui.min.css`, minified: true })
+const vuePleasureCss = getPlugins({ exportCss: `dist/pleasure-ui-vue.css` })
+const vuePleasureMin = getPlugins({ exportCss: `dist/pleasure-ui-vue.min.css`, minified: true })
+const vuePleasureElementCss = getPlugins({ exportCss: `dist/pleasure-ui-vue.element-ui.css` })
+const vuePleasureElementMin = getPlugins({ exportCss: `dist/pleasure-ui-vue.element-ui.min.css`, minified: true })
 const plugins = getPlugins()
 
 module.exports = [
   {
-    input: 'src/vue-pleasure.js',
+    input: 'src/pleasure-ui-vue.js',
     output: [
       {
-        file: 'dist/vue-pleasure.js',
+        file: 'dist/pleasure-ui-vue.js',
         name: 'VuePleasure',
         format: 'iife',
         banner
@@ -81,15 +81,15 @@ module.exports = [
     plugins: vuePleasureCss
   },
   {
-    input: 'src/vue-pleasure.js',
+    input: 'src/pleasure-ui-vue.js',
     output: [
       {
-        file: 'dist/vue-pleasure.common.js',
+        file: 'dist/pleasure-ui-vue.common.js',
         format: 'cjs',
         banner
       },
       {
-        file: 'dist/vue-pleasure.esm.js',
+        file: 'dist/pleasure-ui-vue.esm.js',
         format: 'esm',
         banner
       }
@@ -100,7 +100,7 @@ module.exports = [
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/vue-pleasure.element-ui.js',
+        file: 'dist/pleasure-ui-vue.element-ui.js',
         name: 'ElementUiPleasure',
         format: 'iife',
         banner
@@ -112,12 +112,12 @@ module.exports = [
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/vue-pleasure.element-ui.common.js',
+        file: 'dist/pleasure-ui-vue.element-ui.common.js',
         format: 'cjs',
         banner
       },
       {
-        file: 'dist/vue-pleasure.element-ui.esm.js',
+        file: 'dist/pleasure-ui-vue.element-ui.esm.js',
         format: 'esm',
         banner
       }
@@ -125,10 +125,10 @@ module.exports = [
     plugins
   },
   {
-    input: 'src/vue-pleasure.js',
+    input: 'src/pleasure-ui-vue.js',
     output: [
       {
-        file: 'dist/vue-pleasure.min.js',
+        file: 'dist/pleasure-ui-vue.min.js',
         format: 'iife',
         name: 'VuePleasure',
         banner
@@ -140,7 +140,7 @@ module.exports = [
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/vue-pleasure.element-ui.min.js',
+        file: 'dist/pleasure-ui-vue.element-ui.min.js',
         format: 'iife',
         name: 'ElementUiPleasure',
         banner

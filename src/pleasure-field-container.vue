@@ -6,7 +6,7 @@
       :disabled="field.$pleasure.disabled"
       :label="field.$pleasure.label"
     >
-      <slot />
+      <slot/>
     </component>
   </div>
 </template>
@@ -34,6 +34,7 @@
         return Object.assign({}, this.$props, childProps, get(this.field, '$pleasure', {}))
       },
       fieldContainer () {
+        console.log({ field: this.field })
         if (this.$pleasure.settings.ui === 'element-ui') {
           return 'el-form-item'
         }

@@ -108,6 +108,27 @@ Element UI customization for Pleasure
       }
     }
   }
+
+  &.multiple-lines {
+    .el-form-item__label {
+      float: none !important;
+    }
+
+    .el-input {
+      input[readonly] {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+
+  .el-date-editor.el-input, .el-date-editor.el-input__inner {
+    width: 100%;
+  }
+
+  input {
+    border-color: transparent !important;
+  }
 }
 
 .el-dropdown-menu__item:not(.is-disabled), .el-dropdown-menu__item {

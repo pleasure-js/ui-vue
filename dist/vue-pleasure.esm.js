@@ -9,7 +9,7 @@ import startCase from 'lodash/startCase';
 import get$1 from 'lodash/get';
 import defaults from 'lodash/defaults';
 import merge from 'deepmerge';
-import pleasureClient from 'pleasure-client';
+import { instance, PleasureApiClient } from 'pleasure-api-client';
 import Vue from 'vue';
 import objectHash from 'object-hash';
 import CoercePropsMixin from 'vue-coerce-props';
@@ -228,6 +228,7 @@ var script$1 = {
       return Object.assign({}, this.$props, childProps, get(this.field, '$pleasure', {}))
     },
     fieldContainer () {
+      console.log({ field: this.field });
       if (this.$pleasure.settings.ui === 'element-ui') {
         return 'el-form-item'
       }
@@ -307,12 +308,23 @@ var script$2 = {
       default: undefined
     },
     value: {
-      type: [Number, Boolean, String, Object, Array],
+      type: [Number, Boolean, String, Object, Array, Date],
       default: null
     },
     field: {
       type: Object,
       required: true
+    }
+  },
+  data () {
+    return {
+      defaultProps: {
+        'el-slider': {
+          range: true,
+          showStops: true,
+          max: 10
+        }
+      }
     }
   },
   computed: {
@@ -324,26 +336,42 @@ var script$2 = {
         });
       }
 
-      return Object.assign({}, this.$props, childProps, get$1(this.field, '$pleasure', {}))
+      console.log(`default props for ${ this.componentType }`, this.defaultProps[this.fieldComponent]);
+      return Object.assign({}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get$1(this.field, '$pleasure', {}))
     },
     componentType () {
+      const componentType = get$1(this.field, '$pleasure.component', get$1(this.field, 'component'));
       // Arrays -> 'select'
       if (
-        (
-          this.field.enumValues &&
-          this.field.enumValues.length > 0
-        ) ||
-        this.field.instance === 'Array'
+        !componentType &&
+        ((
+            this.field.enumValues &&
+            this.field.enumValues.length > 0
+          ) ||
+          this.field.instance === 'Array')
       ) {
         return 'array'
       }
 
-      return 'input'
+      return kebabCase(componentType || 'input')
     },
     fieldComponent () {
+      console.log(`componentType`, this.componentType);
       switch (this.componentType) {
         case 'array':
           return 'pleasure-select'
+
+        case 'multiple-select':
+          return 'pleasure-multiple-select'
+
+        case 'date':
+          return 'el-date-picker'
+
+        case 'date-time':
+          return 'pleasure-date-time'
+
+        case 'range':
+          return 'el-slider'
 
         default:
           return 'el-input'
@@ -610,6 +638,13 @@ __vue_render__$3._withStripped = true;
  *
  * @vue-prop {Boolean} [autoload=true] - Determines whether the values of the entry (if any) should be automatically
  * pulled from the server when the component is mounted.
+ *
+ * @vue-prop {Boolean} [multipleLines=true] - Determines whether the fields should be multiple lines or not. (label next
+ * to field or not).
+ *
+ * @vue-prop {Object} [appendValues={}] - Whatever data being sent will be overridden with this one.
+ *
+ * @vue-prop {String} [controller] - Alternatively the controller of the entity to hit with the collected data.
  */
 var script$4 = {
   components: {
@@ -624,6 +659,14 @@ var script$4 = {
       default () {
         return []
       }
+    },
+    multipleLines: {
+      type: Boolean,
+      default: true
+    },
+    controller: {
+      type: String,
+      default: null
     },
     guessLabel: {
       type: Boolean,
@@ -703,6 +746,12 @@ var script$4 = {
     autoload: {
       type: Boolean,
       default: true
+    },
+    appendValues: {
+      type: Object,
+      default() {
+        return {}
+      }
     }
   },
   data () {
@@ -742,7 +791,7 @@ var script$4 = {
   watch: {
     values: {
       handler (v) {
-        this.$emit('input', v);
+        this.$emit('input', Object.assign({}, v, this.appendValues));
       },
       deep: true
     }
@@ -792,31 +841,36 @@ var script$4 = {
 
       field = defaults(field, legacy);
 
-      if (!field.$pleasure.label && this.guessLabel) {
+      if (!field.$pleasure.hasOwnProperty('label') && this.guessLabel) {
         field.$pleasure.label = startCase(field.path);
       }
 
-      if (!field.$pleasure.placeholder && this.guessPlaceholder) {
+      if (!field.$pleasure.hasOwnProperty('placeholder') && this.guessPlaceholder) {
         field.$pleasure.placeholder = startCase(field.path);
       }
 
-      if (this.autoLabelI18n) {
+      if (!field.$pleasure.hasOwnProperty('label') && this.autoLabelI18n) {
         field.$pleasure.label = this.plsi18n(label, field.$pleasure.label);
       }
 
-      if (this.autoPlaceholderI18n) {
+      if (!field.$pleasure.hasOwnProperty('placeholder') && this.autoPlaceholderI18n) {
         field.$pleasure.placeholder = this.plsi18n(placeholder, field.$pleasure.placeholder);
       }
 
       return field
     },
     performSubmit () {
+      const values = Object.assign({}, this.values, this.appendValues);
+      if (this.controller) {
+        return this.$pleasure.api.controller(this.entity, this.controller, values)
+      }
+
       switch (this.method) {
         case 'create':
-          return this.$pleasure.api.create(this.entity, this.values)
+          return this.$pleasure.api.create(this.entity, values)
 
         case 'update':
-          return this.$pleasure.api.update(this.entity, this.entryId, this.values)
+          return this.$pleasure.api.update(this.entity, this.entryId, values)
       }
     },
     async onSubmit () {
@@ -826,7 +880,7 @@ var script$4 = {
           await this.$pleasure.api.login(this.values);
         } else {
           // other operations
-          await this.performSubmit();
+          this.emit('result', await this.performSubmit());
         }
       } catch (err) {
         this.$pleasure.error(err.message);
@@ -845,7 +899,7 @@ var __vue_render__$4 = function() {
   var _c = _vm._self._c || _h;
   return _c(
     "div",
-    { staticClass: "pleasure" },
+    { class: { pleasure: true, "multiple-lines": _vm.multipleLines } },
     [
       _c(
         "pleasure-form",
@@ -936,6 +990,8 @@ __vue_render__$4._withStripped = true;
     undefined
   );
 
+const pleasureApiClient = instance();
+
 const namespaced = true;
 
 const state = {
@@ -1013,13 +1069,13 @@ const actions = {
     }
 
     commit('setDropdownLoading', id);
-    const results = await pleasureClient.list(entity, listOptions);
+    const results = await pleasureApiClient.list(entity, listOptions);
     commit('setDropdown', { dropdownName, results });
     commit('removeDropdownLoading', id);
     return results
   },
   logout () {
-    return pleasureClient.logout()
+    return pleasureApiClient.logout()
   },
   async syncEntities ({ commit, state }, { force = false } = {}) {
     if (!force && state.entitiesSync !== 0) {
@@ -1030,7 +1086,7 @@ const actions = {
     let entities;
 
     try {
-      entities = await pleasureClient.getEntities();
+      entities = await pleasureApiClient.getEntities();
     } catch (err) {
       commit('setEntitiesSync', 0);
       console.log(`Could not retrieve entities`, err.message);
@@ -1162,6 +1218,8 @@ function styleInject(css, ref) {
 var css = ".pleasure a {\n    text-decoration: none;\n    cursor: pointer;\n  }\n\n.pleasure button, .pleasure input, .pleasure select, .pleasure textarea {\n    font-family: inherit;\n    font-size: inherit;\n    line-height: inherit;\n    color: inherit;\n  }\n\n.pleasure .app-offset {\n    margin-top: -60px;\n    padding-top: 70px !important;\n  }\n\n.pleasure .deep-vert-separation {\n    padding-top: 35px;\n    padding-bottom: 35px;\n  }\n\n.pleasure .deep-horz-separation {\n    box-sizing: border-box;\n    padding-left: 35px;\n    padding-right: 35px;\n  }\n\n.pleasure .vert-separation {\n    padding-top: 35px;\n    padding-bottom: 35px;\n  }\n\n.pleasure .horz-separation {\n    box-sizing: border-box;\n    padding-left: 35px;\n    padding-right: 35px;\n  }\n\n.pleasure .text-left {\n    text-align: left !important;\n  }\n\n.pleasure .text-right {\n    text-align: right !important;\n  }\n\n.pleasure .text-justify {\n    text-align: justify !important;\n  }\n\n.pleasure .text-center {\n    text-align: center !important;\n  }\n\n.pleasure .friendly-table .el-col {\n      box-sizing: border-box;\n      padding: 5px;\n    }\n\n.pleasure .center-middle {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    flex-direction: column;\n  }\n\n.pleasure .mobile-first {\n    box-sizing: border-box;\n    width: 100%;\n    max-width: 480px !important;\n    margin: 0 auto !important;\n    position: relative;\n  }\n\n.pleasure .mobile-first-tight {\n    max-width: 320px !important;\n  }\n";
 styleInject(css);
 
+const pleasureApiClient$1 = PleasureApiClient.instance();
+
 /**
  * @module vue-pleasure
  * @desc Implements a set of tools for {@link https://vuejs.org/ Vue.js} to use along the {@link pleasure/api The Pleasure Api}
@@ -1222,23 +1280,23 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
       await store.dispatch('pleasure/syncEntities');
     };
 
-    // Vue.$pleasure = pleasureClient
-    pleasureClient
+    // Vue.$pleasure = pleasureApiClient
+    pleasureApiClient$1
       .cache(storageCache);
 
-    pleasureClient
+    pleasureApiClient$1
       .on('logout', sessionChanged);
 
-    pleasureClient
+    pleasureApiClient$1
       .on('login', sessionChanged);
   }
 
-  pleasureClient
+  pleasureApiClient$1
     .on('login', (user) => {
       store.commit('pleasure/setUser', user);
     });
 
-  pleasureClient
+  pleasureApiClient$1
     .on('logout', () => {
       store.commit('pleasure/setUser', null);
     });
@@ -1268,7 +1326,7 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
               type: 'error'
             });
           },
-          api: pleasureClient,
+          api: pleasureApiClient$1,
           settings: store.getters['pleasure/settings'],
           dropdown: store.getters['pleasure/dropdown'],
           entities: store.getters['pleasure/entities'],
@@ -1278,7 +1336,8 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     }
   });
 
-  pleasureClient.on('profile-update', user => {
+  pleasureApiClient$1.on('profile-update', user => {
+    console.log(`updating profile`, { user });
     store.dispatch('pleasure/changeUserProfile', user);
   });
 
