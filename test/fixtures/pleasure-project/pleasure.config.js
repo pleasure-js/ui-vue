@@ -1,5 +1,5 @@
 module.exports = {
-  nuxtPleasure: {
+  ui: {
     postCssVariables: {
       theme: {
         profile: {

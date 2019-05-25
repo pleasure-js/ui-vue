@@ -27,9 +27,11 @@
   export default {
     mounted () {
       // console.log(this.$pleasure.api.product.on('create'))
-      this.$pleasure.api.product.on('create', function (product) {
+      // window.$pleasureApi = this.$pleasure.api
+      // console.log(this.$pleasure.api)
+      /*this.$pleasure.api.product.on('create', function (product) {
         // console.log({ product })
-      })
+      })*/
     },
     components: {
       Profile
