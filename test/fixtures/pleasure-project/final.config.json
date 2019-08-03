@@ -1,6 +1,6 @@
 {
   "dev": true,
-  "srcDir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/client",
+  "srcDir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/client",
   "head": {
     "meta": {
       "link": {
@@ -22,90 +22,61 @@
   },
   "css": [
     "@/assets/style.pcss",
-    "/Users/tin/Sites/pleasure-ui-nuxt/node_modules/element-ui/lib/theme-chalk/display.css",
-    "/Users/tin/Sites/pleasure-ui-nuxt/node_modules/element-ui/packages/theme-chalk/lib/index.css"
+    "/Users/tin/projects/pleasure-suite-builder/node_modules/element-ui/lib/theme-chalk/display.css",
+    "/Users/tin/projects/pleasure-suite-builder/node_modules/element-ui/packages/theme-chalk/lib/index.css"
   ],
   "modules": [
     [
       "pleasure-ui-nuxt",
       {
-        "root": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project",
+        "root": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project",
         "name": "pleasure-dummy-project",
         "config": {
-          "mode": "tier",
-          "api": {
-            "prefix": "/api",
-            "port": 3000,
-            "collectionListLimit": 100,
-            "collectionMaxListLimit": 300,
-            "mongodb": {
-              "host": "localhost",
-              "port": 27017,
-              "database": "pleasure-dummy-project",
-              "username": null,
-              "password": null,
-              "driverOptions": {
-                "autoIndex": true,
-                "reconnectTries": 1.7976931348623157e+308,
-                "reconnectInterval": 500,
-                "poolSize": 5,
-                "useNewUrlParser": true
-              }
-            },
-            "entitiesPath": "api",
-            "entitiesUri": "/entities"
-          },
-          "pleasureClient": {
-            "baseURL": "http://localhost:3000/api",
-            "entitiesUri": "/entities",
-            "authEndpoint": "/token",
-            "revokeEndpoint": "/revoke",
-            "timeout": 15000
-          },
-          "nuxtPleasure": {
-            "postCssVariables": {
-              "theme": {
-                "profile": {
-                  "background": "green"
-                }
+          "postCssVariables": {
+            "theme": {
+              "profile": {
+                "background": "green"
               }
             }
           }
         },
-        "pleasureRoot": "/Users/tin/Sites/pleasure"
+        "pleasureRoot": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-api"
       }
     ]
   ],
   "modulesDir": [
-    "/Users/tin/Sites/pleasure-ui-nuxt/node_modules",
-    "/Users/tin/Sites/pleasure-ui-vue/node_modules",
-    "/Users/tin/Sites/pleasure-client/node_modules",
-    "/Users/tin/Sites/pleasure/cli/node_modules",
-    "/Users/tin/Sites/pleasure/node_modules",
-    "/Users/tin/Sites/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-api-client/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-cli/cli/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-cli/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/node_modules",
+    "/Users/tin/projects/node_modules",
     "/Users/tin/node_modules",
     "/Users/node_modules",
     "/node_modules"
   ],
   "__normalized__": true,
   "globalName": "nuxt",
-  "rootDir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project",
+  "rootDir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project",
   "fetch": {
     "server": true,
     "client": true
   },
   "plugins": [
     {
-      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.nuxt-i18n-plugin.3a3e91c4.js"
+      "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.nuxt-i18n-plugin.c13a65cc.js"
     },
     {
-      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.pleasure-ui-nuxt-plugin.542e85da.js"
+      "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.pleasure-ui-nuxt-plugin.2c375d50.js"
     },
     {
-      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.nuxt-element-ui-pleasure-plugin.d5ed2a46.js"
+      "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.nuxt-element-ui-pleasure-plugin.288858c7.js"
     },
     {
-      "src": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.setup-element-ui.49236372.js"
+      "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.setup-element-ui.4092899d.js"
     }
   ],
   "devModules": [
@@ -131,7 +102,7 @@
     "dev": true,
     "loading": "Loading..."
   },
-  "transition": {
+  "pageTransition": {
     "name": "page",
     "mode": "out-in",
     "appear": false,
@@ -170,42 +141,10 @@
     "$pleasure.settings": {
       "ui": "element-ui"
     },
-    "$pleasure.mode": "tier",
-    "$pleasure.api": {
-      "prefix": "/api",
-      "port": 3000,
-      "collectionListLimit": 100,
-      "collectionMaxListLimit": 300,
-      "mongodb": {
-        "host": "localhost",
-        "port": 27017,
-        "database": "pleasure-dummy-project",
-        "username": null,
-        "password": null,
-        "driverOptions": {
-          "autoIndex": true,
-          "reconnectTries": 1.7976931348623157e+308,
-          "reconnectInterval": 500,
-          "poolSize": 5,
-          "useNewUrlParser": true
-        }
-      },
-      "entitiesPath": "api",
-      "entitiesUri": "/entities"
-    },
-    "$pleasure.pleasureClient": {
-      "baseURL": "http://localhost:3000/api",
-      "entitiesUri": "/entities",
-      "authEndpoint": "/token",
-      "revokeEndpoint": "/revoke",
-      "timeout": 15000
-    },
-    "$pleasure.nuxtPleasure": {
-      "postCssVariables": {
-        "theme": {
-          "profile": {
-            "background": "green"
-          }
+    "$pleasure.postCssVariables": {
+      "theme": {
+        "profile": {
+          "background": "green"
         }
       }
     }
@@ -217,8 +156,8 @@
       "path": "/_loading"
     }
   ],
-  "_nuxtConfigFile": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js",
-  "buildDir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt",
+  "_nuxtConfigFile": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js",
+  "buildDir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt",
   "dir": {
     "assets": "assets",
     "layouts": "layouts",
@@ -242,6 +181,14 @@
     "sass",
     "less"
   ],
+  "alias": {
+    "~~": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project",
+    "@@": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project",
+    "~": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/client",
+    "@": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/client",
+    "assets": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/client/assets",
+    "static": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/client/static"
+  },
   "ignorePrefix": "-",
   "ignore": [
     "**/*.test.*",
@@ -249,7 +196,7 @@
     "**/-*.*"
   ],
   "generate": {
-    "dir": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/dist",
+    "dir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/dist",
     "routes": [],
     "exclude": [],
     "concurrency": 500,
@@ -258,7 +205,7 @@
     "fallback": "200.html"
   },
   "watch": [
-    "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
   ],
   "watchers": {
     "webpack": {},
@@ -334,7 +281,8 @@
       }
     },
     "typescript": {
-      "typeCheck": true
+      "typeCheck": true,
+      "ignoreNotFoundWarnings": false
     },
     "styleResources": {},
     "plugins": [],
@@ -397,20 +345,20 @@
     },
     "templates": [
       {
-        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/setup-element-ui.js",
-        "dst": "lib.setup-element-ui.49236372.js"
+        "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/lib/setup-element-ui.js",
+        "dst": "lib.setup-element-ui.4092899d.js"
       },
       {
-        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/nuxt-element-ui-pleasure-plugin.js",
-        "dst": "lib.nuxt-element-ui-pleasure-plugin.d5ed2a46.js"
+        "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/lib/nuxt-element-ui-pleasure-plugin.js",
+        "dst": "lib.nuxt-element-ui-pleasure-plugin.288858c7.js"
       },
       {
-        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/pleasure-ui-nuxt-plugin.js",
-        "dst": "lib.pleasure-ui-nuxt-plugin.542e85da.js"
+        "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/lib/pleasure-ui-nuxt-plugin.js",
+        "dst": "lib.pleasure-ui-nuxt-plugin.2c375d50.js"
       },
       {
-        "src": "/Users/tin/Sites/pleasure-ui-nuxt/lib/nuxt-i18n-plugin.js",
-        "dst": "lib.nuxt-i18n-plugin.3a3e91c4.js"
+        "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/lib/nuxt-i18n-plugin.js",
+        "dst": "lib.nuxt-i18n-plugin.c13a65cc.js"
       }
     ],
     "watch": [],
@@ -515,8 +463,8 @@
     "badgeMessages": []
   },
   "_nuxtConfigFiles": [
-    "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
   ],
-  "appTemplatePath": "/Users/tin/Sites/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/views/app.template.html",
+  "appTemplatePath": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/views/app.template.html",
   "store": true
 }

@@ -589,6 +589,7 @@ Element UI customization for Pleasure
     background: undefined !important;
     color: undefined !important;
     border: none;
+    -webkit-transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -605,6 +606,7 @@ Element UI customization for Pleasure
     background: undefined !important;
     color: undefined !important;
     border: none;
+    -webkit-transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
