@@ -23,8 +23,8 @@
         default: undefined
       },
       value: {
-        type: [Number, Boolean, String, Object, Array, Date],
-        default: null
+        type: [String, Number, Object, Array, Date, Boolean],
+        default: ''
       },
       field: {
         type: Object,
