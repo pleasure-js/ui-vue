@@ -10,6 +10,9 @@
       <template
         v-if="loaded"
       >
+        <!--
+        Iterates through schemas
+        -->
         <pleasure-field-container
           v-for="field in schema"
           :key="`${formId}-${field.path}`"
@@ -148,8 +151,8 @@
         type: String,
         default: null,
         coerce (...args) {
-          console.log(`coercing`, ...args)
-          console.log(`coercing>>>`, this.i18nScope, this.entity)
+          // console.log(`coercing`, ...args)
+          // console.log(`coercing>>>`, this.i18nScope, this.entity)
           return this.i18nScope ? this.i18nScope : (this.entity || 'default')
         }
       },
@@ -201,7 +204,7 @@
       },
       appendValues: {
         type: Object,
-        default() {
+        default () {
           return {}
         }
       }
@@ -230,7 +233,7 @@
         forOwn(entitySchema, (field, fieldName) => {
           // skip if it's virtual or starts with an underscore
           if (/^_/.test(fieldName) || get(field, 'options.options.virtual') || this.omit.indexOf(fieldName) >= 0) {
-            console.log(`skipping`, { fieldName })
+            // console.log(`skipping`, { fieldName })
             return
           }
 

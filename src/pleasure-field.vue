@@ -51,7 +51,7 @@
           })
         }
 
-        console.log(`default props for ${ this.componentType }`, this.defaultProps[this.fieldComponent])
+        // console.log(`default props for ${ this.componentType }`, this.defaultProps[this.fieldComponent])
         return Object.assign({}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get(this.field, '$pleasure', {}))
       },
       componentType () {
