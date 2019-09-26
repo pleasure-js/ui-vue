@@ -1,7 +1,7 @@
 <template>
   <el-select
-    multiple
     v-model="value"
+    multiple
     placeholder="Select"
     @input="$emit('input', $event)"
   >
@@ -9,8 +9,8 @@
       v-for="item in options"
       :key="item.value"
       :label="item.label"
-      :value="item.value">
-    </el-option>
+      :value="item.value"
+    />
   </el-select>
 </template>
 <script>
@@ -19,16 +19,6 @@
       field: {
         type: Object,
         required: true
-      }
-    },
-    computed: {
-      item () {
-        return this.field.values.map((v) => {
-          return {
-            label: v,
-            value: v
-          }
-        })
       }
     },
     data () {

@@ -59,10 +59,11 @@ module.exports = {
       background: {
         default: colors.strongBlack,
         select: theme.primary,
-        focus: `color(${colors.strongBlack} shade(10%))`,
-        over: `color(${colors.strongBlack} shade(5%))`,
+        focus: `color(${ colors.strongBlack } shade(10%))`,
+        over: `color(${ colors.strongBlack } shade(5%))`,
         solid: colors.grayLight
-      }
+      },
+      gapBetween: '20px'
     },
     dropdown: {
       color: {
@@ -86,22 +87,26 @@ module.exports = {
       color: {
         cancel: {
           default: colors.gray,
-          over: colors.gray
+          over: colors.gray,
+          focus: colors.strongBlack
         },
         action: {
           default: colors.strongBlack,
-          over: colors.strongBlack
+          over: colors.strongBlack,
+          focus: colors.strongBlack
         },
         disabled: colors.strongGray
       },
       background: {
         cancel: {
           default: colors.midBlack,
-          over: `color(${colors.midBlack} tint(5%))`
+          over: `color(${ colors.midBlack } tint(5%))`,
+          focus: `color(${ colors.midBlack } tint(5%))`
         },
         action: {
           default: palette.primary,
-          over: `color(${palette.primary} tint(10%))`
+          over: `color(${ palette.primary } tint(10%))`,
+          focus: `color(${ palette.primary } tint(10%))`
         },
         disabled: colors.gray
       }
@@ -124,6 +129,31 @@ module.exports = {
       background: {
         default: colors.strongBlack,
         title: `transparent`
+      }
+    },
+    layout: {
+      padding: '20px'
+    }
+  },
+  menu: {
+    background: '#fc0',
+    width: '260px',
+    bars: {
+      topGap: '0px',
+      color: palette.primary
+    }
+  },
+  headbar: {
+    height: '60px',
+    background: '#fc0',
+    title: {
+      color: '#fff'
+    }
+  },
+  table: {
+    edit: {
+      search: {
+        background: '#fc0'
       }
     }
   }

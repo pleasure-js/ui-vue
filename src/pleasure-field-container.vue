@@ -10,6 +10,11 @@
     </component>
   </div>
 </template>
+<style lang="postcss">
+  .pleasure-field-container + .pleasure-field-container {
+    margin-top: var(--pleasure-input-gap-between);
+  }
+</style>
 <script>
   export default {
     props: {
@@ -34,7 +39,6 @@
         return Object.assign({}, this.$props, childProps, get(this.field, '$pleasure', {}))
       },
       fieldContainer () {
-        console.log({ field: this.field })
         if (this.$pleasure.settings.ui === 'element-ui') {
           return 'el-form-item'
         }

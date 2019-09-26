@@ -21,6 +21,11 @@
     </el-button>
   </div>
 </template>
+<style lang="postcss">
+  .pleasure-form-controls {
+    margin-top: var(--pleasure-input-gap-between);
+  }
+</style>
 <script>
   export default {
     props: {

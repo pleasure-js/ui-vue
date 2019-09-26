@@ -38,11 +38,19 @@ Element UI customization for Pleasure
     &:hover {
       background: var(--pleasure-input-background-over);
       color: var(--pleasure-input-color-over);
+
+      &::placeholder {
+        color: var(--pleasure-input-color-placeholder-over);
+      }
     }
 
     &:focus, &.el-input__inner--focus {
       background: var(--pleasure-input-background-focus);
       color: var(--pleasure-input-color-focus);
+
+      &::placeholder {
+        color: var(--pleasure-input-color-placeholder-focus);
+      }
     }
 
     &::selection {
@@ -219,135 +227,146 @@ Element UI customization for Pleasure
     color: map-get($color, gray-light)
   }
   */
+}
 
-  .light {
-    font-weight: 300;
+.light {
+  font-weight: 300;
+}
+
+.full-btn {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.full-btn + .full-btn {
+  margin: 1em 0 0 0;
+}
+
+.el-button + .el-button {
+  margin-left: 0;
+}
+
+.el-button {
+  border: none !important;
+
+  &.el-button--default {
+    background: var(--pleasure-button-background-cancel);
+    color: var(--pleasure-button-color-cancel);
+
+    &:hover, &:focus {
+      background: var(--pleasure-button-background-cancel-over);
+      color: var(--pleasure-button-color-cancel-over);
+    }
   }
 
-  .full-btn {
-    display: block;
-    position: relative;
-    width: 100%;
+  &.el-button--primary {
+    background: var(--pleasure-button-background-action);
+    color: var(--pleasure-button-color-action);
+
+    &:hover, &:focus {
+      background: var(--pleasure-button-background-action-over);
+      color: var(--pleasure-button-color-action-over);
+    }
+  }
+}
+
+.el-message-box {
+  border: none;
+  background: var(--pleasure-notification-background);
+
+  .el-button.el-button--default {
+    background: var(--pleasure-notification-button-background-cancel);
+    color: var(--pleasure-notification-button-color-cancel);
   }
 
-  .full-btn + .full-btn {
-    margin: 1em 0 0 0;
+  .el-message-box__header {
+    background: var(--pleasure-notification-background-title);
+
+    .el-message-box__title {
+      color: var(--pleasure-notification-color-title);
+    }
   }
 
   .el-button {
-    border: none !important;
-
-    &.el-button--default {
-      background: var(--pleasure-button-background-cancel);
-      color: var(--pleasure-button-color-cancel);
-
-      &:hover, &:focus {
-        background: var(--pleasure-button-background-cancel-over);
-        color: var(--pleasure-button-color-cancel-over);
-      }
-    }
-
     &.el-button--primary {
-      background: var(--pleasure-button-background-action);
-      color: var(--pleasure-button-color-action);
-
-      &:hover, &:focus {
-        background: var(--pleasure-button-background-action-over);
-        color: var(--pleasure-button-color-action-over);
-      }
-    }
-  }
-
-  .el-message-box {
-    border: none;
-    background: var(--pleasure-notification-background);
-
-    .el-button.el-button--default {
-      background: var(--pleasure-notification-button-background-cancel);
-      color: var(--pleasure-notification-button-color-cancel);
+      background: var(--pleasure-notification-button-background-action);
+      color: var(--pleasure-notification-button-color-action);
     }
 
-    .el-message-box__header {
-      background: var(--pleasure-notification-background-title);
-
-      .el-message-box__title {
-        color: var(--pleasure-notification-color-title);
-      }
-    }
-
-    .el-button {
+    &:focus {
       &.el-button--primary {
-        background: var(--pleasure-notification-button-background-action);
-        color: var(--pleasure-notification-button-color-action);
+        background: var(--pleasure-notification-button-background-action-focus);
+        color: var(--pleasure-notification-button-color-action-focus);
       }
     }
   }
+}
 
-  .el-button {
-    &[disabled] {
-      background: var(--pleasure-button-background-disabled) !important;
-      color: var(--pleasure-button-color-disabled) !important;
-    }
+.el-button {
+  &[disabled] {
+    background: var(--pleasure-button-background-disabled) !important;
+    color: var(--pleasure-button-color-disabled) !important;
+  }
+}
+
+.el-icon-close {
+  color: var(--pleasure-notification-button-color-close) !important;
+}
+
+.add-btn, .delete-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  font-size: 1em;
+  padding: 12px;
+  box-shadow: 0, 0, 12px, 3px, rgba(var(--pleasure-palette-real-black), .2);
+  z-index: 1000;
+  background: var(--pleasure-pleasure-btn-add-background) !important;
+  color: var(--pleasure-pleasure-btn-add-color) !important;
+  border: none;
+  transition: transform .3s 0s easeOutBack;
+
+  &:hover {
+    transform: scale(1.2)
   }
 
-  .el-icon-close {
-    color: var(--pleasure-notification-button-color-close) !important;
-  }
-
-  .add-btn, .delete-btn {
+  &.abs {
     position: absolute;
-    bottom: 30px;
-    right: 30px;
-    font-size: 1em;
-    padding: 12px;
-    box-shadow: 0, 0, 12px, 3px, rgba(var(--pleasure-palette-real-black), .2);
-    z-index: 1000;
-    background: var(--pleasure-pleasure-btn-add-background) !important;
-    color: var(--pleasure-pleasure-btn-add-color) !important;
-    border: none;
-    transition: transform .3s 0s easeOutBack;
-
-    &:hover {
-      transform: scale(1.2)
-    }
-
-    &.abs {
-      position: absolute;
-    }
-
-    html.client-app & {
-      bottom: calc(30px + constant(safe-area-inset-bottom) + constant(safe-area-inset-top));
-      bottom: calc(30px + env(safe-area-inset-bottom) + env(safe-area-inset-top));
-    }
   }
 
-  .delete-btn {
-    left: 80px;
-    background: var(--pleasure-pleasure-btn-remove-background);
-    color: var(--pleasure-pleasure-btn-remove-color);
+  html.client-app & {
+    bottom: calc(30px + constant(safe-area-inset-bottom) + constant(safe-area-inset-top));
+    bottom: calc(30px + env(safe-area-inset-bottom) + env(safe-area-inset-top));
   }
+}
 
-  .el-notification {
-    margin-top: 64px;
-    border: none;
-    background: var(--pleasure-notification-background);
+.delete-btn {
+  left: 80px;
+  background: var(--pleasure-pleasure-btn-remove-background);
+  color: var(--pleasure-pleasure-btn-remove-color);
+}
 
-    .el-notification__title {
-      color: var(--pleasure-notification-title-color);
-    }
+.el-notification {
+  margin-top: 64px;
+  border: none;
+  background: var(--pleasure-notification-background);
+
+  .el-notification__title {
+    color: var(--pleasure-notification-title-color);
   }
+}
 
-  .el-table__empty-text {
-    margin-top: calc(-1 * var(--pleasure-headbar-height) + 43px);
-  }
+.el-table__empty-text {
+  margin-top: calc(-1 * var(--pleasure-headbar-height) + 43px);
+}
 
-  .el-form {
-    width: 100%;
-  }
+.el-form {
+  width: 100%;
+}
 
-  .el-form-item__content {
-    .el-input__prefix {
-      max-height: 40px;
-    }
+.el-form-item__content {
+  .el-input__prefix {
+    max-height: 40px;
   }
 }
