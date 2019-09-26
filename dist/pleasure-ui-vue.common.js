@@ -13,12 +13,16 @@ var forOwn = _interopDefault(require('lodash/forOwn'));
 var kebabCase = _interopDefault(require('lodash/kebabCase'));
 var startCase = _interopDefault(require('lodash/startCase'));
 var get$1 = _interopDefault(require('lodash/get'));
-var defaults = _interopDefault(require('lodash/defaults'));
 var merge = _interopDefault(require('deepmerge'));
-var pleasureApiClient$2 = require('pleasure-api-client');
+var uniq = _interopDefault(require('lodash/uniq'));
+var defaults = _interopDefault(require('lodash/defaults'));
+var pleasureApiClient$1 = require('pleasure-api-client');
 var Vue = _interopDefault(require('vue'));
+var Cookies = _interopDefault(require('cookies'));
 var objectHash = _interopDefault(require('object-hash'));
+var find = _interopDefault(require('lodash/find'));
 var CoercePropsMixin = _interopDefault(require('vue-coerce-props'));
+var VueI18n = _interopDefault(require('vue-i18n'));
 var Vuex = _interopDefault(require('vuex'));
 
 //
@@ -210,6 +214,11 @@ __vue_render__._withStripped = true;
 //
 //
 //
+//
+//
+//
+//
+//
 
 var script$1 = {
   props: {
@@ -234,7 +243,6 @@ var script$1 = {
       return Object.assign({}, this.$props, childProps, get(this.field, '$pleasure', {}))
     },
     fieldContainer () {
-      console.log({ field: this.field });
       if (this.$pleasure.settings.ui === 'element-ui') {
         return 'el-form-item'
       }
@@ -246,7 +254,6 @@ var script$1 = {
 
 /* script */
 const __vue_script__$1 = script$1;
-
 /* template */
 var __vue_render__$1 = function() {
   var _vm = this;
@@ -314,8 +321,8 @@ var script$2 = {
       default: undefined
     },
     value: {
-      type: [Number, Boolean, String, Object, Array, Date],
-      default: null
+      type: [String, Number, Object, Array, Date, Boolean],
+      default: ''
     },
     field: {
       type: Object,
@@ -342,12 +349,11 @@ var script$2 = {
         });
       }
 
-      console.log(`default props for ${ this.componentType }`, this.defaultProps[this.fieldComponent]);
-      return Object.assign({}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get$1(this.field, '$pleasure', {}))
+      return merge.all([{}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get$1(this.field, '$pleasure', {})])
     },
     componentType () {
       const componentType = get$1(this.field, '$pleasure.component', get$1(this.field, 'component'));
-      // Arrays -> 'select'
+
       if (
         !componentType &&
         ((
@@ -362,7 +368,6 @@ var script$2 = {
       return kebabCase(componentType || 'input')
     },
     fieldComponent () {
-      console.log(`componentType`, this.componentType);
       switch (this.componentType) {
         case 'array':
           return 'pleasure-select'
@@ -470,6 +475,11 @@ __vue_render__$2._withStripped = true;
 //
 //
 //
+//
+//
+//
+//
+//
 
 var script$3 = {
   props: {
@@ -518,7 +528,6 @@ var script$3 = {
 
 /* script */
 const __vue_script__$3 = script$3;
-
 /* template */
 var __vue_render__$3 = function() {
   var _vm = this;
@@ -604,6 +613,428 @@ __vue_render__$3._withStripped = true;
 
 //
 
+const fnStub = {
+  type: Function,
+  default () {
+    return () => {}
+  }
+};
+
+var script$4 = {
+  props: {
+    customBehavior: {
+      type: Boolean,
+      default: false
+    },
+    tableTop: {
+      type: Number,
+      default: 0
+    },
+    searchSpan: {
+      type: Number,
+      default: 24
+    },
+    searchBy: Array,
+    searchStrict: {
+      type: Boolean,
+      default: false
+    },
+    defaultSort: {
+      type: Object
+    },
+    /**
+     * @vue-prop {Boolean} [withSearch=true] - Add
+     */
+    withSearch: {
+      type: Boolean,
+      default: true
+    },
+    canEdit: Boolean,
+    canAdd: {
+      type: Boolean,
+      default: true
+    },
+    canDelete: {
+      type: Boolean,
+      default: false
+    },
+    /**
+     * @vue-prop {String} entity - Entity name
+     */
+    entity: {
+      type: String,
+      required: true
+    },
+    cellClick: fnStub,
+    /**
+     * @vue-prop {Function|Boolean} rowClick=true - A function to handle the row click. `true` to let pleasure handle
+     * the request automatically. `false` to disable. Defaults to `true`.
+     **/
+    rowClick: {
+      type: [Function, Boolean],
+      default: true
+    },
+    rowClassName: Function,
+    action: fnStub,
+    appendData: Object
+  },
+  data () {
+    return {
+      loadingMore: false,
+      sort: null,
+      tableScroll: null,
+      searchResults: null,
+      selections: [],
+      search: null
+      // results: (this.dropdowns[this.entity] ? this.dropdowns[this.entity].slice() : [])
+    }
+  },
+  computed: {
+    indexes () {
+      if (!this.$pleasure.entities[this.entity]) {
+        return []
+      }
+
+      return uniq(this.$pleasure.entities[this.entity].$pleasure.index.search.concat(this.$pleasure.entities[this.entity].$pleasure.index.sort).filter(fieldName => fieldName !== '_id'))
+    },
+    fields () {
+      // todo: add prop to override default indexes fields
+      return this.indexes
+    },
+    sortValue () {
+      return this.sort ? {
+        [this.sort.prop]: this.sort.order === 'ascending' ? 1 : -1
+      } : null
+    },
+    tableStyle () {
+      let top = this.tableTop;
+
+      if (this.withSearch) {
+        top += 40;
+      }
+
+      return this.withSearch ? { top } : null
+    },
+    datatable () {
+      if (this.searchResults !== null) {
+        return this.searchResults
+      }
+
+      return this.$pleasure.dropdown[this.entity] || []
+    },
+    safeLookUp () {
+      return debounce(this.lookUp.bind(this), 150)
+    }
+  },
+  mounted () {
+    console.log(`entity>>>`, this.$pleasure.entities[this.entity]);
+    /*
+          this.tableScroll = this.$el.querySelector('.el-table__body-wrapper')
+          this.tableScroll.addEventListener('scroll', this.handleScroll)
+
+          if (!this.defaultSort && !this.customBehavior && this.entity) {
+            // this.reload()
+            /!* this.$store.dispatch('db/dropdown', {
+              model: this.entity,
+              token: getToken()
+            }) *!/
+          }
+    */
+  },
+  methods: {
+    guessLabel(field) {
+      const requestedLabel = `entities.label.${field}`;
+      const foundLabel = this.$t(requestedLabel);
+      return requestedLabel !== foundLabel ? foundLabel : startCase(field)
+    },
+    async reload () {
+      if (!this.entity) {
+        return
+      }
+      console.log(`reloading`, this.entity);
+      // this.$store.dispatch('db/clean', this.entity)
+      return this.loadMore(true)
+    },
+    getSearch () {
+      let search = {};
+
+      if (!this.searchBy || this.searchBy.length === 0) {
+        search = { search: this.search };
+      } else if (this.search) {
+        const find = {};
+
+        this.searchBy.forEach(prop => {
+          find[prop] = this.search;
+        });
+
+        search = {
+          find,
+          strict: this.searchStrict.toString()
+        };
+      }
+
+      return search
+    },
+    async handleSortChange (sort) {
+      if (!this.entity) {
+        return
+      }
+
+      this.sort = sort;
+      this.$emit('sort-change', sort);
+      console.log(`table sort`);
+      /*
+              await this.$store.dispatch('db/dropdown', {
+                model: this.entity,
+                sort: { [sort.prop]: sort.order === 'descending' ? -1 : 1 },
+                params: this.appendData,
+                token: getToken()
+              })
+
+              this.$el.querySelector('.el-table__body-wrapper').scrollTop = 0
+              this.loadingMore = false
+      */
+    },
+    handleScroll () {
+      const { tableScroll } = this;
+
+      const scrollHeight = tableScroll.scrollHeight - tableScroll.offsetHeight;
+      const scrollTop = tableScroll.scrollTop;
+
+      if (scrollTop >= scrollHeight) {
+        this.loadMore();
+      }
+    },
+    async loadMore (r) {
+      return console.log(`loadMore`)
+      if ((!r && this.loadingMore) || !this.entity) {
+        return
+      }
+
+      const { sortValue: sort } = this;
+
+      this.loadingMore = true;
+      let data;
+
+      // todo: list
+      try {
+        ({ data } = await this.$store.dispatch('db/api', {
+          model: this.entity,
+          skip: this.datatable.length,
+          sort,
+          params: this.appendData,
+          ...this.getSearch()
+        }));
+      } catch (err) {
+        data = [];
+      }
+
+      if (this.searchResults
+      ) {
+        this.searchResults.push(...data);
+      } else {
+        this.$store.commit('db/APPEND_DROPDOWN', { model: this.entity, data });
+      }
+
+      this.loadingMore = !r && data.length < 1;
+    },
+    promptCreate () {
+      this.$router.push({ path: `/pleasure/create/${ this.entity }` });
+    },
+    handleDeleteSelection () {
+      this.$confirm(this.$t('confirm.remove.default'))
+        .then(_ => {
+          this.deleteSelection();
+        })
+        .catch(_ => {});
+    },
+    async lookUp () {
+      // console.log('searching', this.search)
+      if (!this.search) {
+        return this.$set(this, 'searchResults', null)
+      }
+
+      this.searching = true;
+
+      try {
+        const { data } = await
+          this.$store.dispatch('db/api', {
+            model: this.entity,
+            params: this.appendData,
+            ...this.getSearch()
+          });
+
+        this.$set(this, 'searchResults', data);
+      } catch (err) {
+        // console.log({ err })
+      } finally {
+        this.searching = false;
+      }
+    },
+    async deleteSelection () {
+      this.loading = true;
+      const remove = this.selections.map(v => v._id);
+      const model = this.entity;
+      const { errorObj } = await
+        this.$store.dispatch('db/api', {
+          model,
+          remove,
+          ctx: this
+        });
+      this.$emit('deleted', remove);
+      !errorObj && await
+        this.$store.dispatch(`db/dropdown`, { model }); // reloading it from the page
+      this.loading = false;
+    },
+    filterTag (value, row) {
+      return row.type === value
+    },
+    handleSelectionChange (val) {
+      this.$set(this, 'selections', val || []);
+    },
+    handleRowClick (row, event, col) {
+      if (this.rowClick === false) {
+        // console.log('row click is false')
+        return
+      }
+      if (typeof this.rowClick === 'function') {
+        return this.rowClick(row, event, col)
+      }
+
+      // todo: check if can update / read
+      this.$router.push({ path: `/pleasure/update/${ this.entity }/${ row._id }` });
+    },
+    handleCellClick (row, event, col) {
+      if (this.cellClick) {
+        return this.cellClick(row, event, col)
+      }
+    }
+  }
+};
+
+/* script */
+const __vue_script__$4 = script$4;
+/* template */
+var __vue_render__$4 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    {
+      class: {
+        content: true,
+        "pleasure-table-edit": true,
+        "friendly-table": true,
+        "can-add": _vm.canAdd
+      }
+    },
+    [
+      _c(
+        "el-table",
+        {
+          ref: "tb",
+          staticClass: "the-table",
+          style: _vm.tableStyle,
+          attrs: {
+            "default-sort": _vm.defaultSort,
+            height: "100%",
+            data: _vm.datatable,
+            stripe: "",
+            "tooltip-effect": "dark",
+            "highlight-current-row": "",
+            "row-class-name": "pleasure-row",
+            "row-class-name": _vm.rowClassName
+          },
+          on: {
+            "cell-click": _vm.handleCellClick,
+            "row-click": _vm.handleRowClick,
+            "selection-change": _vm.handleSelectionChange,
+            "sort-change": _vm.handleSortChange
+          }
+        },
+        [
+          _vm.canDelete
+            ? _c("el-table-column", {
+                attrs: { type: "selection", width: "35" }
+              })
+            : _vm._e(),
+          _vm._v(" "),
+          _vm._l(_vm.fields, function(field) {
+            return _c("el-table-column", {
+              attrs: {
+                prop: field,
+                label: _vm.guessLabel(field),
+                "min-width": "180",
+                sortable: "custom"
+              },
+              scopedSlots: _vm._u(
+                [
+                  {
+                    key: "default",
+                    fn: function(scope) {
+                      return [_vm._v(_vm._s(scope.row[field]))]
+                    }
+                  }
+                ],
+                null,
+                true
+              )
+            })
+          })
+        ],
+        2
+      ),
+      _vm._v(" "),
+      _vm.canAdd
+        ? _c("el-button", {
+            staticClass: "add-btn",
+            attrs: { name: "add", icon: "el-icon-plus", circle: "" },
+            on: { click: _vm.promptCreate }
+          })
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.selections.length > 0 && _vm.canDelete
+        ? _c("el-button", {
+            staticClass: "delete-btn",
+            attrs: { name: "delete", icon: "el-icon-minus", circle: "" },
+            on: { click: _vm.handleDeleteSelection }
+          })
+        : _vm._e()
+    ],
+    1
+  )
+};
+var __vue_staticRenderFns__$4 = [];
+__vue_render__$4._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$4 = undefined;
+  /* scoped */
+  const __vue_scope_id__$4 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$4 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$4 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var PleasureTableEdit = normalizeComponent_1(
+    { render: __vue_render__$4, staticRenderFns: __vue_staticRenderFns__$4 },
+    __vue_inject_styles__$4,
+    __vue_script__$4,
+    __vue_scope_id__$4,
+    __vue_is_functional_template__$4,
+    __vue_module_identifier__$4,
+    undefined,
+    undefined
+  );
+
+//
+
 /**
  * @module vue-pleasure/pleasure
  * @desc A component to render entities. It implements seamlessly with the defined {@link pleasure/PleasureEntity PleasureEntities}
@@ -652,12 +1083,13 @@ __vue_render__$3._withStripped = true;
  *
  * @vue-prop {String} [controller] - Alternatively the controller of the entity to hit with the collected data.
  */
-var script$4 = {
+var script$5 = {
   components: {
     PleasureForm,
     PleasureFieldContainer,
     PleasureField,
-    PleasureFormControls
+    PleasureFormControls,
+    PleasureTableEdit
   },
   props: {
     omit: {
@@ -702,8 +1134,8 @@ var script$4 = {
       type: String,
       default: null,
       coerce (...args) {
-        console.log(`coercing`, ...args);
-        console.log(`coercing>>>`, this.i18nScope, this.entity);
+        // console.log(`coercing`, ...args)
+        // console.log(`coercing>>>`, this.i18nScope, this.entity)
         return this.i18nScope ? this.i18nScope : (this.entity || 'default')
       }
     },
@@ -755,7 +1187,7 @@ var script$4 = {
     },
     appendValues: {
       type: Object,
-      default() {
+      default () {
         return {}
       }
     }
@@ -782,9 +1214,9 @@ var script$4 = {
       const schema = [];
 
       forOwn(entitySchema, (field, fieldName) => {
-        // skip if it's virtual or starts with an underscore
-        if (/^_/.test(fieldName) || get$1(field, 'options.options.virtual') || this.omit.indexOf(fieldName) >= 0) {
-          console.log(`skipping`, { fieldName });
+        // skip if it's virtual or starts with an underscore or dollar sign
+        if (/^[_$]/.test(fieldName) || get$1(field, 'options.options.virtual') || this.omit.indexOf(fieldName) >= 0) {
+          // console.log(`skipping`, { fieldName })
           return
         }
 
@@ -886,7 +1318,7 @@ var script$4 = {
           await this.$pleasure.api.login(this.values);
         } else {
           // other operations
-          this.emit('result', await this.performSubmit());
+          this.$emit('result', await this.performSubmit());
         }
       } catch (err) {
         this.$pleasure.error(err.message);
@@ -896,10 +1328,9 @@ var script$4 = {
 };
 
 /* script */
-const __vue_script__$4 = script$4;
-
+const __vue_script__$5 = script$5;
 /* template */
-var __vue_render__$4 = function() {
+var __vue_render__$5 = function() {
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
@@ -968,17 +1399,17 @@ var __vue_render__$4 = function() {
     1
   )
 };
-var __vue_staticRenderFns__$4 = [];
-__vue_render__$4._withStripped = true;
+var __vue_staticRenderFns__$5 = [];
+__vue_render__$5._withStripped = true;
 
   /* style */
-  const __vue_inject_styles__$4 = undefined;
+  const __vue_inject_styles__$5 = undefined;
   /* scoped */
-  const __vue_scope_id__$4 = undefined;
+  const __vue_scope_id__$5 = undefined;
   /* module identifier */
-  const __vue_module_identifier__$4 = undefined;
+  const __vue_module_identifier__$5 = undefined;
   /* functional template */
-  const __vue_is_functional_template__$4 = false;
+  const __vue_is_functional_template__$5 = false;
   /* style inject */
   
   /* style inject SSR */
@@ -986,29 +1417,202 @@ __vue_render__$4._withStripped = true;
 
   
   var pleasure = normalizeComponent_1(
-    { render: __vue_render__$4, staticRenderFns: __vue_staticRenderFns__$4 },
-    __vue_inject_styles__$4,
-    __vue_script__$4,
-    __vue_scope_id__$4,
-    __vue_is_functional_template__$4,
-    __vue_module_identifier__$4,
+    { render: __vue_render__$5, staticRenderFns: __vue_staticRenderFns__$5 },
+    __vue_inject_styles__$5,
+    __vue_script__$5,
+    __vue_scope_id__$5,
+    __vue_is_functional_template__$5,
+    __vue_module_identifier__$5,
     undefined,
     undefined
   );
 
-const pleasureApiClient = pleasureApiClient$2.instance();
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
 
+var js_cookie = createCommonjsModule(function (module, exports) {
+(function (factory) {
+	var registeredInModuleLoader;
+	{
+		module.exports = factory();
+		registeredInModuleLoader = true;
+	}
+	if (!registeredInModuleLoader) {
+		var OldCookies = window.Cookies;
+		var api = window.Cookies = factory();
+		api.noConflict = function () {
+			window.Cookies = OldCookies;
+			return api;
+		};
+	}
+}(function () {
+	function extend () {
+		var i = 0;
+		var result = {};
+		for (; i < arguments.length; i++) {
+			var attributes = arguments[ i ];
+			for (var key in attributes) {
+				result[key] = attributes[key];
+			}
+		}
+		return result;
+	}
+
+	function decode (s) {
+		return s.replace(/(%[0-9A-Z]{2})+/g, decodeURIComponent);
+	}
+
+	function init (converter) {
+		function api() {}
+
+		function set (key, value, attributes) {
+			if (typeof document === 'undefined') {
+				return;
+			}
+
+			attributes = extend({
+				path: '/'
+			}, api.defaults, attributes);
+
+			if (typeof attributes.expires === 'number') {
+				attributes.expires = new Date(new Date() * 1 + attributes.expires * 864e+5);
+			}
+
+			// We're using "expires" because "max-age" is not supported by IE
+			attributes.expires = attributes.expires ? attributes.expires.toUTCString() : '';
+
+			try {
+				var result = JSON.stringify(value);
+				if (/^[\{\[]/.test(result)) {
+					value = result;
+				}
+			} catch (e) {}
+
+			value = converter.write ?
+				converter.write(value, key) :
+				encodeURIComponent(String(value))
+					.replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
+
+			key = encodeURIComponent(String(key))
+				.replace(/%(23|24|26|2B|5E|60|7C)/g, decodeURIComponent)
+				.replace(/[\(\)]/g, escape);
+
+			var stringifiedAttributes = '';
+			for (var attributeName in attributes) {
+				if (!attributes[attributeName]) {
+					continue;
+				}
+				stringifiedAttributes += '; ' + attributeName;
+				if (attributes[attributeName] === true) {
+					continue;
+				}
+
+				// Considers RFC 6265 section 5.2:
+				// ...
+				// 3.  If the remaining unparsed-attributes contains a %x3B (";")
+				//     character:
+				// Consume the characters of the unparsed-attributes up to,
+				// not including, the first %x3B (";") character.
+				// ...
+				stringifiedAttributes += '=' + attributes[attributeName].split(';')[0];
+			}
+
+			return (document.cookie = key + '=' + value + stringifiedAttributes);
+		}
+
+		function get (key, json) {
+			if (typeof document === 'undefined') {
+				return;
+			}
+
+			var jar = {};
+			// To prevent the for loop in the first place assign an empty array
+			// in case there are no cookies at all.
+			var cookies = document.cookie ? document.cookie.split('; ') : [];
+			var i = 0;
+
+			for (; i < cookies.length; i++) {
+				var parts = cookies[i].split('=');
+				var cookie = parts.slice(1).join('=');
+
+				if (!json && cookie.charAt(0) === '"') {
+					cookie = cookie.slice(1, -1);
+				}
+
+				try {
+					var name = decode(parts[0]);
+					cookie = (converter.read || converter)(cookie, name) ||
+						decode(cookie);
+
+					if (json) {
+						try {
+							cookie = JSON.parse(cookie);
+						} catch (e) {}
+					}
+
+					jar[name] = cookie;
+
+					if (key === name) {
+						break;
+					}
+				} catch (e) {}
+			}
+
+			return key ? jar[key] : jar;
+		}
+
+		api.set = set;
+		api.get = function (key) {
+			return get(key, false /* read as raw */);
+		};
+		api.getJSON = function (key) {
+			return get(key, true /* read as json */);
+		};
+		api.remove = function (key, attributes) {
+			set(key, '', extend(attributes, {
+				expires: -1
+			}));
+		};
+
+		api.defaults = {};
+
+		api.withConverter = init;
+
+		return api;
+	}
+
+	return init(function () {});
+}));
+});
+
+const clientPayload = {};
+
+console.log(`pleasure-ui-vue/client`);
+if (process.client && js_cookie.get('accessToken')) {
+  // auto load accessToken
+  console.log(`auto loading access token`, js_cookie.get('accessToken'));
+  clientPayload.accessToken = js_cookie.get('accessToken');
+}
+
+var pleasureApiClient = pleasureApiClient$1.PleasureApiClient.instance(clientPayload);
+
+pleasureApiClient.debug(true);
+
+const strict = true;
 const namespaced = true;
 
-const state = {
-  entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
-  entitiesSchema: {},
-  dropdown: {},
-  settings: process.env.$pleasure.settings,
-  dropdownLoading: [],
-  user: null,
-  locales: ['en', 'es'],
-  locale: 'en'
+const state = () => {
+  return {
+    entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
+    entitiesSchema: {},
+    dropdown: {},
+    settings: process.env.$pleasure.settings || {},
+    dropdownLoading: [],
+    user: null,
+    locales: ['en', 'es'],
+    locale: 'en'
+  }
 };
 
 const mutations = {
@@ -1021,7 +1625,8 @@ const mutations = {
     }
   },
   removeDropdownLoading (state, id) {
-    state.dropdownLoading.splice(state.dropdownLoading.indexOf(id), 1);
+    const newState = state.dropdownLoading.filter(needle => needle !== id);
+    Vue.set(state, 'dropdownLoading', newState);
   },
   setUser (state, user) {
     Vue.set(state, 'user', user);
@@ -1031,15 +1636,30 @@ const mutations = {
   },
   setEntitiesSchema (state, entitiesSchema) {
     forOwn(entitiesSchema, (entity) => {
-      forOwn(entity, (field) => {
-        defaults(field, { $pleasure: {} });
+      forOwn(entity, (field, fieldName) => {
+        if (!/^\$/.test(fieldName)) {
+          defaults(field, { $pleasure: {} });
+        }
       });
     });
     Vue.set(state, 'entitiesSchema', entitiesSchema);
   },
   setDropdown (state, { dropdownName, results }) {
-    console.log(`setting dropdown`, { dropdownName, results });
     Vue.set(state.dropdown, dropdownName, results);
+  },
+  updateDropdown (state, { entity, modified, id }) {
+    const set = get$1(state, `dropdown.${ entity }`);
+    const localEntry = find(set, { _id: id });
+
+    if (!localEntry) {
+      return
+    }
+
+    const final = merge(localEntry, modified);
+    Vue.set(set, set.indexOf(localEntry), final);
+  },
+  clearDropdowns (state) {
+    Vue.set(state, 'dropdown', {});
   }
 };
 
@@ -1060,25 +1680,49 @@ const actions = {
   async locale ({ commit }, locale) {
     commit('setlocale', locale);
   },
-  async loadDropdown ({ commit, state }, { entity, listOptions, name, force = false } = {}) {
+  async dropdownChanged ({ commit }, payload = {}) {
+    return commit('updateDropdown', payload)
+  },
+  async loadDropdown ({ commit, state }, { entity, listOptions, name, force = false, req } = {}) {
+    if (req) {
+      const accessToken = new Cookies(req).get('accessToken');
+      pleasureApiClient.setCredentials({ accessToken });
+    }
     const dropdownName = entity || name;
     const id = objectHash({ entity, listOptions, dropdownName });
 
     if (state.dropdownLoading.indexOf(id) >= 0) {
+      // console.log(`already loading id ${ id }`)
       return
     }
 
-    console.log(`load dropdown`);
+    // console.log(`load dropdown`)
 
     if (!force && state.dropdown[dropdownName]) {
+      // console.log(`dropdown ${ dropdownName } already existis`, state.dropdown[dropdownName])
       return state.dropdown[dropdownName]
     }
 
     commit('setDropdownLoading', id);
-    const results = await pleasureApiClient.list(entity, listOptions);
+    let results;
+    let err;
+    try {
+      results = await pleasureApiClient.list(entity, listOptions);
+    } catch (e) {
+      err = e;
+    }
+
     commit('setDropdown', { dropdownName, results });
     commit('removeDropdownLoading', id);
+
+    if (err) {
+      throw err
+    }
+
     return results
+  },
+  clearDropdowns ({ commit, state }, { req } = {}) {
+    return commit('clearDropdowns')
   },
   logout () {
     return pleasureApiClient.logout()
@@ -1095,7 +1739,7 @@ const actions = {
       entities = await pleasureApiClient.getEntities();
     } catch (err) {
       commit('setEntitiesSync', 0);
-      console.log(`Could not retrieve entities`, err.message);
+      // console.log(`Could not retrieve entities`, err.message)
       return
     }
 
@@ -1116,10 +1760,14 @@ const getters = {
   },
   user (state) {
     return state.user
+  },
+  locale (state) {
+    return state.locale
   }
 };
 
 var PleasureStore = /*#__PURE__*/Object.freeze({
+  strict: strict,
   namespaced: namespaced,
   state: state,
   mutations: mutations,
@@ -1194,37 +1842,990 @@ class BrowserStorageCache {
   }
 }
 
-function styleInject(css, ref) {
-  if ( ref === void 0 ) ref = {};
-  var insertAt = ref.insertAt;
+const bus = new Vue();
 
-  if (!css || typeof document === 'undefined') { return; }
+//
 
-  var head = document.head || document.getElementsByTagName('head')[0];
-  var style = document.createElement('style');
-  style.type = 'text/css';
-
-  if (insertAt === 'top') {
-    if (head.firstChild) {
-      head.insertBefore(style, head.firstChild);
-    } else {
-      head.appendChild(style);
+var script$6 = {
+  props: {
+    initialZIndex: {
+      type: Number,
+      default: 99
     }
-  } else {
-    head.appendChild(style);
+  },
+  data () {
+    return {
+      on: false,
+      full: false,
+      zIndex: this.initialZIndex,
+      bindedResetFullState: this.resetFullState.bind(this)
+    }
+  },
+  computed: {
+    classes () {
+      return {
+        'back-drop': true,
+        full: this.full,
+        on: this.on
+      }
+    }
+  },
+  mounted () {
+    bus.$on('backdrop-on', this.open.bind(this));
+    bus.$on('backdrop-off', this.close.bind(this));
+    bus.$on('backdrop-toggle', this.toggle.bind(this));
+  },
+  methods: {
+    resetFullState () {
+      console.log(`resetFullState`);
+      this.full = false;
+    },
+    open ({ zIndex, full } = {}) {
+      this.$refs.backdrop.removeEventListener('animationend', this.bindedResetFullState);
+      this.on = true;
+      this.zIndex = zIndex || this.initialZIndex;
+      this.full = !!full;
+    },
+    close ({ zIndex } = {}) {
+      this.$refs.backdrop.addEventListener('animationend', this.bindedResetFullState, { once: true });
+
+      this.on = false;
+      this.zIndex = zIndex || this.initialZIndex;
+    },
+    toggle (payload) {
+      if (this.on) {
+        this.close(payload);
+      } else {
+        this.open(payload);
+      }
+    }
   }
+};
 
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css;
-  } else {
-    style.appendChild(document.createTextNode(css));
+/* script */
+const __vue_script__$6 = script$6;
+/* template */
+var __vue_render__$6 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c("div", {
+    ref: "backdrop",
+    class: _vm.classes,
+    style: { "z-index": _vm.zIndex }
+  })
+};
+var __vue_staticRenderFns__$6 = [];
+__vue_render__$6._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$6 = undefined;
+  /* scoped */
+  const __vue_scope_id__$6 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$6 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$6 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var backdrop = normalizeComponent_1(
+    { render: __vue_render__$6, staticRenderFns: __vue_staticRenderFns__$6 },
+    __vue_inject_styles__$6,
+    __vue_script__$6,
+    __vue_scope_id__$6,
+    __vue_is_functional_template__$6,
+    __vue_module_identifier__$6,
+    undefined,
+    undefined
+  );
+
+/* script */
+/* template */
+var __vue_render__$7 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { staticClass: "pleasure-full-height-container" },
+    [_vm._t("header"), _vm._v(" "), _vm._t("default")],
+    2
+  )
+};
+var __vue_staticRenderFns__$7 = [];
+__vue_render__$7._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$7 = undefined;
+  /* scoped */
+  const __vue_scope_id__$7 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$7 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$7 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var fullHeightContainer = normalizeComponent_1(
+    { render: __vue_render__$7, staticRenderFns: __vue_staticRenderFns__$7 },
+    __vue_inject_styles__$7,
+    {},
+    __vue_scope_id__$7,
+    __vue_is_functional_template__$7,
+    __vue_module_identifier__$7,
+    undefined,
+    undefined
+  );
+
+//
+
+var script$7 = {
+  props: {
+    mainTitle: {
+      type: String,
+      default: ''
+    }
+  },
+  data () {
+    return {
+      title: this.mainTitle
+    }
+  },
+  watch: {
+    $route () {
+      this.setTitle(this.mainTitle);
+    }
+  },
+  mounted () {
+    bus.$on('pleasure-headbar', ({ exec }) => {
+      exec && this[exec[0]](...exec.slice(1));
+    });
+  },
+  methods: {
+    setTitle (title) {
+      this.title = title;
+    }
   }
-}
+};
 
-var css = ".pleasure a {\n    text-decoration: none;\n    cursor: pointer;\n  }\n\n.pleasure button, .pleasure input, .pleasure select, .pleasure textarea {\n    font-family: inherit;\n    font-size: inherit;\n    line-height: inherit;\n    color: inherit;\n  }\n\n.pleasure .app-offset {\n    margin-top: -60px;\n    padding-top: 70px !important;\n  }\n\n.pleasure .deep-vert-separation {\n    padding-top: 35px;\n    padding-bottom: 35px;\n  }\n\n.pleasure .deep-horz-separation {\n    box-sizing: border-box;\n    padding-left: 35px;\n    padding-right: 35px;\n  }\n\n.pleasure .vert-separation {\n    padding-top: 35px;\n    padding-bottom: 35px;\n  }\n\n.pleasure .horz-separation {\n    box-sizing: border-box;\n    padding-left: 35px;\n    padding-right: 35px;\n  }\n\n.pleasure .text-left {\n    text-align: left !important;\n  }\n\n.pleasure .text-right {\n    text-align: right !important;\n  }\n\n.pleasure .text-justify {\n    text-align: justify !important;\n  }\n\n.pleasure .text-center {\n    text-align: center !important;\n  }\n\n.pleasure .friendly-table .el-col {\n      box-sizing: border-box;\n      padding: 5px;\n    }\n\n.pleasure .center-middle {\n    display: -webkit-box;\n    display: flex;\n    -webkit-box-align: center;\n            align-items: center;\n    -webkit-box-pack: center;\n            justify-content: center;\n    -webkit-box-orient: vertical;\n    -webkit-box-direction: normal;\n            flex-direction: column;\n  }\n\n.pleasure .mobile-first {\n    box-sizing: border-box;\n    width: 100%;\n    max-width: 480px !important;\n    margin: 0 auto !important;\n    position: relative;\n  }\n\n.pleasure .mobile-first-tight {\n    max-width: 320px !important;\n  }\n";
-styleInject(css);
+/* script */
+const __vue_script__$7 = script$7;
+/* template */
+var __vue_render__$8 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "header",
+    { staticClass: "headbar" },
+    [
+      _vm._t("default", [
+        _vm.title
+          ? _c("h1", [_vm._v("\n      " + _vm._s(_vm.title) + "\n    ")])
+          : _vm._e()
+      ])
+    ],
+    2
+  )
+};
+var __vue_staticRenderFns__$8 = [];
+__vue_render__$8._withStripped = true;
 
-const pleasureApiClient$1 = pleasureApiClient$2.PleasureApiClient.instance();
+  /* style */
+  const __vue_inject_styles__$8 = undefined;
+  /* scoped */
+  const __vue_scope_id__$8 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$8 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$8 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var headbar = normalizeComponent_1(
+    { render: __vue_render__$8, staticRenderFns: __vue_staticRenderFns__$8 },
+    __vue_inject_styles__$8,
+    __vue_script__$7,
+    __vue_scope_id__$8,
+    __vue_is_functional_template__$8,
+    __vue_module_identifier__$8,
+    undefined,
+    undefined
+  );
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+var script$8 = {
+  /**
+   * Initial state of the menu
+   */
+  props: {
+    opened: {
+      type: Boolean,
+      default: false
+    },
+    items: {
+      type: Array,
+      default: null
+    }
+  },
+  data () {
+    return {
+      isOpen: this.opened,
+    }
+  },
+  computed: {
+    cls () {
+      return {
+        menu: true,
+        open: this.isOpen
+      }
+    }
+  },
+  watch: {
+    isOpen (v) {
+      this.$emit(v ? 'opened' : 'closed');
+    }
+  },
+  methods: {
+    toggle () {
+      return this.isOpen = !this.isOpen
+    },
+    close () {
+      this.isOpen = false;
+    },
+    open () {
+      this.isOpen = true;
+    }
+  }
+};
+
+/* script */
+const __vue_script__$8 = script$8;
+/* template */
+var __vue_render__$9 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { class: _vm.cls },
+    [
+      _vm._t("head"),
+      _vm._v(" "),
+      _c(
+        "el-menu",
+        _vm._l(_vm.items, function(item, itemIndex) {
+          return _c("pleasure-menu-item", {
+            key: "menu-" + itemIndex,
+            attrs: { index: "menu-" + itemIndex, item: item }
+          })
+        }),
+        1
+      )
+    ],
+    2
+  )
+};
+var __vue_staticRenderFns__$9 = [];
+__vue_render__$9._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$9 = undefined;
+  /* scoped */
+  const __vue_scope_id__$9 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$9 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$9 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var menu = normalizeComponent_1(
+    { render: __vue_render__$9, staticRenderFns: __vue_staticRenderFns__$9 },
+    __vue_inject_styles__$9,
+    __vue_script__$8,
+    __vue_scope_id__$9,
+    __vue_is_functional_template__$9,
+    __vue_module_identifier__$9,
+    undefined,
+    undefined
+  );
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+var script$9 = {
+  props: {
+    /**
+     * Adds a gap between the bars and the viewport edge.
+     */
+    sideNavigation: {
+      type: Boolean,
+      default: false
+    },
+    state: {
+      type: String,
+      default: 'open'
+    }
+  },
+  data () {
+    return {
+      theState: this.state,
+      theSideNavigation: this.sideNavigation
+    }
+  },
+  computed: {
+    cls () {
+      return {
+        'menu-bars': true,
+        'side-navigation': this.theSideNavigation,
+        [`state-${ this.theState }`]: true
+      }
+    },
+  },
+  methods: {
+    setState (s) {
+      return this.theState = s
+    },
+    setSideNavigation (s) {
+      return this.theSideNavigation = s
+    }
+  }
+};
+
+/* script */
+const __vue_script__$9 = script$9;
+/* template */
+var __vue_render__$a = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c("div", { ref: "bars", class: _vm.cls }, [
+    _c("div"),
+    _vm._v(" "),
+    _c("div")
+  ])
+};
+var __vue_staticRenderFns__$a = [];
+__vue_render__$a._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$a = undefined;
+  /* scoped */
+  const __vue_scope_id__$a = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$a = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$a = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var menuBars = normalizeComponent_1(
+    { render: __vue_render__$a, staticRenderFns: __vue_staticRenderFns__$a },
+    __vue_inject_styles__$a,
+    __vue_script__$9,
+    __vue_scope_id__$a,
+    __vue_is_functional_template__$a,
+    __vue_module_identifier__$a,
+    undefined,
+    undefined
+  );
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/**
+ * @typeof {Object} Item
+ * @property {String} name - Name of the item
+ * @property {String} to - Link
+ * @property {String} icon - Icon class name
+ * @property {Item[]} children - Array of items
+ */
+
+var script$a = {
+  name: 'MenuItem',
+  props: {
+    index: {
+      type: String,
+      required: true
+    },
+    /**
+     * The item
+     * @type Item
+     */
+    item: {
+      type: Object,
+      required: true
+    }
+  },
+  computed: {
+    hasChildren () {
+      return this.item.children && this.item.children.length > 0
+    },
+    menuItemProps () {
+      const props = {};
+      if (this.hasChildren) {
+        props.index = this.item.name;
+      }
+      return props
+    }
+  }
+};
+
+/* script */
+const __vue_script__$a = script$a;
+/* template */
+var __vue_render__$b = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { staticClass: "menu-item" },
+    [
+      _c(
+        _vm.hasChildren ? "el-submenu" : "el-menu-item",
+        {
+          tag: "component",
+          attrs: { index: _vm.index, "v-bind": _vm.menuItemProps }
+        },
+        [
+          _vm.hasChildren
+            ? [
+                _c("template", { slot: "title" }, [
+                  _vm.item.icon ? _c("i", { class: _vm.item.icon }) : _vm._e(),
+                  _vm._v(" "),
+                  _c("span", [_vm._v(_vm._s(_vm.item.name))])
+                ]),
+                _vm._v(" "),
+                _vm._l(_vm.item.children, function(child, childIndex) {
+                  return _c("pleasure-menu-item", {
+                    key: _vm.item.name + "-" + childIndex,
+                    attrs: { index: _vm.index + "-" + childIndex, item: child }
+                  })
+                })
+              ]
+            : !_vm.item.to
+            ? [_vm._v("\n      " + _vm._s(_vm.item.name) + "\n    ")]
+            : [
+                _c("nuxt-link", { attrs: { to: _vm.item.to } }, [
+                  _vm._v("\n        " + _vm._s(_vm.item.name) + "\n      ")
+                ])
+              ]
+        ],
+        2
+      )
+    ],
+    1
+  )
+};
+var __vue_staticRenderFns__$b = [];
+__vue_render__$b._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$b = undefined;
+  /* scoped */
+  const __vue_scope_id__$b = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$b = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$b = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var menuItem = normalizeComponent_1(
+    { render: __vue_render__$b, staticRenderFns: __vue_staticRenderFns__$b },
+    __vue_inject_styles__$b,
+    __vue_script__$a,
+    __vue_scope_id__$b,
+    __vue_is_functional_template__$b,
+    __vue_module_identifier__$b,
+    undefined,
+    undefined
+  );
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+var script$b = {
+  props: {
+    menuItems: {
+      type: Array,
+      default () {
+        return [
+          {
+            name: 'Hello'
+          },
+          {
+            name: 'My'
+          },
+          {
+            name: 'Friend',
+            children: [
+              {
+                name: 'Martin'
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  data () {
+    return {
+      menuOpened: false
+    }
+  },
+  watch: {
+    $route () {
+      this.closeMenu();
+    }
+  },
+  mounted () {
+    window.addEventListener('keydown', (e) => {
+      if (e.keyCode === 27) {
+        this.closeMenu();
+      }
+    });
+  },
+  methods: {
+    openMenu () {
+      this.$refs.bars.setState('close');
+      this.$refs.bars.setSideNavigation(true);
+      this.$refs.backdrop.open({ full: true });
+      this.$refs.menu.open();
+    },
+    closeMenu () {
+      this.$refs.bars.setState('open');
+      this.$refs.bars.setSideNavigation(false);
+      this.$refs.backdrop.close();
+      this.$refs.menu.close();
+    },
+    toggleMenu () {
+      const open = this.$refs.menu.toggle();
+      if (open) {
+        this.openMenu();
+      } else {
+        this.closeMenu();
+      }
+    }
+  }
+};
+
+/* script */
+const __vue_script__$b = script$b;
+/* template */
+var __vue_render__$c = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { staticClass: "mobile-app" },
+    [
+      _c("pleasure-menu-bars", {
+        ref: "bars",
+        nativeOn: {
+          click: function($event) {
+            return _vm.toggleMenu($event)
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c(
+        "pleasure-menu",
+        {
+          ref: "menu",
+          attrs: { items: _vm.menuItems },
+          on: {
+            opened: function($event) {
+              _vm.menuOpened = true;
+            },
+            closed: function($event) {
+              _vm.menuOpened = false;
+            }
+          }
+        },
+        [_vm._t("menu-head", null, { slot: "head" })],
+        2
+      ),
+      _vm._v(" "),
+      _c("pleasure-headbar", {
+        class: { "pleasure-headbar-opener": true, opened: _vm.menuOpened }
+      }),
+      _vm._v(" "),
+      _c("div", { staticClass: "headbar-background" }),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          class: {
+            "mobile-app-body": true,
+            "pleasure-opener": true,
+            opened: _vm.menuOpened
+          }
+        },
+        [
+          _c(
+            "pleasure-layout-mobile-app",
+            [_vm._t("default", [_c("h1", [_vm._v("Always our Pleasure!")])])],
+            2
+          )
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c("pleasure-backdrop", {
+        ref: "backdrop",
+        nativeOn: {
+          click: function($event) {
+            $event.stopPropagation();
+            return _vm.closeMenu($event)
+          }
+        }
+      })
+    ],
+    1
+  )
+};
+var __vue_staticRenderFns__$c = [];
+__vue_render__$c._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$c = undefined;
+  /* scoped */
+  const __vue_scope_id__$c = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$c = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$c = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var _default = normalizeComponent_1(
+    { render: __vue_render__$c, staticRenderFns: __vue_staticRenderFns__$c },
+    __vue_inject_styles__$c,
+    __vue_script__$b,
+    __vue_scope_id__$c,
+    __vue_is_functional_template__$c,
+    __vue_module_identifier__$c,
+    undefined,
+    undefined
+  );
+
+/* script */
+/* template */
+var __vue_render__$d = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { staticClass: "pleasure-layout-mobile-app" },
+    [_vm._t("default")],
+    2
+  )
+};
+var __vue_staticRenderFns__$d = [];
+__vue_render__$d._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$d = undefined;
+  /* scoped */
+  const __vue_scope_id__$d = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$d = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$d = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+
+  
+  var mobileApp = normalizeComponent_1(
+    { render: __vue_render__$d, staticRenderFns: __vue_staticRenderFns__$d },
+    __vue_inject_styles__$d,
+    {},
+    __vue_scope_id__$d,
+    __vue_is_functional_template__$d,
+    __vue_module_identifier__$d,
+    undefined,
+    undefined
+  );
+
+
+
+var ui = /*#__PURE__*/Object.freeze({
+  PleasureBackdrop: backdrop,
+  PleasureFullHeightContainer: fullHeightContainer,
+  PleasureHeadbar: headbar,
+  PleasureLayoutDefault: _default,
+  PleasureMenu: menu,
+  PleasureMenuBars: menuBars,
+  PleasureMenuItem: menuItem,
+  PleasureLayoutMobileApp: mobileApp,
+  PleasureTableEdit: PleasureTableEdit
+});
+
+Vue.use(VueI18n);
 
 /**
  * @module vue-pleasure
@@ -1232,6 +2833,7 @@ const pleasureApiClient$1 = pleasureApiClient$2.PleasureApiClient.instance();
  */
 
 function install (Vue, { app, store, noCoerce = false } = {}) {
+  Vue.prototype.$pleasureApiClient = pleasureApiClient;
   if (!store) {
     Vue.use(Vuex);
     store = new Vuex.Store({
@@ -1245,16 +2847,17 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     store.registerModule('pleasure', PleasureStore);
   }
 
-  /*
-    app.i18n = new VueI18n({
-      locale: store.state.pleasure.locale,
+  /*  const i18n = new VueI18n({
+      locale: store.getters['pleasure/locale'],
       fallbackLocale: 'en',
+      silentTranslationWarn: true,
       messages: {
         'en': require('~/locales/en.json'),
         'es': require('~/locales/es.json')
       }
     })
-  */
+
+    Object.assign(app, { i18n })*/
 
   /*
     app.i18n.path = (link) => {
@@ -1278,44 +2881,47 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     - Provide a nuxt middleware that loads the entities schema
    */
 
-  if (!process.server) {
-    const storageCache = new BrowserStorageCache();
-
-    const sessionChanged = async () => {
-      storageCache.clearAll();
-      await store.dispatch('pleasure/syncEntities');
-    };
-
-    // Vue.$pleasure = pleasureApiClient
-    pleasureApiClient$1
-      .cache(storageCache);
-
-    pleasureApiClient$1
-      .on('logout', sessionChanged);
-
-    pleasureApiClient$1
-      .on('login', sessionChanged);
-  }
-
-  pleasureApiClient$1
+  pleasureApiClient
     .on('login', (user) => {
+      js_cookie.set('accessToken', pleasureApiClient.accessToken);
       store.commit('pleasure/setUser', user);
     });
 
-  pleasureApiClient$1
+  pleasureApiClient
     .on('logout', () => {
+      js_cookie.remove('accessToken');
       store.commit('pleasure/setUser', null);
     });
 
+  if (!process.server) {
+    const storageCache = new BrowserStorageCache();
+
+    const sessionChanged = () => {
+      storageCache.clearAll();
+      store.dispatch('pleasure/clearDropdowns');
+      return store.dispatch('pleasure/syncEntities')
+    };
+
+    // Vue.$pleasure = pleasureApiClient
+    pleasureApiClient
+      .cache(storageCache);
+
+    pleasureApiClient
+      .on('logout', sessionChanged);
+
+    pleasureApiClient
+      .on('login', sessionChanged);
+  }
+
   if (!noCoerce) {
-    console.log(`enabling coerce`);
+    // console.log(`enabling coerce`)
     Vue.mixin(CoercePropsMixin);
   }
 
   Vue.mixin({
-    components: {
+    components: Object.assign({}, ui, {
       pleasure
-    },
+    }),
     filters: {
       lang (text) {
         // return app.i18n(text)
@@ -1328,28 +2934,41 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
         return {
           error (message) {
             $this.$message({
-              message,
+              message: $this.$t(message),
               type: 'error'
             });
           },
-          api: pleasureApiClient$1,
+          api: pleasureApiClient,
           settings: store.getters['pleasure/settings'],
           dropdown: store.getters['pleasure/dropdown'],
           entities: store.getters['pleasure/entities'],
-          user: store.getters['pleasure/user']
+          user: store.getters['pleasure/user'],
+          setHeadbarTitle (title) {
+            bus.$emit('pleasure-headbar', { exec: ['setTitle', title] });
+          }
         }
       }
     }
   });
 
-  pleasureApiClient$1.on('profile-update', user => {
-    console.log(`updating profile`, { user });
+  pleasureApiClient.on('profile-update', user => {
+    // console.log(`updating profile`, { user })
     store.dispatch('pleasure/changeUserProfile', user);
   });
 
-  if (!process.server) {
+  if (process.client) {
     store.dispatch('pleasure/syncEntities');
+
+    // keep store synced
+    pleasureApiClient.on('update', (payload) => {
+      store.dispatch('pleasure/dropdownChanged', payload);
+    });
   }
 }
 
-exports.install = install;
+var pleasureUiVue = {
+  install
+};
+
+exports.default = pleasureUiVue;
+exports.pleasureApiClient = pleasureApiClient;

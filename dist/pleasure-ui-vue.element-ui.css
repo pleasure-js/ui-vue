@@ -162,6 +162,86 @@ Element UI customization for Pleasure
       color: #e7e7e7;
     }
 
+.pleasure input:hover::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:hover::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:hover::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:hover::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:hover::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:hover::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:hover::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:hover::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:hover:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:hover:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:hover:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:hover:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:hover::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:hover::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:hover::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:hover::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:hover::placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:hover::placeholder {
+        color: #434344;
+      }
+
+.pleasure select:hover::placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:hover::placeholder {
+        color: #434344;
+      }
+
 .pleasure input:focus {
       background: rgb(32, 32, 32);
       color: #e7e7e7;
@@ -201,6 +281,166 @@ Element UI customization for Pleasure
       background: rgb(32, 32, 32);
       color: #e7e7e7;
     }
+
+.pleasure input:focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input.el-input__inner--focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner.el-input__inner--focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select.el-input__inner--focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner.el-input__inner--focus::-webkit-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure input.el-input__inner--focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner.el-input__inner--focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure select.el-input__inner--focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner.el-input__inner--focus::-moz-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input.el-input__inner--focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner.el-input__inner--focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select.el-input__inner--focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner.el-input__inner--focus:-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input.el-input__inner--focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner.el-input__inner--focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select:focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure select.el-input__inner--focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner.el-input__inner--focus::-ms-input-placeholder {
+        color: #434344;
+      }
+
+.pleasure input:focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure input.el-input__inner--focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner:focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-input__inner.el-input__inner--focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure select:focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure select.el-input__inner--focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner:focus::placeholder {
+        color: #434344;
+      }
+
+.pleasure .el-textarea__inner.el-input__inner--focus::placeholder {
+        color: #434344;
+      }
 
 .pleasure input::-moz-selection {
       background: #e23533 !important;
@@ -429,6 +669,20 @@ Element UI customization for Pleasure
 .el-popper {
   border: none;
   background: #e23533;
+
+  /*
+  .gray-pale {
+    color: map-get($color, gray-pale)
+  }
+
+  .gray {
+    color: map-get($color, gray)
+  }
+
+  .gray-light {
+    color: map-get($color, gray-light)
+  }
+  */
 }
 
 .el-popper[x-placement^="bottom"] .popper__arrow {
@@ -484,175 +738,163 @@ Element UI customization for Pleasure
     display: none;
   }
 
-/*
-  .gray-pale {
-    color: map-get($color, gray-pale)
+.light {
+  font-weight: 300;
+}
+
+.full-btn {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.full-btn + .full-btn {
+  margin: 1em 0 0 0;
+}
+
+.el-button + .el-button {
+  margin-left: 0;
+}
+
+.el-button {
+  border: none !important;
+}
+
+.el-button.el-button--default {
+    background: #434344;
+    color: #999;
   }
 
-  .gray {
-    color: map-get($color, gray)
-  }
-
-  .gray-light {
-    color: map-get($color, gray-light)
-  }
-  */
-
-.el-popper .light {
-    font-weight: 300;
-  }
-
-.el-popper .full-btn {
-    display: block;
-    position: relative;
-    width: 100%;
-  }
-
-.el-popper .full-btn + .full-btn {
-    margin: 1em 0 0 0;
-  }
-
-.el-popper .el-button {
-    border: none !important;
-  }
-
-.el-popper .el-button.el-button--default {
-      background: #434344;
+.el-button.el-button--default:hover {
+      background: rgb(76, 76, 77);
       color: #999;
     }
 
-.el-popper .el-button.el-button--default:hover {
-        background: rgb(76, 76, 77);
-        color: #999;
-      }
+.el-button.el-button--default:focus {
+      background: rgb(76, 76, 77);
+      color: #999;
+    }
 
-.el-popper .el-button.el-button--default:focus {
-        background: rgb(76, 76, 77);
-        color: #999;
-      }
+.el-button.el-button--primary {
+    background: #e23533;
+    color: #242424;
+  }
 
-.el-popper .el-button.el-button--primary {
-      background: #e23533;
+.el-button.el-button--primary:hover {
+      background: rgb(229, 73, 71);
       color: #242424;
     }
 
-.el-popper .el-button.el-button--primary:hover {
-        background: rgb(229, 73, 71);
-        color: #242424;
-      }
+.el-button.el-button--primary:focus {
+      background: rgb(229, 73, 71);
+      color: #242424;
+    }
 
-.el-popper .el-button.el-button--primary:focus {
-        background: rgb(229, 73, 71);
-        color: #242424;
-      }
+.el-message-box {
+  border: none;
+  background: #242424;
+}
 
-.el-popper .el-message-box {
-    border: none;
-    background: #242424;
+.el-message-box .el-button.el-button--default {
+    background: #434344;
+    color: #999;
   }
 
-.el-popper .el-message-box .el-button.el-button--default {
-      background: #434344;
+.el-message-box .el-message-box__header {
+    background: transparent;
+  }
+
+.el-message-box .el-message-box__header .el-message-box__title {
       color: #999;
     }
 
-.el-popper .el-message-box .el-message-box__header {
-      background: transparent;
+.el-message-box .el-button.el-button--primary {
+      background: #e23533;
+      color: #e23533;
     }
 
-.el-popper .el-message-box .el-message-box__header .el-message-box__title {
-        color: #999;
+.el-message-box .el-button:focus.el-button--primary {
+        background: undefined;
+        color: undefined;
       }
 
-.el-popper .el-message-box .el-button.el-button--primary {
-        background: #e23533;
-        color: #e23533;
-      }
-
-.el-popper .el-button[disabled] {
-      background: #999 !important;
-      color: #666 !important;
-    }
-
-.el-popper .el-icon-close {
-    color: #e23533 !important;
+.el-button[disabled] {
+    background: #999 !important;
+    color: #666 !important;
   }
 
-.el-popper .add-btn {
+.el-icon-close {
+  color: #e23533 !important;
+}
+
+.add-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  font-size: 1em;
+  padding: 12px;
+  box-shadow: undefined;
+  z-index: 1000;
+  background: undefined !important;
+  color: undefined !important;
+  border: none;
+  transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.delete-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  font-size: 1em;
+  padding: 12px;
+  box-shadow: undefined;
+  z-index: 1000;
+  background: undefined !important;
+  color: undefined !important;
+  border: none;
+  transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.add-btn:hover, .delete-btn:hover {
+    transform: scale(1.2)
+  }
+
+.add-btn.abs, .delete-btn.abs {
     position: absolute;
-    bottom: 30px;
-    right: 30px;
-    font-size: 1em;
-    padding: 12px;
-    box-shadow: undefined;
-    z-index: 1000;
-    background: undefined !important;
-    color: undefined !important;
-    border: none;
-    -webkit-transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-.el-popper .delete-btn {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    font-size: 1em;
-    padding: 12px;
-    box-shadow: undefined;
-    z-index: 1000;
-    background: undefined !important;
-    color: undefined !important;
-    border: none;
-    -webkit-transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+html.client-app .add-btn, html.client-app .delete-btn {
+    bottom: calc(30px + constant(safe-area-inset-bottom) + constant(safe-area-inset-top));
+    bottom: calc(30px + env(safe-area-inset-bottom) + env(safe-area-inset-top));
   }
 
-.el-popper .add-btn:hover, .el-popper .delete-btn:hover {
-      -webkit-transform: scale(1.2);
-              transform: scale(1.2)
-    }
+.delete-btn {
+  left: 80px;
+  background: undefined;
+  color: undefined;
+}
 
-.el-popper .add-btn.abs, .el-popper .delete-btn.abs {
-      position: absolute;
-    }
+.el-notification {
+  margin-top: 64px;
+  border: none;
+  background: #242424;
+}
 
-html.client-app .el-popper .add-btn, html.client-app .el-popper .delete-btn {
-      bottom: calc(30px + constant(safe-area-inset-bottom) + constant(safe-area-inset-top));
-      bottom: calc(30px + env(safe-area-inset-bottom) + env(safe-area-inset-top));
-    }
-
-.el-popper .delete-btn {
-    left: 80px;
-    background: undefined;
+.el-notification .el-notification__title {
     color: undefined;
   }
 
-.el-popper .el-notification {
-    margin-top: 64px;
-    border: none;
-    background: #242424;
+.el-table__empty-text {
+  margin-top: undefined;
+}
+
+.el-form {
+  width: 100%;
+}
+
+.el-form-item__content .el-input__prefix {
+    max-height: 40px;
   }
-
-.el-popper .el-notification .el-notification__title {
-      color: undefined;
-    }
-
-.el-popper .el-table__empty-text {
-    margin-top: undefined;
-  }
-
-.el-popper .el-form {
-    width: 100%;
-  }
-
-.el-popper .el-form-item__content .el-input__prefix {
-      max-height: 40px;
-    }
 
 .pleasure-select-container .pleasure-select {
     display: block;
