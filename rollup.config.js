@@ -13,7 +13,9 @@ const postCssCalc = require('postcss-calc')
 const postCssPresetEnv = require('postcss-preset-env')
 const Dot = require('dot-object')
 const merge = require('deepmerge')
-const { get, kebabCase, mapKeys } = require('lodash')
+const { kebabCase, mapKeys } = require('lodash')
+const PostCssExtract = require('pleasure-rollup-postcss-extract')
+
 
 const banner = `/*!
  * ${name} v${version}
@@ -95,7 +97,7 @@ module.exports = [
         banner
       }
     ],
-    plugins
+    plugins: [PostCssExtract({ fileName: 'pleasure-ui-vue.pcss' })].concat(vuePleasureCss)
   },
   {
     input: 'src/element-ui/index.js',
@@ -123,7 +125,7 @@ module.exports = [
         banner
       }
     ],
-    plugins
+    plugins: [PostCssExtract({ fileName: 'pleasure-ui-vue-element.pcss' })].concat(vuePleasureElementCss)
   },
   {
     input: 'src/pleasure-ui-vue.js',
