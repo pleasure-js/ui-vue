@@ -28,6 +28,7 @@ const pcssVars = mapKeys(dot.dot(require('./postcss.variables.js')), (v, k) => k
 const getPlugins = ({ exportCss = false, minified = false } = {}) => {
   const plugs = []
   plugs.push(commonjs())
+  plugs.push(nodeResolve({ only: ['js-cookie', 'cookieparser'] }))
 
   plugs.push(postCss({
       extract: exportCss,
