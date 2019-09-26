@@ -335,7 +335,7 @@
             await this.$pleasure.api.login(this.values)
           } else {
             // other operations
-            this.emit('result', await this.performSubmit())
+            this.$emit('result', await this.performSubmit())
           }
         } catch (err) {
           this.$pleasure.error(err.message)
