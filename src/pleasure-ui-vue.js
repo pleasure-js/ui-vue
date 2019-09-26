@@ -1,19 +1,27 @@
 import pleasure from './pleasure.vue'
-import { PleasureApiClient } from 'pleasure-api-client'
 import * as PleasureStore from './lib/pleasure-store.js'
 import { BrowserStorageCache } from './lib/browser-storage-cache'
 import CoercePropsMixin from 'vue-coerce-props'
+import VueI18n from 'vue-i18n'
 import Vuex from 'vuex'
+import Vue from 'vue'
+import Cookies from 'js-cookie'
 import './pleasure.pcss'
+import * as ui from './ui/index.js'
+import { bus } from './lib/bus.js'
+import pleasureApiClient from './lib/client.js'
 
-const pleasureApiClient = PleasureApiClient.instance()
+export { pleasureApiClient }
+
+Vue.use(VueI18n)
 
 /**
  * @module vue-pleasure
  * @desc Implements a set of tools for {@link https://vuejs.org/ Vue.js} to use along the {@link pleasure/api The Pleasure Api}
  */
 
-export function install (Vue, { app, store, noCoerce = false } = {}) {
+function install (Vue, { app, store, noCoerce = false } = {}) {
+  Vue.prototype.$pleasureApiClient = pleasureApiClient
   if (!store) {
     Vue.use(Vuex)
     store = new Vuex.Store({
@@ -27,16 +35,17 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     store.registerModule('pleasure', PleasureStore)
   }
 
-  /*
-    app.i18n = new VueI18n({
-      locale: store.state.pleasure.locale,
+  /*  const i18n = new VueI18n({
+      locale: store.getters['pleasure/locale'],
       fallbackLocale: 'en',
+      silentTranslationWarn: true,
       messages: {
         'en': require('~/locales/en.json'),
         'es': require('~/locales/es.json')
       }
     })
-  */
+
+    Object.assign(app, { i18n })*/
 
   /*
     app.i18n.path = (link) => {
@@ -60,12 +69,25 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
     - Provide a nuxt middleware that loads the entities schema
    */
 
+  pleasureApiClient
+    .on('login', (user) => {
+      Cookies.set('accessToken', pleasureApiClient.accessToken)
+      store.commit('pleasure/setUser', user)
+    })
+
+  pleasureApiClient
+    .on('logout', () => {
+      Cookies.remove('accessToken')
+      store.commit('pleasure/setUser', null)
+    })
+
   if (!process.server) {
     const storageCache = new BrowserStorageCache()
 
-    const sessionChanged = async () => {
+    const sessionChanged = () => {
       storageCache.clearAll()
-      await store.dispatch('pleasure/syncEntities')
+      store.dispatch('pleasure/clearDropdowns')
+      return store.dispatch('pleasure/syncEntities')
     }
 
     // Vue.$pleasure = pleasureApiClient
@@ -79,25 +101,15 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
       .on('login', sessionChanged)
   }
 
-  pleasureApiClient
-    .on('login', (user) => {
-      store.commit('pleasure/setUser', user)
-    })
-
-  pleasureApiClient
-    .on('logout', () => {
-      store.commit('pleasure/setUser', null)
-    })
-
   if (!noCoerce) {
-    console.log(`enabling coerce`)
+    // console.log(`enabling coerce`)
     Vue.mixin(CoercePropsMixin)
   }
 
   Vue.mixin({
-    components: {
+    components: Object.assign({}, ui, {
       pleasure
-    },
+    }),
     filters: {
       lang (text) {
         // return app.i18n(text)
@@ -110,7 +122,7 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
         return {
           error (message) {
             $this.$message({
-              message,
+              message: $this.$t(message),
               type: 'error'
             })
           },
@@ -118,18 +130,30 @@ export function install (Vue, { app, store, noCoerce = false } = {}) {
           settings: store.getters['pleasure/settings'],
           dropdown: store.getters['pleasure/dropdown'],
           entities: store.getters['pleasure/entities'],
-          user: store.getters['pleasure/user']
+          user: store.getters['pleasure/user'],
+          setHeadbarTitle (title) {
+            bus.$emit('pleasure-headbar', { exec: ['setTitle', title] })
+          }
         }
       }
     }
   })
 
   pleasureApiClient.on('profile-update', user => {
-    console.log(`updating profile`, { user })
+    // console.log(`updating profile`, { user })
     store.dispatch('pleasure/changeUserProfile', user)
   })
 
-  if (!process.server) {
+  if (process.client) {
     store.dispatch('pleasure/syncEntities')
+
+    // keep store synced
+    pleasureApiClient.on('update', (payload) => {
+      store.dispatch('pleasure/dropdownChanged', payload)
+    })
   }
+}
+
+export default {
+  install
 }
