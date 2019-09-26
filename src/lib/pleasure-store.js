@@ -1,22 +1,29 @@
-import { instance } from 'pleasure-api-client'
+import pleasureApiClient from './client.js'
 import Vue from 'vue'
+import Cookies from 'cookies'
 import objectHash from 'object-hash'
 import defaults from 'lodash/defaults'
 import forOwn from 'lodash/forOwn'
+import find from 'lodash/find'
+import get from 'lodash/get'
+import merge from 'deepmerge'
 
-const pleasureApiClient = instance()
+pleasureApiClient.debug(true)
 
+export const strict = true
 export const namespaced = true
 
-export const state = {
-  entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
-  entitiesSchema: {},
-  dropdown: {},
-  settings: process.env.$pleasure.settings,
-  dropdownLoading: [],
-  user: null,
-  locales: ['en', 'es'],
-  locale: 'en'
+export const state = () => {
+  return {
+    entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
+    entitiesSchema: {},
+    dropdown: {},
+    settings: process.env.$pleasure.settings || {},
+    dropdownLoading: [],
+    user: null,
+    locales: ['en', 'es'],
+    locale: 'en'
+  }
 }
 
 export const mutations = {
@@ -29,7 +36,8 @@ export const mutations = {
     }
   },
   removeDropdownLoading (state, id) {
-    state.dropdownLoading.splice(state.dropdownLoading.indexOf(id), 1)
+    const newState = state.dropdownLoading.filter(needle => needle !== id)
+    Vue.set(state, 'dropdownLoading', newState)
   },
   setUser (state, user) {
     Vue.set(state, 'user', user)
@@ -39,15 +47,30 @@ export const mutations = {
   },
   setEntitiesSchema (state, entitiesSchema) {
     forOwn(entitiesSchema, (entity) => {
-      forOwn(entity, (field) => {
-        defaults(field, { $pleasure: {} })
+      forOwn(entity, (field, fieldName) => {
+        if (!/^\$/.test(fieldName)) {
+          defaults(field, { $pleasure: {} })
+        }
       })
     })
     Vue.set(state, 'entitiesSchema', entitiesSchema)
   },
   setDropdown (state, { dropdownName, results }) {
-    console.log(`setting dropdown`, { dropdownName, results })
     Vue.set(state.dropdown, dropdownName, results)
+  },
+  updateDropdown (state, { entity, modified, id }) {
+    const set = get(state, `dropdown.${ entity }`)
+    const localEntry = find(set, { _id: id })
+
+    if (!localEntry) {
+      return
+    }
+
+    const final = merge(localEntry, modified)
+    Vue.set(set, set.indexOf(localEntry), final)
+  },
+  clearDropdowns (state) {
+    Vue.set(state, 'dropdown', {})
   }
 }
 
@@ -68,25 +91,49 @@ export const actions = {
   async locale ({ commit }, locale) {
     commit('setlocale', locale)
   },
-  async loadDropdown ({ commit, state }, { entity, listOptions, name, force = false } = {}) {
+  async dropdownChanged ({ commit }, payload = {}) {
+    return commit('updateDropdown', payload)
+  },
+  async loadDropdown ({ commit, state }, { entity, listOptions, name, force = false, req } = {}) {
+    if (req) {
+      const accessToken = new Cookies(req).get('accessToken')
+      pleasureApiClient.setCredentials({ accessToken })
+    }
     const dropdownName = entity || name
     const id = objectHash({ entity, listOptions, dropdownName })
 
     if (state.dropdownLoading.indexOf(id) >= 0) {
+      // console.log(`already loading id ${ id }`)
       return
     }
 
-    console.log(`load dropdown`)
+    // console.log(`load dropdown`)
 
     if (!force && state.dropdown[dropdownName]) {
+      // console.log(`dropdown ${ dropdownName } already existis`, state.dropdown[dropdownName])
       return state.dropdown[dropdownName]
     }
 
     commit('setDropdownLoading', id)
-    const results = await pleasureApiClient.list(entity, listOptions)
+    let results
+    let err
+    try {
+      results = await pleasureApiClient.list(entity, listOptions)
+    } catch (e) {
+      err = e
+    }
+
     commit('setDropdown', { dropdownName, results })
     commit('removeDropdownLoading', id)
+
+    if (err) {
+      throw err
+    }
+
     return results
+  },
+  clearDropdowns ({ commit, state }, { req } = {}) {
+    return commit('clearDropdowns')
   },
   logout () {
     return pleasureApiClient.logout()
@@ -103,7 +150,7 @@ export const actions = {
       entities = await pleasureApiClient.getEntities()
     } catch (err) {
       commit('setEntitiesSync', 0)
-      console.log(`Could not retrieve entities`, err.message)
+      // console.log(`Could not retrieve entities`, err.message)
       return
     }
 
@@ -124,5 +171,8 @@ export const getters = {
   },
   user (state) {
     return state.user
+  },
+  locale (state) {
+    return state.locale
   }
 }
