@@ -56,7 +56,7 @@
       },
       componentType () {
         const componentType = get(this.field, '$pleasure.component', get(this.field, 'component'))
-        // Arrays -> 'select'
+
         if (
           !componentType &&
           ((

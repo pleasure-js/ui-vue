@@ -1,38 +1,30 @@
 <template>
   <div class="tests">
-    <profile></profile>
+    <profile />
     <pleasure
       v-if="!$pleasure.user"
+      key="login"
       :cancelable="false"
       action-label="Login"
       :custom-schema="loginSchema"
       :login="true"
       :value="login"
-      key="login"
-    ></pleasure>
+    />
     <pleasure
       v-if="$pleasure.user"
+      key="create"
       method="update"
       entity="user"
       action-label="Update"
       :cancelable="false"
       :entry-id="$pleasure.user._id"
-      key="create"
-    ></pleasure>
+    />
   </div>
 </template>
 <script>
   import Profile from '~/components/profile.vue'
 
   export default {
-    mounted () {
-      // console.log(this.$pleasure.api.product.on('create'))
-      // window.$pleasureApi = this.$pleasure.api
-      // console.log(this.$pleasure.api)
-      /*this.$pleasure.api.product.on('create', function (product) {
-        // console.log({ product })
-      })*/
-    },
     components: {
       Profile
     },

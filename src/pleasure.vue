@@ -27,7 +27,7 @@
           />
         </pleasure-field-container>
       </template>
-      <slot/>
+      <slot />
       <pleasure-form-controls
         v-if="loaded && withControls"
         :v-bind="$props"
@@ -41,6 +41,11 @@
     </pleasure-form>
   </div>
 </template>
+<style lang="postcss">
+  .pleasure-field-container + .pleasure-field-container {
+    margin-top: var(--pleasure-input-gap-between);
+  }
+</style>
 <script>
   import forOwn from 'lodash/forOwn'
   import kebabCase from 'lodash/kebabCase'
@@ -49,6 +54,7 @@
   import PleasureFieldContainer from './pleasure-field-container.vue'
   import PleasureField from './pleasure-field.vue'
   import PleasureFormControls from './pleasure-form-controls.vue'
+  import PleasureTableEdit from './ui/table-edit.vue'
   import defaults from 'lodash/defaults'
   import get from 'lodash/get'
   import merge from 'deepmerge'
@@ -106,7 +112,8 @@
       PleasureForm,
       PleasureFieldContainer,
       PleasureField,
-      PleasureFormControls
+      PleasureFormControls,
+      PleasureTableEdit
     },
     props: {
       omit: {
@@ -231,8 +238,8 @@
         const schema = []
 
         forOwn(entitySchema, (field, fieldName) => {
-          // skip if it's virtual or starts with an underscore
-          if (/^_/.test(fieldName) || get(field, 'options.options.virtual') || this.omit.indexOf(fieldName) >= 0) {
+          // skip if it's virtual or starts with an underscore or dollar sign
+          if (/^[_$]/.test(fieldName) || get(field, 'options.options.virtual') || this.omit.indexOf(fieldName) >= 0) {
             // console.log(`skipping`, { fieldName })
             return
           }

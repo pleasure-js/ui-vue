@@ -1,4 +1,5 @@
-const { name, version, author, peerDependencies: external, dependencies: only } = require('./package.json')
+const { name, version, author } = require('./package.json')
+const nodeResolve = require('rollup-plugin-node-resolve')
 const minify = require('rollup-plugin-babel-minify')
 const vue = require('rollup-plugin-vue')
 const postCss = require('rollup-plugin-postcss')
@@ -18,8 +19,8 @@ const PostCssExtract = require('pleasure-rollup-postcss-extract')
 
 
 const banner = `/*!
- * ${name} v${version}
- * (c) 2018-${new Date().getFullYear()} ${author}
+ * ${ name } v${ version }
+ * (c) 2018-${ new Date().getFullYear() } ${ author }
  * Released under the MIT License.
  */`
 
@@ -81,7 +82,7 @@ module.exports = [
         banner
       }
     ],
-    plugins: vuePleasureCss
+    plugins
   },
   {
     input: 'src/pleasure-ui-vue.js',
@@ -109,7 +110,7 @@ module.exports = [
         banner
       }
     ],
-    plugins: vuePleasureElementCss
+    plugins
   },
   {
     input: 'src/element-ui/index.js',

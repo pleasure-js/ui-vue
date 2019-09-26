@@ -1,10 +1,10 @@
 <template>
   <div class="tests">
     <pleasure
+      key="create-user"
       entity="user"
       :omit="['level']"
-      key="create-user"
-    ></pleasure>
+    />
   </div>
 </template>
 <script>
@@ -12,8 +12,8 @@
     data () {
       return {
         login: {
-          email: `acsosa2@gmail.com`,
-          password: `anita123`
+          email: ``,
+          password: ``
         },
         loginSchema: {
           email: {

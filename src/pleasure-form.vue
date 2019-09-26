@@ -1,9 +1,9 @@
 <template>
   <div class="pleasure-form">
     <component
-      @input="$emit('input', $event)"
       :is="formComponent"
       :key="formId"
+      @input="$emit('input', $event)"
     >
       <slot />
     </component>

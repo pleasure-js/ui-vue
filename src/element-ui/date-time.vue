@@ -1,8 +1,10 @@
 <template>
   <div class="pleasure-date-time">
-    <pleasure :custom-schema="schema" :with-controls="false" @input="$emit('input', $event)">
-
-    </pleasure>
+    <pleasure
+      :custom-schema="schema"
+      :with-controls="false"
+      @input="$emit('input', $event)"
+    />
   </div>
 </template>
 <script>

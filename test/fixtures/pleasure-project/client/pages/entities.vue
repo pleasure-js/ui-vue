@@ -6,14 +6,12 @@
       :with-controls="false"
       i18n-scope="entities"
       @input="entity = $event.entity"
-    >
-    </pleasure>
+    />
     <pleasure
       v-if="entity"
       :key="`edit-${entity}`"
       :entity="entity"
-    >
-    </pleasure>
+    />
   </div>
 </template>
 <script>
