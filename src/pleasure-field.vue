@@ -10,6 +10,7 @@
 </template>
 <script>
   import get from 'lodash/get'
+  import merge from 'deepmerge'
   import kebabCase from 'lodash/kebabCase'
 
   export default {
@@ -51,8 +52,7 @@
           })
         }
 
-        // console.log(`default props for ${ this.componentType }`, this.defaultProps[this.fieldComponent])
-        return Object.assign({}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get(this.field, '$pleasure', {}))
+        return merge.all([{}, this.$props, this.defaultProps[this.fieldComponent] || {}, childProps, get(this.field, '$pleasure', {})])
       },
       componentType () {
         const componentType = get(this.field, '$pleasure.component', get(this.field, 'component'))
@@ -71,7 +71,6 @@
         return kebabCase(componentType || 'input')
       },
       fieldComponent () {
-        console.log(`componentType`, this.componentType)
         switch (this.componentType) {
           case 'array':
             return 'pleasure-select'
