@@ -9,15 +9,16 @@ import startCase from 'lodash/startCase';
 import get$1 from 'lodash/get';
 import merge from 'deepmerge';
 import uniq from 'lodash/uniq';
+import debounce from 'lodash/debounce';
+import isEqual from 'lodash/isEqual';
 import defaults from 'lodash/defaults';
 import { PleasureApiClient } from 'pleasure-api-client';
 import Vue from 'vue';
-import Cookies from 'cookies';
 import objectHash from 'object-hash';
 import find from 'lodash/find';
 import CoercePropsMixin from 'vue-coerce-props';
-import VueI18n from 'vue-i18n';
 import Vuex from 'vuex';
+import mapKeys from 'lodash/mapKeys';
 
 //
 //
@@ -53,90 +54,83 @@ var script = {
   }
 };
 
-function normalizeComponent(template, style, script, scopeId, isFunctionalTemplate, moduleIdentifier
-/* server only */
-, shadowMode, createInjector, createInjectorSSR, createInjectorShadow) {
-  if (typeof shadowMode !== 'boolean') {
-    createInjectorSSR = createInjector;
-    createInjector = shadowMode;
-    shadowMode = false;
-  } // Vue.extend constructor export interop.
-
-
-  var options = typeof script === 'function' ? script.options : script; // render functions
-
-  if (template && template.render) {
-    options.render = template.render;
-    options.staticRenderFns = template.staticRenderFns;
-    options._compiled = true; // functional template
-
-    if (isFunctionalTemplate) {
-      options.functional = true;
+function normalizeComponent(template, style, script, scopeId, isFunctionalTemplate, moduleIdentifier /* server only */, shadowMode, createInjector, createInjectorSSR, createInjectorShadow) {
+    if (typeof shadowMode !== 'boolean') {
+        createInjectorSSR = createInjector;
+        createInjector = shadowMode;
+        shadowMode = false;
     }
-  } // scopedId
-
-
-  if (scopeId) {
-    options._scopeId = scopeId;
-  }
-
-  var hook;
-
-  if (moduleIdentifier) {
-    // server build
-    hook = function hook(context) {
-      // 2.3 injection
-      context = context || // cached call
-      this.$vnode && this.$vnode.ssrContext || // stateful
-      this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext; // functional
-      // 2.2 with runInNewContext: true
-
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__;
-      } // inject component styles
-
-
-      if (style) {
-        style.call(this, createInjectorSSR(context));
-      } // register component module identifier for async chunk inference
-
-
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier);
-      }
-    }; // used by ssr in case component is cached and beforeCreate
-    // never gets called
-
-
-    options._ssrRegister = hook;
-  } else if (style) {
-    hook = shadowMode ? function () {
-      style.call(this, createInjectorShadow(this.$root.$options.shadowRoot));
-    } : function (context) {
-      style.call(this, createInjector(context));
-    };
-  }
-
-  if (hook) {
-    if (options.functional) {
-      // register for functional component in vue file
-      var originalRender = options.render;
-
-      options.render = function renderWithStyleInjection(h, context) {
-        hook.call(context);
-        return originalRender(h, context);
-      };
-    } else {
-      // inject component registration as beforeCreate hook
-      var existing = options.beforeCreate;
-      options.beforeCreate = existing ? [].concat(existing, hook) : [hook];
+    // Vue.extend constructor export interop.
+    const options = typeof script === 'function' ? script.options : script;
+    // render functions
+    if (template && template.render) {
+        options.render = template.render;
+        options.staticRenderFns = template.staticRenderFns;
+        options._compiled = true;
+        // functional template
+        if (isFunctionalTemplate) {
+            options.functional = true;
+        }
     }
-  }
-
-  return script;
+    // scopedId
+    if (scopeId) {
+        options._scopeId = scopeId;
+    }
+    let hook;
+    if (moduleIdentifier) {
+        // server build
+        hook = function (context) {
+            // 2.3 injection
+            context =
+                context || // cached call
+                    (this.$vnode && this.$vnode.ssrContext) || // stateful
+                    (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext); // functional
+            // 2.2 with runInNewContext: true
+            if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+                context = __VUE_SSR_CONTEXT__;
+            }
+            // inject component styles
+            if (style) {
+                style.call(this, createInjectorSSR(context));
+            }
+            // register component module identifier for async chunk inference
+            if (context && context._registeredComponents) {
+                context._registeredComponents.add(moduleIdentifier);
+            }
+        };
+        // used by ssr in case component is cached and beforeCreate
+        // never gets called
+        options._ssrRegister = hook;
+    }
+    else if (style) {
+        hook = shadowMode
+            ? function (context) {
+                style.call(this, createInjectorShadow(context, this.$root.$options.shadowRoot));
+            }
+            : function (context) {
+                style.call(this, createInjector(context));
+            };
+    }
+    if (hook) {
+        if (options.functional) {
+            // register for functional component in vue file
+            const originalRender = options.render;
+            options.render = function renderWithStyleInjection(h, context) {
+                hook.call(context);
+                return originalRender(h, context);
+            };
+        }
+        else {
+            // inject component registration as beforeCreate hook
+            const existing = options.beforeCreate;
+            options.beforeCreate = existing ? [].concat(existing, hook) : [hook];
+        }
+    }
+    return script;
 }
 
-var normalizeComponent_1 = normalizeComponent;
+const isOldIE = typeof navigator !== 'undefined' &&
+    /msie [6-9]\\b/.test(navigator.userAgent.toLowerCase());
 
 /* script */
 const __vue_script__ = script;
@@ -183,15 +177,19 @@ __vue_render__._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var PleasureForm = normalizeComponent_1(
+  var PleasureForm = normalizeComponent(
     { render: __vue_render__, staticRenderFns: __vue_staticRenderFns__ },
     __vue_inject_styles__,
     __vue_script__,
     __vue_scope_id__,
     __vue_is_functional_template__,
     __vue_module_identifier__,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -289,15 +287,19 @@ __vue_render__$1._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var PleasureFieldContainer = normalizeComponent_1(
+  var PleasureFieldContainer = normalizeComponent(
     { render: __vue_render__$1, staticRenderFns: __vue_staticRenderFns__$1 },
     __vue_inject_styles__$1,
     __vue_script__$1,
     __vue_scope_id__$1,
     __vue_is_functional_template__$1,
     __vue_module_identifier__$1,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -433,15 +435,19 @@ __vue_render__$2._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var PleasureField = normalizeComponent_1(
+  var PleasureField = normalizeComponent(
     { render: __vue_render__$2, staticRenderFns: __vue_staticRenderFns__$2 },
     __vue_inject_styles__$2,
     __vue_script__$2,
     __vue_scope_id__$2,
     __vue_is_functional_template__$2,
     __vue_module_identifier__$2,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -592,15 +598,425 @@ __vue_render__$3._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var PleasureFormControls = normalizeComponent_1(
+  var PleasureFormControls = normalizeComponent(
     { render: __vue_render__$3, staticRenderFns: __vue_staticRenderFns__$3 },
     __vue_inject_styles__$3,
     __vue_script__$3,
     __vue_scope_id__$3,
     __vue_is_functional_template__$3,
     __vue_module_identifier__$3,
+    false,
+    undefined,
+    undefined,
+    undefined
+  );
+
+var PTE = {
+  props: {
+    /**
+     * @vue-prop {String} entity - Entity name
+     */
+    entity: {
+      type: String,
+      required: true
+    },
+  },
+  methods: {
+    /**
+     * @function getFilter
+     * Returns the filters for element-ui table header from found enumValues
+     * @param {String} fieldName - The field name
+     * @return {[{ text, value }]|void}
+     **/
+    getFilter (fieldName) {
+      const field = this.$pleasure.entities[this.entity][fieldName];
+      if (!this.isEnum(fieldName)) {
+        return
+      }
+
+      return field.enumValues.map(value => {
+        const i18nLabel = `entities.enum.${ value }`;
+        const i18nTranslation = this.$t(i18nLabel);
+        // console.log({ i18nLabel, i18nTranslation })
+        return {
+          label: i18nLabel !== i18nTranslation ? i18nTranslation : value,
+          value
+        }
+      })
+    },
+    isEnum (fieldName) {
+      const field = this.$pleasure.entities[this.entity][fieldName];
+      return field.enumValues && field.enumValues.length > 0
+    },
+    getSortIcon (sort) {
+      return sort === null ? 'el-icon-d-caret' : (sort === -1 ? 'el-icon-caret-bottom' : 'el-icon-caret-top')
+    },
+    guessLabel (field, root = `entities.label`) {
+      const requestedLabel = `${ root }.${ field }`;
+      const foundLabel = this.$t(requestedLabel);
+      return requestedLabel !== foundLabel ? foundLabel : startCase(field)
+    }
+  }
+};
+
+class DropdownManager {
+  constructor ({ entity, store, dropdownName, prefix = 'pleasure' }) {
+    this._entity = entity;
+    this._dropdownName = dropdownName;
+    this._store = store;
+    this._find = {};
+    // this._sort = undefined
+    this._search = null;
+    this._skip = null;
+    this._limit = null;
+    this._synced = true;
+    this._prefix = prefix;
+    this.defaultLimit = process.env.PLEASURE_API_COLLECTION_LIST_LIMIT;
+
+    console.log(`defaultLimit`, this.defaultLimit);
+  }
+
+  static debug (v) {
+  }
+
+  get prefix () {
+    if (!this._prefix) {
+      return ''
+    }
+    return `${ this._prefix }/`
+  }
+
+  get entity () {
+    return this._entity
+  }
+
+  get dropdownName () {
+    return this._dropdownName || this.entity
+  }
+
+  get store () {
+    return this._store
+  }
+
+  get find () {
+    return this._find
+  }
+
+  get sort () {
+    return this._sort !== undefined ? this._sort : get$1(this.meta, 'sort')
+  }
+
+  set sort (sort) {
+    if (sort !== this.sort) {
+      this._synced = false;
+    }
+    return this._sort = sort
+  }
+
+  set find (find) {
+    if (!isEqual(find, this._find)) {
+      this._synced = false;
+    }
+    // this._find = JSON.stringify(find)
+    this._find = find;
+    return this._find
+  }
+
+  get meta () {
+    return this.store.getters[`${ this.prefix }dropdownMeta`][this.dropdownName]
+  }
+
+  get search () {
+    return this._search !== null ? this._search : get$1(this.meta, 'search')
+  }
+
+  set search (search) {
+    if (search !== this.search) {
+      this._synced = false;
+    }
+    return this._search = search
+  }
+
+  get skip () {
+    return this._skip || get$1(this.meta, `skip`, 0)
+  }
+
+  set skip (skip) {
+    if (skip !== this.skip) {
+      this._synced = false;
+    }
+    return this._skip = skip
+  }
+
+  get limit () {
+    return this._limit || get$1(this.meta, `limit`)
+  }
+
+  set limit (limit) {
+    if (limit !== this.limit) {
+      this._synced = false;
+    }
+    return this._limit = limit
+  }
+
+  get page () {
+    return (Math.ceil(this.skip / (this.limit || this.defaultLimit)) || 0) + 1
+  }
+
+  set page (pageNumber) {
+    if (pageNumber < 1) {
+      return
+    }
+    this.skip = (pageNumber - 1) * (this.limit || this.defaultLimit);
+  }
+
+  get data () {
+    console.log(`accessing data from ${ this.prefix }dropdown`, this.store.getters[`${ this.prefix }dropdown`], `for`, this.dropdownName);
+    return this.store.getters[`${ this.prefix }dropdown`][this.dropdownName]
+  }
+
+  sync (force = false) {
+    if (!force && this._synced) {
+      return this.data
+    }
+
+    const { find, entity, limit, skip, search, sort } = this;
+    // console.log({ find })
+    return this.store.dispatch(`${ this.prefix }loadDropdown`, {
+      entity,
+      force: true,
+      listOptions: { find, limit, skip, search, sort }
+    })
+  }
+
+  prev () {
+    this.page--;
+    return this.sync()
+  }
+
+  next () {
+    this.page++;
+    return this.sync()
+  }
+}
+
+//
+
+function filterPropertyHandler () {
+  this.refreshInput();
+}
+
+var script$4 = {
+  mixins: [PTE],
+  data () {
+    return {
+      enumValue: [],
+      filter: null,
+      filterType: null,
+      sort: this.value.sort,
+    }
+  },
+  methods: {
+    filterHandler () {
+      Object.assign(this.manager.find, {
+        [this.fieldName]: {
+          $in: this.enumValue
+        }
+      });
+      console.log(`filter handler`, this.manager.find);
+      this.$emit('refresh-results');
+    },
+    refreshInput () {
+      this.$emit('input', {
+        type: this.filterType,
+        value: this.filter,
+        sort: this.sort
+      });
+      this.$emit('refresh-results');
+    },
+    toggleSort () {
+      if (this.sort === null) {
+        this.sort = 1;
+      } else if (this.sort === 1) {
+        this.sort = -1;
+      } else {
+        this.sort = null;
+      }
+      this.refreshInput();
+    },
+  },
+  props: {
+    fieldName: {
+      type: String,
+      required: true
+    },
+    manager: {
+      type: DropdownManager
+    },
+    value: {
+      required: true,
+      type: Object,
+      default () {
+        return {}
+      }
+    }
+  },
+  watch: {
+    filter: filterPropertyHandler,
+    filterType () {
+      filterPropertyHandler.call(this);
+      this.$nextTick(() => {
+        if (this.$refs['field']) {
+          console.log(`focusing`, this.$refs['field']);
+          this.$refs['field'].focus();
+        }
+      });
+    },
+    sort: filterPropertyHandler
+  }
+};
+
+/* script */
+const __vue_script__$4 = script$4;
+/* template */
+var __vue_render__$4 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "el-row",
+    { staticClass: "table-edit-filter", attrs: { gutter: 10 } },
+    [
+      _c(
+        "el-col",
+        { attrs: { span: 8, gutter: 10 } },
+        [
+          _c("el-button", {
+            staticClass: "plain",
+            attrs: {
+              icon: _vm.getSortIcon(_vm.sort),
+              size: "mini",
+              circle: ""
+            },
+            on: { click: _vm.toggleSort }
+          }),
+          _vm._v("\n    " + _vm._s(_vm.guessLabel(_vm.fieldName)) + "\n  ")
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "el-col",
+        { attrs: { span: 16 } },
+        [
+          _vm.isEnum(_vm.fieldName)
+            ? _c(
+                "el-select",
+                {
+                  attrs: { placeholder: "Select", size: "mini", multiple: "" },
+                  on: { input: _vm.filterHandler },
+                  model: {
+                    value: _vm.enumValue,
+                    callback: function($$v) {
+                      _vm.enumValue = $$v;
+                    },
+                    expression: "enumValue"
+                  }
+                },
+                _vm._l(_vm.getFilter(_vm.fieldName), function(item) {
+                  return _c("el-option", {
+                    attrs: { value: item.value, label: item.label }
+                  })
+                }),
+                1
+              )
+            : _c(
+                "el-input",
+                {
+                  ref: "field",
+                  attrs: {
+                    clearable: true,
+                    disabled: !_vm.filterType,
+                    size: "mini"
+                  },
+                  model: {
+                    value: _vm.filter,
+                    callback: function($$v) {
+                      _vm.filter = $$v;
+                    },
+                    expression: "filter"
+                  }
+                },
+                [
+                  _c(
+                    "el-select",
+                    {
+                      staticStyle: { width: "70px" },
+                      attrs: { slot: "prepend", size: "mini" },
+                      slot: "prepend",
+                      model: {
+                        value: _vm.filterType,
+                        callback: function($$v) {
+                          _vm.filterType = $$v;
+                        },
+                        expression: "filterType"
+                      }
+                    },
+                    [
+                      _c("el-option", { attrs: { label: "--", value: null } }),
+                      _vm._v(" "),
+                      _c("el-option", {
+                        attrs: { label: "Equals", value: "equals" }
+                      }),
+                      _vm._v(" "),
+                      _c("el-option", {
+                        attrs: { label: "Like", value: "like" }
+                      })
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
+        ],
+        1
+      )
+    ],
+    1
+  )
+};
+var __vue_staticRenderFns__$4 = [];
+__vue_render__$4._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$4 = undefined;
+  /* scoped */
+  const __vue_scope_id__$4 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$4 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$4 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+  /* style inject shadow dom */
+  
+
+  
+  var TableEditFilter = normalizeComponent(
+    { render: __vue_render__$4, staticRenderFns: __vue_staticRenderFns__$4 },
+    __vue_inject_styles__$4,
+    __vue_script__$4,
+    __vue_scope_id__$4,
+    __vue_is_functional_template__$4,
+    __vue_module_identifier__$4,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -614,19 +1030,28 @@ const fnStub = {
   }
 };
 
-var script$4 = {
+/**
+ * Lists all entries in an entity and allows the user (according to their permission)
+ * to search, find, sort, download in csv format, etc.
+ */
+
+var script$5 = {
+  components: {
+    TableEditFilter
+  },
+  mixins: [PTE],
   props: {
     customBehavior: {
       type: Boolean,
       default: false
     },
+    waitBeforeSearch: {
+      type: Number,
+      default: 300
+    },
     tableTop: {
       type: Number,
       default: 0
-    },
-    searchSpan: {
-      type: Number,
-      default: 24
     },
     searchBy: Array,
     searchStrict: {
@@ -652,13 +1077,6 @@ var script$4 = {
       type: Boolean,
       default: false
     },
-    /**
-     * @vue-prop {String} entity - Entity name
-     */
-    entity: {
-      type: String,
-      required: true
-    },
     cellClick: fnStub,
     /**
      * @vue-prop {Function|Boolean} rowClick=true - A function to handle the row click. `true` to let pleasure handle
@@ -674,18 +1092,57 @@ var script$4 = {
   },
   data () {
     return {
+      promptAdd: false,
+      eleMeta: {
+        advancedSearchControls: 0,
+        filterControls: 0,
+        sortControls: 0
+      },
+      filterData: {},
+      advancedSearchControls: false,
+      sortControls: false,
+      filterControls: false,
+      filter: {
+        advancedSearchControls: {
+          type: null,
+          value: null
+        },
+        sortControls: {
+          type: null,
+          value: null
+        },
+        filterControls: {
+          type: null,
+          value: null
+        }
+      },
       loadingMore: false,
       sort: null,
       tableScroll: null,
+      manager: null,
       searchResults: null,
       selections: [],
-      search: null
+      search: null,
+      searching: false,
+      /**
+       * @function searchHandler
+       * Handles input search performing
+       **/
+      searchHandler: debounce(() => {
+        this.doSearch(this.search);
+      }, this.waitBeforeSearch)
       // results: (this.dropdowns[this.entity] ? this.dropdowns[this.entity].slice() : [])
     }
   },
   computed: {
+    empty () {
+      if (this.searching) {
+        return `Looking for entries containing "${ this.search }" in ${ this.entity }`
+      }
+      return this.search ? `No entries matching "${ this.search }" found in ${ this.entity }` : `No entries found in ${ this.entity }`
+    },
     indexes () {
-      if (!this.$pleasure.entities[this.entity]) {
+      if (!this.$pleasure.entities[this.entity] || !this.$pleasure.entities[this.entity].$pleasure.index) {
         return []
       }
 
@@ -707,46 +1164,119 @@ var script$4 = {
         top += 40;
       }
 
-      return this.withSearch ? { top } : null
-    },
-    datatable () {
-      if (this.searchResults !== null) {
-        return this.searchResults
+      if (this.filterControls) {
+        top += this.eleMeta.filterControls;
       }
 
-      return this.$pleasure.dropdown[this.entity] || []
+      // console.log({ top })
+
+      return this.withSearch ? { top: `${ top }px` } : null
+    },
+    datatable () {
+      return this.$store.getters['pleasure/dropdown'][this.entity] || []
     },
     safeLookUp () {
       return debounce(this.lookUp.bind(this), 150)
     }
   },
   mounted () {
-    console.log(`entity>>>`, this.$pleasure.entities[this.entity]);
-    /*
-          this.tableScroll = this.$el.querySelector('.el-table__body-wrapper')
-          this.tableScroll.addEventListener('scroll', this.handleScroll)
+    // console.log(`store`, this.$store)
+    this.manager = new DropdownManager({ entity: this.entity, store: this.$store });
 
-          if (!this.defaultSort && !this.customBehavior && this.entity) {
-            // this.reload()
-            /!* this.$store.dispatch('db/dropdown', {
-              model: this.entity,
-              token: getToken()
-            }) *!/
-          }
-    */
+    this.indexes.forEach(index => {
+      this.$set(this.filterData, index, { type: null, value: null, sort: null });
+      this.$set(this.filterData, `$sort`, []);
+    });
+
+    const track = ['advancedSearchControls', 'sortControls', 'filterControls'];
+
+    track.forEach(ele => {
+      // console.log(`turning on ${ ele }`)
+      this[ele] = true;
+    });
+
+    this.$nextTick(() => {
+      track.forEach(ele => {
+        // console.log(`Checking offsetHeight of ${ kebabCase(ele) }`)
+        // console.log(`offsetHeight of ${ kebabCase(ele) } ${ this.$refs[kebabCase(ele)].offsetHeight }`)
+        try {
+          this.eleMeta[ele] = this.$refs[kebabCase(ele)].offsetHeight;
+        } catch (err) {
+          console.log(ele, err);
+        }
+        this[ele] = false;
+      });
+    });
+  },
+  watch: {
+    search (v) {
+      this.searching = !!v;
+    }
   },
   methods: {
-    guessLabel(field) {
-      const requestedLabel = `entities.label.${field}`;
-      const foundLabel = this.$t(requestedLabel);
-      return requestedLabel !== foundLabel ? foundLabel : startCase(field)
+    applyFilter () {
+      return this.syncManager()
+    },
+    toggleSort (fieldName) {
+      const newSort = this.filterData.$sort.filter((item) => {
+          return Object.keys(item)[0] !== fieldName
+        }
+      );
+
+      if (this.filterData[fieldName].sort !== null) {
+        newSort.push({
+          [fieldName]: this.filterData[fieldName].sort
+        });
+      }
+
+      console.log({ newSort });
+      this.$set(this.filterData, '$sort', newSort);
+      console.log(`this.filterData.$sort`, this.filterData.$sort);
+      return this.syncManager()
+    },
+    /**
+     * @function doSearch
+     * Uses pleasureApiClient to perform a search against the entity
+     * @param {String} keywords - The keywords
+     **/
+    doSearch (keywords) {
+      this.manager.search = keywords;
+      return this.syncManager()
+    },
+    async syncManager () {
+      this.searching = true;
+      const find = this.manager.find;
+      if (Object.keys(this.filterData).length > 0) {
+        Object.keys(this.filterData).forEach(prop => {
+          // console.log(`checking ${ prop }`, this.filterData[prop])
+          if (this.filterData[prop].type && this.filterData[prop].value) {
+            try {
+              find[prop] = this.filterData[prop].type === 'equals' ? this.filterData[prop].value : new RegExp(this.filterData[prop].value, 'i');
+            } catch (err) {
+              find[prop] = this.filterData[prop].value;
+            }
+            // console.log(`this.filterData[${ prop }]`, this.filterData[prop])
+          } else if (find[prop] && !this.isEnum(prop)) {
+            delete find[prop];
+          }
+        });
+      }
+      this.manager.find = find;
+      this.manager.sort = this.filterData.$sort;
+      await this.manager.sync();
+      this.searching = false;
+    },
+    filterPropertyHandler (fieldName, e) {
+      this.searchHandler(e);
+      // console.log(`focus`, this.$refs[`field-${ fieldName }`])
     },
     async reload () {
       if (!this.entity) {
         return
       }
-      console.log(`reloading`, this.entity);
-      // this.$store.dispatch('db/clean', this.entity)
+      // console.log(`reloading`, this.entity)
+      // this.$store.dispatch([7 90
+      // 'db/clean', this.entity)
       return this.loadMore(true)
     },
     getSearch () {
@@ -769,71 +1299,14 @@ var script$4 = {
 
       return search
     },
-    async handleSortChange (sort) {
-      if (!this.entity) {
-        return
-      }
-
-      this.sort = sort;
-      this.$emit('sort-change', sort);
-      console.log(`table sort`);
-      /*
-              await this.$store.dispatch('db/dropdown', {
-                model: this.entity,
-                sort: { [sort.prop]: sort.order === 'descending' ? -1 : 1 },
-                params: this.appendData,
-                token: getToken()
-              })
-
-              this.$el.querySelector('.el-table__body-wrapper').scrollTop = 0
-              this.loadingMore = false
-      */
-    },
-    handleScroll () {
-      const { tableScroll } = this;
-
-      const scrollHeight = tableScroll.scrollHeight - tableScroll.offsetHeight;
-      const scrollTop = tableScroll.scrollTop;
-
-      if (scrollTop >= scrollHeight) {
-        this.loadMore();
-      }
-    },
-    async loadMore (r) {
-      return console.log(`loadMore`)
-      if ((!r && this.loadingMore) || !this.entity) {
-        return
-      }
-
-      const { sortValue: sort } = this;
-
-      this.loadingMore = true;
-      let data;
-
-      // todo: list
-      try {
-        ({ data } = await this.$store.dispatch('db/api', {
-          model: this.entity,
-          skip: this.datatable.length,
-          sort,
-          params: this.appendData,
-          ...this.getSearch()
-        }));
-      } catch (err) {
-        data = [];
-      }
-
-      if (this.searchResults
-      ) {
-        this.searchResults.push(...data);
-      } else {
-        this.$store.commit('db/APPEND_DROPDOWN', { model: this.entity, data });
-      }
-
-      this.loadingMore = !r && data.length < 1;
+    handleSortChange (sort) {
+      // console.log({ sort })
+      this.manager.sort = { [sort.prop]: sort.order === 'ascending' ? 1 : -1 };
+      return this.syncManager()
     },
     promptCreate () {
-      this.$router.push({ path: `/pleasure/create/${ this.entity }` });
+      this.promptAdd = !this.promptAdd;
+      // this.$router.push({ path: `/pleasure/create/${ this.entity }` })
     },
     handleDeleteSelection () {
       this.$confirm(this.$t('confirm.remove.default'))
@@ -907,9 +1380,9 @@ var script$4 = {
 };
 
 /* script */
-const __vue_script__$4 = script$4;
+const __vue_script__$5 = script$5;
 /* template */
-var __vue_render__$4 = function() {
+var __vue_render__$5 = function() {
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
@@ -918,12 +1391,155 @@ var __vue_render__$4 = function() {
     {
       class: {
         content: true,
+        "with-search": _vm.withSearch,
         "pleasure-table-edit": true,
         "friendly-table": true,
         "can-add": _vm.canAdd
       }
     },
     [
+      _c(
+        "div",
+        { staticClass: "controls" },
+        [
+          _vm._t("controls"),
+          _vm._v(" "),
+          _vm.withSearch
+            ? _c(
+                "el-row",
+                [
+                  _c(
+                    "el-col",
+                    { staticClass: "search-col" },
+                    [
+                      _c("el-input", {
+                        staticClass: "search-input",
+                        attrs: {
+                          clearable: true,
+                          spellcheck: "false",
+                          autocomplete: "off",
+                          placeholder: "Search",
+                          name: "search"
+                        },
+                        on: { input: _vm.searchHandler },
+                        model: {
+                          value: _vm.search,
+                          callback: function($$v) {
+                            _vm.search = $$v;
+                          },
+                          expression: "search"
+                        }
+                      })
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "el-col",
+                    { staticClass: "controls-col" },
+                    [
+                      _c("el-button", {
+                        staticClass: "plain",
+                        attrs: {
+                          icon: _vm.searching
+                            ? "el-icon-loading"
+                            : "el-icon-search"
+                        },
+                        on: {
+                          click: function($event) {
+                            _vm.advancedSearchControls = !_vm.advancedSearchControls;
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("el-button", {
+                        staticClass: "plain",
+                        attrs: { icon: "el-icon-s-operation" },
+                        on: {
+                          click: function($event) {
+                            _vm.filterControls = !_vm.filterControls;
+                          }
+                        }
+                      })
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _c("div", { staticClass: "search-controls" }, [
+            _vm.advancedSearchControls
+              ? _c(
+                  "div",
+                  {
+                    ref: "advanced-search-controls",
+                    staticClass: "advanced-search control"
+                  },
+                  [
+                    _vm._l(_vm.indexes, function(fieldName) {
+                      return [
+                        _vm._v(
+                          "\n          " + _vm._s(fieldName) + "\n        "
+                        )
+                      ]
+                    })
+                  ],
+                  2
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.filterControls
+              ? _c(
+                  "div",
+                  { ref: "filter-controls", staticClass: "filters control" },
+                  _vm._l(_vm.indexes, function(fieldName) {
+                    return _c("table-edit-filter", {
+                      attrs: {
+                        entity: _vm.entity,
+                        "field-name": fieldName,
+                        manager: _vm.manager
+                      },
+                      on: {
+                        "refresh-results": function($event) {
+                          return _vm.toggleSort(fieldName)
+                        }
+                      },
+                      model: {
+                        value: _vm.filterData[fieldName],
+                        callback: function($$v) {
+                          _vm.$set(_vm.filterData, fieldName, $$v);
+                        },
+                        expression: "filterData[fieldName]"
+                      }
+                    })
+                  }),
+                  1
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.sortControls
+              ? _c(
+                  "div",
+                  { ref: "sort-controls", staticClass: "sort control" },
+                  [
+                    _vm._l(_vm.indexes, function(fieldName) {
+                      return [
+                        _vm._v(
+                          "\n          " + _vm._s(fieldName) + "\n        "
+                        )
+                      ]
+                    })
+                  ],
+                  2
+                )
+              : _vm._e()
+          ])
+        ],
+        2
+      ),
+      _vm._v(" "),
       _c(
         "el-table",
         {
@@ -938,13 +1554,13 @@ var __vue_render__$4 = function() {
             "tooltip-effect": "dark",
             "highlight-current-row": "",
             "row-class-name": "pleasure-row",
-            "row-class-name": _vm.rowClassName
+            "row-class-name": _vm.rowClassName,
+            "empty-text": _vm.empty
           },
           on: {
             "cell-click": _vm.handleCellClick,
             "row-click": _vm.handleRowClick,
-            "selection-change": _vm.handleSelectionChange,
-            "sort-change": _vm.handleSortChange
+            "selection-change": _vm.handleSelectionChange
           }
         },
         [
@@ -954,20 +1570,31 @@ var __vue_render__$4 = function() {
               })
             : _vm._e(),
           _vm._v(" "),
-          _vm._l(_vm.fields, function(field) {
+          _vm._l(_vm.fields, function(fieldName) {
             return _c("el-table-column", {
               attrs: {
-                prop: field,
-                label: _vm.guessLabel(field),
+                prop: fieldName,
+                label: _vm.guessLabel(fieldName),
                 "min-width": "180",
-                sortable: "custom"
+                "column-key": fieldName
               },
               scopedSlots: _vm._u(
                 [
                   {
                     key: "default",
                     fn: function(scope) {
-                      return [_vm._v(_vm._s(scope.row[field]))]
+                      return [
+                        _vm._v(
+                          _vm._s(
+                            _vm.isEnum(fieldName)
+                              ? _vm.guessLabel(
+                                  scope.row[fieldName],
+                                  "entities.enum"
+                                )
+                              : scope.row[fieldName]
+                          ) + "\n      "
+                        )
+                      ]
                     }
                   }
                 ],
@@ -994,35 +1621,50 @@ var __vue_render__$4 = function() {
             attrs: { name: "delete", icon: "el-icon-minus", circle: "" },
             on: { click: _vm.handleDeleteSelection }
           })
-        : _vm._e()
+        : _vm._e(),
+      _vm._v(" "),
+      _c("pleasure", {
+        key: _vm.id,
+        class: { prompt: true, on: _vm.promptAdd },
+        attrs: { entity: _vm.entity, method: "create" },
+        on: {
+          cancel: function($event) {
+            _vm.promptAdd = false;
+          }
+        }
+      })
     ],
     1
   )
 };
-var __vue_staticRenderFns__$4 = [];
-__vue_render__$4._withStripped = true;
+var __vue_staticRenderFns__$5 = [];
+__vue_render__$5._withStripped = true;
 
   /* style */
-  const __vue_inject_styles__$4 = undefined;
+  const __vue_inject_styles__$5 = undefined;
   /* scoped */
-  const __vue_scope_id__$4 = undefined;
+  const __vue_scope_id__$5 = undefined;
   /* module identifier */
-  const __vue_module_identifier__$4 = undefined;
+  const __vue_module_identifier__$5 = undefined;
   /* functional template */
-  const __vue_is_functional_template__$4 = false;
+  const __vue_is_functional_template__$5 = false;
   /* style inject */
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var PleasureTableEdit = normalizeComponent_1(
-    { render: __vue_render__$4, staticRenderFns: __vue_staticRenderFns__$4 },
-    __vue_inject_styles__$4,
-    __vue_script__$4,
-    __vue_scope_id__$4,
-    __vue_is_functional_template__$4,
-    __vue_module_identifier__$4,
+  var PleasureTableEdit = normalizeComponent(
+    { render: __vue_render__$5, staticRenderFns: __vue_staticRenderFns__$5 },
+    __vue_inject_styles__$5,
+    __vue_script__$5,
+    __vue_scope_id__$5,
+    __vue_is_functional_template__$5,
+    __vue_module_identifier__$5,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -1046,7 +1688,6 @@ __vue_render__$4._withStripped = true;
  * `${i18nScope}.label.${field.path}`, and last but not least, `${i18nScope}.${field.path}` and will auto replace the
  * values in `field.placeholder` and `field.label`.
  *
- * @vue-prop {String[]} [omit] - Fields to omit from the entity schema.
  *
  * @vue-prop {String} [i18nScope] - Scope where to try to resolve i18n abbreviations from `label`, `placeholder` and
  * error messages. Defaults to the name of the `entity` if any.
@@ -1077,7 +1718,7 @@ __vue_render__$4._withStripped = true;
  *
  * @vue-prop {String} [controller] - Alternatively the controller of the entity to hit with the collected data.
  */
-var script$5 = {
+var script$6 = {
   components: {
     PleasureForm,
     PleasureFieldContainer,
@@ -1086,6 +1727,9 @@ var script$5 = {
     PleasureTableEdit
   },
   props: {
+    /**
+     * What to omit...
+     */
     omit: {
       type: Array,
       default () {
@@ -1244,15 +1888,16 @@ var script$5 = {
     this.entryRead = true;
   },
   methods: {
-    onCancel () {
+    /**
+     * Dismisses any changes made and clear the form
+     */
+    dismiss () {
 
     },
+    onCancel () {
+      this.$emit('cancel');
+    },
     toPleasureField (field) {
-      /*
-              const isDeepKebabCased = v => {
-                return /^[a-z][a-z.-]+[a-z]$/.test(v)
-              }
-      */
       const i18nLabel = kebabCase(field.path);
 
       const placeholder = [
@@ -1322,9 +1967,9 @@ var script$5 = {
 };
 
 /* script */
-const __vue_script__$5 = script$5;
+const __vue_script__$6 = script$6;
 /* template */
-var __vue_render__$5 = function() {
+var __vue_render__$6 = function() {
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
@@ -1332,6 +1977,8 @@ var __vue_render__$5 = function() {
     "div",
     { class: { pleasure: true, "multiple-lines": _vm.multipleLines } },
     [
+      _vm._t("header"),
+      _vm._v(" "),
       _c(
         "pleasure-form",
         {
@@ -1390,33 +2037,37 @@ var __vue_render__$5 = function() {
         2
       )
     ],
-    1
+    2
   )
 };
-var __vue_staticRenderFns__$5 = [];
-__vue_render__$5._withStripped = true;
+var __vue_staticRenderFns__$6 = [];
+__vue_render__$6._withStripped = true;
 
   /* style */
-  const __vue_inject_styles__$5 = undefined;
+  const __vue_inject_styles__$6 = undefined;
   /* scoped */
-  const __vue_scope_id__$5 = undefined;
+  const __vue_scope_id__$6 = undefined;
   /* module identifier */
-  const __vue_module_identifier__$5 = undefined;
+  const __vue_module_identifier__$6 = undefined;
   /* functional template */
-  const __vue_is_functional_template__$5 = false;
+  const __vue_is_functional_template__$6 = false;
   /* style inject */
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var pleasure = normalizeComponent_1(
-    { render: __vue_render__$5, staticRenderFns: __vue_staticRenderFns__$5 },
-    __vue_inject_styles__$5,
-    __vue_script__$5,
-    __vue_scope_id__$5,
-    __vue_is_functional_template__$5,
-    __vue_module_identifier__$5,
+  var pleasure = normalizeComponent(
+    { render: __vue_render__$6, staticRenderFns: __vue_staticRenderFns__$6 },
+    __vue_inject_styles__$6,
+    __vue_script__$6,
+    __vue_scope_id__$6,
+    __vue_is_functional_template__$6,
+    __vue_module_identifier__$6,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -1601,7 +2252,8 @@ const state = () => {
     entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
     entitiesSchema: {},
     dropdown: {},
-    settings: process.env.$pleasure.settings || {},
+    dropdownMeta: {},
+    settings: process.env['$pleasure.settings'] || {},
     dropdownLoading: [],
     user: null,
     locales: ['en', 'es'],
@@ -1638,8 +2290,9 @@ const mutations = {
     });
     Vue.set(state, 'entitiesSchema', entitiesSchema);
   },
-  setDropdown (state, { dropdownName, results }) {
+  setDropdown (state, { dropdownName, results, listOptions }) {
     Vue.set(state.dropdown, dropdownName, results);
+    Vue.set(state.dropdownMeta, dropdownName, listOptions);
   },
   updateDropdown (state, { entity, modified, id }) {
     const set = get$1(state, `dropdown.${ entity }`);
@@ -1653,7 +2306,11 @@ const mutations = {
     Vue.set(set, set.indexOf(localEntry), final);
   },
   clearDropdowns (state) {
-    Vue.set(state, 'dropdown', {});
+    Object.keys(state.dropdown).forEach(dropdown => {
+      Vue.set(state.dropdown, dropdown, undefined);
+
+    });
+    // Vue.set(state, 'dropdown', {})
   }
 };
 
@@ -1677,36 +2334,38 @@ const actions = {
   async dropdownChanged ({ commit }, payload = {}) {
     return commit('updateDropdown', payload)
   },
-  async loadDropdown ({ commit, state }, { entity, listOptions, name, force = false, req } = {}) {
-    if (req) {
+  async loadDropdown (store, { entity, listOptions, name, force = false, req } = {}) {
+    const { commit, state } = store;
+
+    if (process.server && req) {
+      const Cookies = require('cookies');
       const accessToken = new Cookies(req).get('accessToken');
       pleasureApiClient.setCredentials({ accessToken });
     }
+
     const dropdownName = entity || name;
     const id = objectHash({ entity, listOptions, dropdownName });
 
     if (state.dropdownLoading.indexOf(id) >= 0) {
-      // console.log(`already loading id ${ id }`)
       return
     }
 
-    // console.log(`load dropdown`)
-
     if (!force && state.dropdown[dropdownName]) {
-      // console.log(`dropdown ${ dropdownName } already existis`, state.dropdown[dropdownName])
       return state.dropdown[dropdownName]
     }
 
     commit('setDropdownLoading', id);
+
     let results;
     let err;
+
     try {
       results = await pleasureApiClient.list(entity, listOptions);
     } catch (e) {
       err = e;
     }
 
-    commit('setDropdown', { dropdownName, results });
+    commit('setDropdown', { dropdownName, results, listOptions });
     commit('removeDropdownLoading', id);
 
     if (err) {
@@ -1749,6 +2408,9 @@ const getters = {
   dropdown (state) {
     return state.dropdown
   },
+  dropdownMeta (state) {
+    return state.dropdownMeta
+  },
   settings (state) {
     return state.settings
   },
@@ -1761,6 +2423,7 @@ const getters = {
 };
 
 var PleasureStore = /*#__PURE__*/Object.freeze({
+  __proto__: null,
   strict: strict,
   namespaced: namespaced,
   state: state,
@@ -1840,7 +2503,7 @@ const bus = new Vue();
 
 //
 
-var script$6 = {
+var script$7 = {
   props: {
     initialZIndex: {
       type: Number,
@@ -1897,9 +2560,9 @@ var script$6 = {
 };
 
 /* script */
-const __vue_script__$6 = script$6;
+const __vue_script__$7 = script$7;
 /* template */
-var __vue_render__$6 = function() {
+var __vue_render__$7 = function() {
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
@@ -1908,47 +2571,6 @@ var __vue_render__$6 = function() {
     class: _vm.classes,
     style: { "z-index": _vm.zIndex }
   })
-};
-var __vue_staticRenderFns__$6 = [];
-__vue_render__$6._withStripped = true;
-
-  /* style */
-  const __vue_inject_styles__$6 = undefined;
-  /* scoped */
-  const __vue_scope_id__$6 = undefined;
-  /* module identifier */
-  const __vue_module_identifier__$6 = undefined;
-  /* functional template */
-  const __vue_is_functional_template__$6 = false;
-  /* style inject */
-  
-  /* style inject SSR */
-  
-
-  
-  var backdrop = normalizeComponent_1(
-    { render: __vue_render__$6, staticRenderFns: __vue_staticRenderFns__$6 },
-    __vue_inject_styles__$6,
-    __vue_script__$6,
-    __vue_scope_id__$6,
-    __vue_is_functional_template__$6,
-    __vue_module_identifier__$6,
-    undefined,
-    undefined
-  );
-
-/* script */
-/* template */
-var __vue_render__$7 = function() {
-  var _vm = this;
-  var _h = _vm.$createElement;
-  var _c = _vm._self._c || _h;
-  return _c(
-    "div",
-    { staticClass: "pleasure-full-height-container" },
-    [_vm._t("header"), _vm._v(" "), _vm._t("default")],
-    2
-  )
 };
 var __vue_staticRenderFns__$7 = [];
 __vue_render__$7._withStripped = true;
@@ -1965,26 +2587,83 @@ __vue_render__$7._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var fullHeightContainer = normalizeComponent_1(
+  var pleasureBackdrop = normalizeComponent(
     { render: __vue_render__$7, staticRenderFns: __vue_staticRenderFns__$7 },
     __vue_inject_styles__$7,
-    {},
+    __vue_script__$7,
     __vue_scope_id__$7,
     __vue_is_functional_template__$7,
     __vue_module_identifier__$7,
+    false,
+    undefined,
+    undefined,
+    undefined
+  );
+
+/* script */
+/* template */
+var __vue_render__$8 = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    { staticClass: "pleasure-full-height-container" },
+    [_vm._t("header"), _vm._v(" "), _vm._t("default")],
+    2
+  )
+};
+var __vue_staticRenderFns__$8 = [];
+__vue_render__$8._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$8 = undefined;
+  /* scoped */
+  const __vue_scope_id__$8 = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$8 = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$8 = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+  /* style inject shadow dom */
+  
+
+  
+  var pleasureFullHeightContainer = normalizeComponent(
+    { render: __vue_render__$8, staticRenderFns: __vue_staticRenderFns__$8 },
+    __vue_inject_styles__$8,
+    {},
+    __vue_scope_id__$8,
+    __vue_is_functional_template__$8,
+    __vue_module_identifier__$8,
+    false,
+    undefined,
     undefined,
     undefined
   );
 
 //
 
-var script$7 = {
+var script$8 = {
   props: {
     mainTitle: {
       type: String,
       default: ''
+    },
+    position: {
+      type: String,
+      default: 'top',
+      validator: function (value) {
+        // The value must match one of these strings
+        return ['top', 'bottom'].indexOf(value) !== -1
+      }
     }
   },
   data () {
@@ -2010,162 +2689,22 @@ var script$7 = {
 };
 
 /* script */
-const __vue_script__$7 = script$7;
+const __vue_script__$8 = script$8;
 /* template */
-var __vue_render__$8 = function() {
+var __vue_render__$9 = function() {
+  var _obj;
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
   return _c(
     "header",
-    { staticClass: "headbar" },
+    { class: ((_obj = { headbar: true }), (_obj[_vm.position] = true), _obj) },
     [
       _vm._t("default", [
         _vm.title
           ? _c("h1", [_vm._v("\n      " + _vm._s(_vm.title) + "\n    ")])
           : _vm._e()
       ])
-    ],
-    2
-  )
-};
-var __vue_staticRenderFns__$8 = [];
-__vue_render__$8._withStripped = true;
-
-  /* style */
-  const __vue_inject_styles__$8 = undefined;
-  /* scoped */
-  const __vue_scope_id__$8 = undefined;
-  /* module identifier */
-  const __vue_module_identifier__$8 = undefined;
-  /* functional template */
-  const __vue_is_functional_template__$8 = false;
-  /* style inject */
-  
-  /* style inject SSR */
-  
-
-  
-  var headbar = normalizeComponent_1(
-    { render: __vue_render__$8, staticRenderFns: __vue_staticRenderFns__$8 },
-    __vue_inject_styles__$8,
-    __vue_script__$7,
-    __vue_scope_id__$8,
-    __vue_is_functional_template__$8,
-    __vue_module_identifier__$8,
-    undefined,
-    undefined
-  );
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-var script$8 = {
-  /**
-   * Initial state of the menu
-   */
-  props: {
-    opened: {
-      type: Boolean,
-      default: false
-    },
-    items: {
-      type: Array,
-      default: null
-    }
-  },
-  data () {
-    return {
-      isOpen: this.opened,
-    }
-  },
-  computed: {
-    cls () {
-      return {
-        menu: true,
-        open: this.isOpen
-      }
-    }
-  },
-  watch: {
-    isOpen (v) {
-      this.$emit(v ? 'opened' : 'closed');
-    }
-  },
-  methods: {
-    toggle () {
-      return this.isOpen = !this.isOpen
-    },
-    close () {
-      this.isOpen = false;
-    },
-    open () {
-      this.isOpen = true;
-    }
-  }
-};
-
-/* script */
-const __vue_script__$8 = script$8;
-/* template */
-var __vue_render__$9 = function() {
-  var _vm = this;
-  var _h = _vm.$createElement;
-  var _c = _vm._self._c || _h;
-  return _c(
-    "div",
-    { class: _vm.cls },
-    [
-      _vm._t("head"),
-      _vm._v(" "),
-      _c(
-        "el-menu",
-        _vm._l(_vm.items, function(item, itemIndex) {
-          return _c("pleasure-menu-item", {
-            key: "menu-" + itemIndex,
-            attrs: { index: "menu-" + itemIndex, item: item }
-          })
-        }),
-        1
-      )
     ],
     2
   )
@@ -2185,52 +2724,23 @@ __vue_render__$9._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var menu = normalizeComponent_1(
+  var headbar = normalizeComponent(
     { render: __vue_render__$9, staticRenderFns: __vue_staticRenderFns__$9 },
     __vue_inject_styles__$9,
     __vue_script__$8,
     __vue_scope_id__$9,
     __vue_is_functional_template__$9,
     __vue_module_identifier__$9,
+    false,
+    undefined,
     undefined,
     undefined
   );
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -2300,40 +2810,55 @@ __vue_render__$9._withStripped = true;
 //
 
 var script$9 = {
+  /**
+   * Initial state of the menu
+   */
   props: {
-    /**
-     * Adds a gap between the bars and the viewport edge.
-     */
-    sideNavigation: {
+    opened: {
       type: Boolean,
       default: false
     },
-    state: {
+    items: {
+      type: Array,
+      default: null
+    },
+    position: {
       type: String,
-      default: 'open'
+      default: 'left',
+      validator: function (value) {
+        // The value must match one of these strings
+        return ['left', 'right', 'center'].indexOf(value) !== -1
+      }
     }
   },
   data () {
     return {
-      theState: this.state,
-      theSideNavigation: this.sideNavigation
+      isOpen: this.opened,
     }
   },
   computed: {
     cls () {
       return {
-        'menu-bars': true,
-        'side-navigation': this.theSideNavigation,
-        [`state-${ this.theState }`]: true
+        menu: true,
+        open: this.isOpen,
+        [this.position]: true
       }
-    },
+    }
+  },
+  watch: {
+    isOpen (v) {
+      this.$emit(v ? 'opened' : 'closed');
+    }
   },
   methods: {
-    setState (s) {
-      return this.theState = s
+    toggle () {
+      return this.isOpen = !this.isOpen
     },
-    setSideNavigation (s) {
-      return this.theSideNavigation = s
+    close () {
+      this.isOpen = false;
+    },
+    open () {
+      this.isOpen = true;
     }
   }
 };
@@ -2345,11 +2870,25 @@ var __vue_render__$a = function() {
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
-  return _c("div", { ref: "bars", class: _vm.cls }, [
-    _c("div"),
-    _vm._v(" "),
-    _c("div")
-  ])
+  return _c(
+    "div",
+    { class: _vm.cls },
+    [
+      _vm._t("head"),
+      _vm._v(" "),
+      _c(
+        "el-menu",
+        _vm._l(_vm.items, function(item, itemIndex) {
+          return _c("pleasure-menu-item", {
+            key: "menu-" + itemIndex,
+            attrs: { index: "menu-" + itemIndex, item: item }
+          })
+        }),
+        1
+      )
+    ],
+    2
+  )
 };
 var __vue_staticRenderFns__$a = [];
 __vue_render__$a._withStripped = true;
@@ -2366,19 +2905,264 @@ __vue_render__$a._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var menuBars = normalizeComponent_1(
+  var pleasureMenu = normalizeComponent(
     { render: __vue_render__$a, staticRenderFns: __vue_staticRenderFns__$a },
     __vue_inject_styles__$a,
     __vue_script__$9,
     __vue_scope_id__$a,
     __vue_is_functional_template__$a,
     __vue_module_identifier__$a,
+    false,
+    undefined,
     undefined,
     undefined
   );
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+var script$a = {
+  props: {
+    /**
+     * Adds a gap between the bars and the viewport edge.
+     */
+    sideNavigation: {
+      type: Boolean,
+      default: false
+    },
+    state: {
+      type: String,
+      default: 'open'
+    },
+    xPosition: {
+      type: String,
+      default: 'left',
+      validator: function (value) {
+        // The value must match one of these strings
+        return ['left', 'right', 'center'].indexOf(value) !== -1
+      }
+    },
+    yPosition: {
+      type: String,
+      default: 'top',
+      validator: function (value) {
+        // The value must match one of these strings
+        return ['top', 'bottom'].indexOf(value) !== -1
+      }
+    }
+  },
+  data () {
+    return {
+      theState: this.state,
+      theSideNavigation: this.sideNavigation
+    }
+  },
+  computed: {
+    cls () {
+      return {
+        'menu-bars': true,
+        'side-navigation': this.theSideNavigation,
+        [this.xPosition]: true,
+        [this.yPosition]: true,
+        [`state-${ this.theState }`]: true
+      }
+    },
+  },
+  methods: {
+    setState (s) {
+      return this.theState = s
+    },
+    setSideNavigation (s) {
+      return this.theSideNavigation = s
+    }
+  }
+};
+
+/* script */
+const __vue_script__$a = script$a;
+/* template */
+var __vue_render__$b = function() {
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c("div", { ref: "bars", class: _vm.cls }, [
+    _c("div"),
+    _vm._v(" "),
+    _c("div")
+  ])
+};
+var __vue_staticRenderFns__$b = [];
+__vue_render__$b._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$b = undefined;
+  /* scoped */
+  const __vue_scope_id__$b = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$b = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$b = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+  /* style inject shadow dom */
+  
+
+  
+  var pleasureMenuBars = normalizeComponent(
+    { render: __vue_render__$b, staticRenderFns: __vue_staticRenderFns__$b },
+    __vue_inject_styles__$b,
+    __vue_script__$a,
+    __vue_scope_id__$b,
+    __vue_is_functional_template__$b,
+    __vue_module_identifier__$b,
+    false,
+    undefined,
+    undefined,
+    undefined
+  );
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2430,7 +3214,7 @@ __vue_render__$a._withStripped = true;
  * @property {Item[]} children - Array of items
  */
 
-var script$a = {
+var script$b = {
   name: 'MenuItem',
   props: {
     index: {
@@ -2461,9 +3245,9 @@ var script$a = {
 };
 
 /* script */
-const __vue_script__$a = script$a;
+const __vue_script__$b = script$b;
 /* template */
-var __vue_render__$b = function() {
+var __vue_render__$c = function() {
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
@@ -2507,30 +3291,34 @@ var __vue_render__$b = function() {
     1
   )
 };
-var __vue_staticRenderFns__$b = [];
-__vue_render__$b._withStripped = true;
+var __vue_staticRenderFns__$c = [];
+__vue_render__$c._withStripped = true;
 
   /* style */
-  const __vue_inject_styles__$b = undefined;
+  const __vue_inject_styles__$c = undefined;
   /* scoped */
-  const __vue_scope_id__$b = undefined;
+  const __vue_scope_id__$c = undefined;
   /* module identifier */
-  const __vue_module_identifier__$b = undefined;
+  const __vue_module_identifier__$c = undefined;
   /* functional template */
-  const __vue_is_functional_template__$b = false;
+  const __vue_is_functional_template__$c = false;
   /* style inject */
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var menuItem = normalizeComponent_1(
-    { render: __vue_render__$b, staticRenderFns: __vue_staticRenderFns__$b },
-    __vue_inject_styles__$b,
-    __vue_script__$a,
-    __vue_scope_id__$b,
-    __vue_is_functional_template__$b,
-    __vue_module_identifier__$b,
+  var pleasureMenuItem = normalizeComponent(
+    { render: __vue_render__$c, staticRenderFns: __vue_staticRenderFns__$c },
+    __vue_inject_styles__$c,
+    __vue_script__$b,
+    __vue_scope_id__$c,
+    __vue_is_functional_template__$c,
+    __vue_module_identifier__$c,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -2594,8 +3382,33 @@ __vue_render__$b._withStripped = true;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
-var script$b = {
+var script$c = {
   props: {
     menuItems: {
       type: Array,
@@ -2617,6 +3430,14 @@ var script$b = {
           }
         ]
       }
+    },
+    headbarPosition: {
+      type: String,
+      default: 'top'
+    },
+    menuPosition: {
+      type: String,
+      default: 'left'
     }
   },
   data () {
@@ -2629,11 +3450,22 @@ var script$b = {
       this.closeMenu();
     }
   },
+  computed: {
+    openMenuGesture () {
+      return this.menuPosition === 'left' ? 'right' : (this.menuPosition === 'center' ? 'up' : 'left')
+    },
+    closeMenuGesture () {
+      return this.menuPosition === 'left' ? 'left' : (this.menuPosition === 'center' ? 'bottom' : 'right')
+    }
+  },
   mounted () {
     window.addEventListener('keydown', (e) => {
       if (e.keyCode === 27) {
         this.closeMenu();
       }
+    });
+    this.$pleasure.bus.$on('menu-close', () => {
+      this.closeMenu();
     });
   },
   methods: {
@@ -2661,9 +3493,10 @@ var script$b = {
 };
 
 /* script */
-const __vue_script__$b = script$b;
+const __vue_script__$c = script$c;
 /* template */
-var __vue_render__$c = function() {
+var __vue_render__$d = function() {
+  var _obj;
   var _vm = this;
   var _h = _vm.$createElement;
   var _c = _vm._self._c || _h;
@@ -2672,19 +3505,54 @@ var __vue_render__$c = function() {
     { staticClass: "mobile-app" },
     [
       _c("pleasure-menu-bars", {
-        ref: "bars",
-        nativeOn: {
-          click: function($event) {
-            return _vm.toggleMenu($event)
+        directives: [
+          {
+            name: "touch",
+            rawName: "v-touch:swipe[openMenuGesture].prevent",
+            value: _vm.openMenu,
+            expression: "openMenu",
+            arg: "swipe[openMenuGesture]",
+            modifiers: { prevent: true }
+          },
+          {
+            name: "touch",
+            rawName: "v-touch:swipe[closeMenuGesture].prevent",
+            value: _vm.closeMenu,
+            expression: "closeMenu",
+            arg: "swipe[closeMenuGesture]",
+            modifiers: { prevent: true }
+          },
+          {
+            name: "touch",
+            rawName: "v-touch:tap.prevent",
+            value: _vm.toggleMenu,
+            expression: "toggleMenu",
+            arg: "tap",
+            modifiers: { prevent: true }
           }
+        ],
+        ref: "bars",
+        attrs: {
+          "x-position": _vm.menuPosition,
+          "y-position": _vm.headbarPosition
         }
       }),
       _vm._v(" "),
       _c(
         "pleasure-menu",
         {
+          directives: [
+            {
+              name: "touch",
+              rawName: "v-touch:swipe[closeMenuGesture].prevent",
+              value: _vm.closeMenu,
+              expression: "closeMenu",
+              arg: "swipe[closeMenuGesture]",
+              modifiers: { prevent: true }
+            }
+          ],
           ref: "menu",
-          attrs: { items: _vm.menuItems },
+          attrs: { items: _vm.menuItems, position: _vm.menuPosition },
           on: {
             opened: function($event) {
               _vm.menuOpened = true;
@@ -2698,11 +3566,21 @@ var __vue_render__$c = function() {
         2
       ),
       _vm._v(" "),
-      _c("pleasure-headbar", {
-        class: { "pleasure-headbar-opener": true, opened: _vm.menuOpened }
-      }),
+      _c(
+        "pleasure-headbar",
+        {
+          class: { "pleasure-headbar-opener": true, opened: _vm.menuOpened },
+          attrs: { position: _vm.headbarPosition }
+        },
+        [_vm._t("menu-headbar", null, { slot: "head" })],
+        2
+      ),
       _vm._v(" "),
-      _c("div", { staticClass: "headbar-background" }),
+      _c("div", {
+        class: ((_obj = { "headbar-background": true }),
+        (_obj[_vm.headbarPosition] = true),
+        _obj)
+      }),
       _vm._v(" "),
       _c(
         "div",
@@ -2716,6 +3594,7 @@ var __vue_render__$c = function() {
         [
           _c(
             "pleasure-layout-mobile-app",
+            { attrs: { "headbar-position": _vm.headbarPosition } },
             [_vm._t("default", [_c("h1", [_vm._v("Always our Pleasure!")])])],
             2
           )
@@ -2724,57 +3603,41 @@ var __vue_render__$c = function() {
       ),
       _vm._v(" "),
       _c("pleasure-backdrop", {
-        ref: "backdrop",
-        nativeOn: {
-          click: function($event) {
-            $event.stopPropagation();
-            return _vm.closeMenu($event)
+        directives: [
+          {
+            name: "touch",
+            rawName: "v-touch:swipe[closeMenuGesture].prevent.stop",
+            value: _vm.closeMenu,
+            expression: "closeMenu",
+            arg: "swipe[closeMenuGesture]",
+            modifiers: { prevent: true, stop: true }
+          },
+          {
+            name: "touch",
+            rawName: "v-touch:swipe.top.prevent.stop",
+            arg: "swipe",
+            modifiers: { top: true, prevent: true, stop: true }
+          },
+          {
+            name: "touch",
+            rawName: "v-touch:swipe.bottom.prevent.stop",
+            arg: "swipe",
+            modifiers: { bottom: true, prevent: true, stop: true }
+          },
+          {
+            name: "touch",
+            rawName: "v-touch:tap.stop",
+            value: _vm.closeMenu,
+            expression: "closeMenu",
+            arg: "tap",
+            modifiers: { stop: true }
           }
-        }
+        ],
+        ref: "backdrop",
+        staticClass: "menu-backdrop"
       })
     ],
     1
-  )
-};
-var __vue_staticRenderFns__$c = [];
-__vue_render__$c._withStripped = true;
-
-  /* style */
-  const __vue_inject_styles__$c = undefined;
-  /* scoped */
-  const __vue_scope_id__$c = undefined;
-  /* module identifier */
-  const __vue_module_identifier__$c = undefined;
-  /* functional template */
-  const __vue_is_functional_template__$c = false;
-  /* style inject */
-  
-  /* style inject SSR */
-  
-
-  
-  var _default = normalizeComponent_1(
-    { render: __vue_render__$c, staticRenderFns: __vue_staticRenderFns__$c },
-    __vue_inject_styles__$c,
-    __vue_script__$b,
-    __vue_scope_id__$c,
-    __vue_is_functional_template__$c,
-    __vue_module_identifier__$c,
-    undefined,
-    undefined
-  );
-
-/* script */
-/* template */
-var __vue_render__$d = function() {
-  var _vm = this;
-  var _h = _vm.$createElement;
-  var _c = _vm._self._c || _h;
-  return _c(
-    "div",
-    { staticClass: "pleasure-layout-mobile-app" },
-    [_vm._t("default")],
-    2
   )
 };
 var __vue_staticRenderFns__$d = [];
@@ -2792,15 +3655,97 @@ __vue_render__$d._withStripped = true;
   
   /* style inject SSR */
   
+  /* style inject shadow dom */
+  
 
   
-  var mobileApp = normalizeComponent_1(
+  var _default = normalizeComponent(
     { render: __vue_render__$d, staticRenderFns: __vue_staticRenderFns__$d },
     __vue_inject_styles__$d,
-    {},
+    __vue_script__$c,
     __vue_scope_id__$d,
     __vue_is_functional_template__$d,
     __vue_module_identifier__$d,
+    false,
+    undefined,
+    undefined,
+    undefined
+  );
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+var script$d = {
+  props: {
+    headbarPosition: {
+      type: String,
+      default: 'top'
+    }
+  }
+};
+
+/* script */
+const __vue_script__$d = script$d;
+/* template */
+var __vue_render__$e = function() {
+  var _obj;
+  var _vm = this;
+  var _h = _vm.$createElement;
+  var _c = _vm._self._c || _h;
+  return _c(
+    "div",
+    {
+      class: ((_obj = { "pleasure-layout-mobile-app": true }),
+      (_obj[_vm.headbarPosition] = true),
+      _obj)
+    },
+    [_vm._t("default")],
+    2
+  )
+};
+var __vue_staticRenderFns__$e = [];
+__vue_render__$e._withStripped = true;
+
+  /* style */
+  const __vue_inject_styles__$e = undefined;
+  /* scoped */
+  const __vue_scope_id__$e = undefined;
+  /* module identifier */
+  const __vue_module_identifier__$e = undefined;
+  /* functional template */
+  const __vue_is_functional_template__$e = false;
+  /* style inject */
+  
+  /* style inject SSR */
+  
+  /* style inject shadow dom */
+  
+
+  
+  var mobileApp = normalizeComponent(
+    { render: __vue_render__$e, staticRenderFns: __vue_staticRenderFns__$e },
+    __vue_inject_styles__$e,
+    __vue_script__$d,
+    __vue_scope_id__$e,
+    __vue_is_functional_template__$e,
+    __vue_module_identifier__$e,
+    false,
+    undefined,
     undefined,
     undefined
   );
@@ -2808,18 +3753,339 @@ __vue_render__$d._withStripped = true;
 
 
 var ui = /*#__PURE__*/Object.freeze({
-  PleasureBackdrop: backdrop,
-  PleasureFullHeightContainer: fullHeightContainer,
+  __proto__: null,
+  PleasureBackdrop: pleasureBackdrop,
+  PleasureFullHeightContainer: pleasureFullHeightContainer,
   PleasureHeadbar: headbar,
   PleasureLayoutDefault: _default,
-  PleasureMenu: menu,
-  PleasureMenuBars: menuBars,
-  PleasureMenuItem: menuItem,
+  PleasureMenu: pleasureMenu,
+  PleasureMenuBars: pleasureMenuBars,
+  PleasureMenuItem: pleasureMenuItem,
   PleasureLayoutMobileApp: mobileApp,
   PleasureTableEdit: PleasureTableEdit
 });
 
-Vue.use(VueI18n);
+var vue2TouchEvents = createCommonjsModule(function (module) {
+/**
+ *
+ * @author    Jerry Bendy
+ * @since     4/12/2017
+ */
+
+function touchX(event) {
+    if(event.type.indexOf("mouse") !== -1){
+        return event.clientX;
+    }
+    return event.touches[0].clientX;
+}
+
+function touchY(event) {
+    if(event.type.indexOf("mouse") !== -1){
+        return event.clientY;
+    }
+    return event.touches[0].clientY;
+}
+
+var isPassiveSupported = (function() {
+    var supportsPassive = false;
+    try {
+        var opts = Object.defineProperty({}, 'passive', {
+            get: function() {
+                supportsPassive = true;
+            }
+        });
+        window.addEventListener('test', null, opts);
+    } catch (e) {}
+    return supportsPassive;
+})();
+
+
+var vueTouchEvents = {
+    install: function (Vue, options) {
+
+        // Set default options
+        options = Object.assign({}, {
+            disableClick: false,
+            tapTolerance: 10,
+            swipeTolerance: 30,
+            longTapTimeInterval: 400,
+            touchClass: ''
+        }, options || {});
+
+
+        function touchStartEvent(event) {
+            var $this = this.$$touchObj,
+                isTouchEvent = event.type.indexOf("touch") >= 0,
+                isMouseEvent = event.type.indexOf("mouse") >= 0;
+
+            if (isTouchEvent) {
+                $this.lastTouchStartTime = event.timeStamp;
+            }
+
+            if (isMouseEvent && $this.lastTouchStartTime && event.timeStamp - $this.lastTouchStartTime < 350) {
+                return
+            }
+
+            if ($this.touchStarted) {
+                return
+            }
+
+            addTouchClass(this);
+
+            $this.touchStarted = true;
+
+            $this.touchMoved = false;
+            $this.swipeOutBounded = false;
+
+            $this.startX = touchX(event);
+            $this.startY = touchY(event);
+
+            $this.currentX = 0;
+            $this.currentY = 0;
+
+            $this.touchStartTime = event.timeStamp;
+
+            triggerEvent(event, this, 'start');
+        }
+
+        function touchMoveEvent(event) {
+            var $this = this.$$touchObj;
+
+            $this.currentX = touchX(event);
+            $this.currentY = touchY(event);
+
+            if (!$this.touchMoved) {
+                var tapTolerance = options.tapTolerance;
+
+                $this.touchMoved = Math.abs($this.startX - $this.currentX) > tapTolerance ||
+                    Math.abs($this.startY - $this.currentY) > tapTolerance;
+
+                if($this.touchMoved){
+                    triggerEvent(event, this, 'moved');
+                }
+
+            } else if (!$this.swipeOutBounded) {
+                var swipeOutBounded = options.swipeTolerance;
+
+                $this.swipeOutBounded = Math.abs($this.startX - $this.currentX) > swipeOutBounded &&
+                    Math.abs($this.startY - $this.currentY) > swipeOutBounded;
+            }
+
+            if($this.touchMoved){
+                triggerEvent(event, this, 'moving');
+            }
+        }
+
+        function touchCancelEvent() {
+            var $this = this.$$touchObj;
+
+            removeTouchClass(this);
+
+            $this.touchStarted = $this.touchMoved = false;
+            $this.startX = $this.startY = 0;
+        }
+
+        function touchEndEvent(event) {
+            var $this = this.$$touchObj,
+                isTouchEvent = event.type.indexOf("touch") >= 0,
+                isMouseEvent = event.type.indexOf("mouse") >= 0;
+
+            if (isTouchEvent) {
+                $this.lastTouchEndTime = event.timeStamp;
+            }
+
+            if (isMouseEvent && $this.lastTouchEndTime && event.timeStamp - $this.lastTouchEndTime < 350) {
+                return
+            }
+
+            $this.touchStarted = false;
+
+            removeTouchClass(this);
+
+            // Fix #33, Trigger `end` event when touch stopped
+            triggerEvent(event, this, 'end');
+
+            if (!$this.touchMoved) {
+                // detect if this is a longTap event or not
+                if ($this.callbacks.longtap && event.timeStamp - $this.touchStartTime > options.longTapTimeInterval) {
+                    event.preventDefault();
+                    triggerEvent(event, this, 'longtap');
+
+                } else {
+                    // emit tap event
+                    triggerEvent(event, this, 'tap');
+                }
+
+            } else if (!$this.swipeOutBounded) {
+                var swipeOutBounded = options.swipeTolerance, direction;
+
+                if (Math.abs($this.startX - $this.currentX) < swipeOutBounded) {
+                    direction = $this.startY > $this.currentY ? "top" : "bottom";
+
+                } else {
+                    direction = $this.startX > $this.currentX ? "left" : "right";
+                }
+
+                // Only emit the specified event when it has modifiers
+                if ($this.callbacks['swipe.' + direction]) {
+                    triggerEvent(event, this, 'swipe.' + direction, direction);
+
+                } else {
+                    // Emit a common event when it has no any modifier
+                    triggerEvent(event, this, 'swipe', direction);
+                }
+            }
+        }
+
+        function mouseEnterEvent() {
+            addTouchClass(this);
+        }
+
+        function mouseLeaveEvent() {
+            removeTouchClass(this);
+        }
+
+        function triggerEvent(e, $el, eventType, param) {
+            var $this = $el.$$touchObj;
+
+            // get the callback list
+            var callbacks = $this.callbacks[eventType] || [];
+            if (callbacks.length === 0) {
+                return null
+            }
+
+            for (var i = 0; i < callbacks.length; i++) {
+                var binding = callbacks[i];
+
+                if (binding.modifiers.stop) {
+                    e.stopPropagation();
+                }
+
+                if (binding.modifiers.prevent) {
+                    e.preventDefault();
+                }
+
+                // handle `self` modifier`
+                if (binding.modifiers.self && e.target !== e.currentTarget) {
+                    continue
+                }
+
+                if (typeof binding.value === 'function') {
+                    if (param) {
+                        binding.value(param, e);
+                    } else {
+                        binding.value(e);
+                    }
+                }
+            }
+        }
+
+        function addTouchClass($el) {
+            var className = $el.$$touchClass || options.touchClass;
+            className && $el.classList.add(className);
+        }
+
+        function removeTouchClass($el) {
+            var className = $el.$$touchClass || options.touchClass;
+            className && $el.classList.remove(className);
+        }
+
+        Vue.directive('touch', {
+            bind: function ($el, binding) {
+
+                $el.$$touchObj = $el.$$touchObj || {
+                        // an object contains all callbacks registered,
+                        // key is event name, value is an array
+                        callbacks: {},
+                        // prevent bind twice, set to true when event bound
+                        hasBindTouchEvents: false
+                    };
+
+
+                // register callback
+                var eventType = binding.arg || 'tap';
+                switch (eventType) {
+                    case 'swipe':
+                        var _m = binding.modifiers;
+                        if (_m.left || _m.right || _m.top || _m.bottom) {
+                            for (var i in binding.modifiers) {
+                                if (['left', 'right', 'top', 'bottom'].indexOf(i) >= 0) {
+                                    var _e = 'swipe.' + i;
+                                    $el.$$touchObj.callbacks[_e] = $el.$$touchObj.callbacks[_e] || [];
+                                    $el.$$touchObj.callbacks[_e].push(binding);
+                                }
+                            }
+                        } else {
+                            $el.$$touchObj.callbacks.swipe = $el.$$touchObj.callbacks.swipe || [];
+                            $el.$$touchObj.callbacks.swipe.push(binding);
+                        }
+                        break
+
+                    default:
+                        $el.$$touchObj.callbacks[eventType] = $el.$$touchObj.callbacks[eventType] || [];
+                        $el.$$touchObj.callbacks[eventType].push(binding);
+                }
+
+                // prevent bind twice
+                if ($el.$$touchObj.hasBindTouchEvents) {
+                    return
+                }
+
+                var passiveOpt = isPassiveSupported ? { passive: true } : false;
+                $el.addEventListener('touchstart', touchStartEvent, passiveOpt);
+                $el.addEventListener('touchmove', touchMoveEvent, passiveOpt);
+                $el.addEventListener('touchcancel', touchCancelEvent);
+                $el.addEventListener('touchend', touchEndEvent);
+
+                $el.addEventListener('mousedown', touchStartEvent);
+                $el.addEventListener('mousemove', touchMoveEvent);
+                $el.addEventListener('mouseup', touchEndEvent);
+                $el.addEventListener('mouseenter', mouseEnterEvent);
+                $el.addEventListener('mouseleave', mouseLeaveEvent);
+
+                // set bind mark to true
+                $el.$$touchObj.hasBindTouchEvents = true;
+            },
+
+            unbind: function ($el) {
+                $el.removeEventListener('touchstart', touchStartEvent);
+                $el.removeEventListener('touchmove', touchMoveEvent);
+                $el.removeEventListener('touchcancel', touchCancelEvent);
+                $el.removeEventListener('touchend', touchEndEvent);
+
+                $el.removeEventListener('mousedown', touchStartEvent);
+                $el.removeEventListener('mousemove', touchMoveEvent);
+                $el.removeEventListener('mouseup', touchEndEvent);
+                $el.removeEventListener('mouseenter', mouseEnterEvent);
+                $el.removeEventListener('mouseleave', mouseLeaveEvent);
+
+                // remove vars
+                delete $el.$$touchObj;
+            }
+        });
+
+        Vue.directive('touch-class', {
+            bind: function ($el, binding) {
+                $el.$$touchClass = binding.value;
+            },
+            unbind: function ($el) {
+                delete $el.$$touchClass;
+            }
+        });
+    }
+};
+
+
+/*
+ * Exports
+ */
+{
+    module.exports = vueTouchEvents;
+
+}
+});
+
+// Vue.use(VueI18n)
 
 /**
  * @module vue-pleasure
@@ -2827,7 +4093,10 @@ Vue.use(VueI18n);
  */
 
 function install (Vue, { app, store, noCoerce = false } = {}) {
+  Vue.use(vue2TouchEvents);
+
   Vue.prototype.$pleasureApiClient = pleasureApiClient;
+  console.log(`store${ store ? '' : ' NOT' } provided`, { store });
   if (!store) {
     Vue.use(Vuex);
     store = new Vuex.Store({
@@ -2838,32 +4107,8 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     // throw new Error('Please provide vuex store.')
   } else {
     // register your own vuex module
-    store.registerModule('pleasure', PleasureStore);
+    store.registerModule('pleasure', PleasureStore, { preserveState: false });
   }
-
-  /*  const i18n = new VueI18n({
-      locale: store.getters['pleasure/locale'],
-      fallbackLocale: 'en',
-      silentTranslationWarn: true,
-      messages: {
-        'en': require('~/locales/en.json'),
-        'es': require('~/locales/es.json')
-      }
-    })
-
-    Object.assign(app, { i18n })*/
-
-  /*
-    app.i18n.path = (link) => {
-      if (app.i18n.locale === app.i18n.fallbackLocale) {
-        return `/${link}`
-      }
-
-      return `/${app.i18n.locale}/${link}`
-    }
-
-    Vue.use(VueI18n)
-  */
 
   /*
   todo:
@@ -2887,7 +4132,7 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
       store.commit('pleasure/setUser', null);
     });
 
-  if (!process.server) {
+  if (process.client) {
     const storageCache = new BrowserStorageCache();
 
     const sessionChanged = () => {
@@ -2912,10 +4157,19 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     Vue.mixin(CoercePropsMixin);
   }
 
+  const kebabKeyedComponents = mapKeys(ui, (value, key) => {
+    return kebabCase(key)
+  });
+
+  console.log({ kebabKeyedComponents });
+  const components = Object.assign({}, kebabKeyedComponents, {
+    pleasure
+  });
+
+  console.log({ components });
+
   Vue.mixin({
-    components: Object.assign({}, ui, {
-      pleasure
-    }),
+    components,
     filters: {
       lang (text) {
         // return app.i18n(text)
@@ -2939,7 +4193,8 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
           user: store.getters['pleasure/user'],
           setHeadbarTitle (title) {
             bus.$emit('pleasure-headbar', { exec: ['setTitle', title] });
-          }
+          },
+          bus
         }
       }
     }
@@ -2955,7 +4210,19 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
 
     // keep store synced
     pleasureApiClient.on('update', (payload) => {
+      // todo: move to a DropdownManager implementation
+      // and keep it fully synced
       store.dispatch('pleasure/dropdownChanged', payload);
+    });
+
+    pleasureApiClient.on('create', ({ entity }) => {
+      // todo: move to a DropdownManager implementation
+      store.dispatch('pleasure/syncDropdown', { entity, force: true });
+    });
+
+    pleasureApiClient.on('delete', ({ entity }) => {
+      // todo: move to a DropdownManager implementation
+      store.dispatch('pleasure/syncDropdown', { entity, force: true });
     });
   }
 }

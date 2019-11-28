@@ -2,18 +2,21 @@ import pleasure from './pleasure.vue'
 import * as PleasureStore from './lib/pleasure-store.js'
 import { BrowserStorageCache } from './lib/browser-storage-cache'
 import CoercePropsMixin from 'vue-coerce-props'
-import VueI18n from 'vue-i18n'
+// import VueI18n from 'vue-i18n'
 import Vuex from 'vuex'
-import Vue from 'vue'
+// import Vue from 'vue'
 import Cookies from 'js-cookie'
 import './pleasure.pcss'
 import * as ui from './ui/index.js'
 import { bus } from './lib/bus.js'
 import pleasureApiClient from './lib/client.js'
+import kebabCase from 'lodash/kebabCase'
+import mapKeys from 'lodash/mapKeys'
+import Vue2TouchEvents from 'vue2-touch-events'
 
 export { pleasureApiClient }
 
-Vue.use(VueI18n)
+// Vue.use(VueI18n)
 
 /**
  * @module vue-pleasure
@@ -21,7 +24,10 @@ Vue.use(VueI18n)
  */
 
 function install (Vue, { app, store, noCoerce = false } = {}) {
+  Vue.use(Vue2TouchEvents)
+
   Vue.prototype.$pleasureApiClient = pleasureApiClient
+  console.log(`store${ store ? '' : ' NOT' } provided`, { store })
   if (!store) {
     Vue.use(Vuex)
     store = new Vuex.Store({
@@ -32,32 +38,8 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     // throw new Error('Please provide vuex store.')
   } else {
     // register your own vuex module
-    store.registerModule('pleasure', PleasureStore)
+    store.registerModule('pleasure', PleasureStore, { preserveState: false })
   }
-
-  /*  const i18n = new VueI18n({
-      locale: store.getters['pleasure/locale'],
-      fallbackLocale: 'en',
-      silentTranslationWarn: true,
-      messages: {
-        'en': require('~/locales/en.json'),
-        'es': require('~/locales/es.json')
-      }
-    })
-
-    Object.assign(app, { i18n })*/
-
-  /*
-    app.i18n.path = (link) => {
-      if (app.i18n.locale === app.i18n.fallbackLocale) {
-        return `/${link}`
-      }
-
-      return `/${app.i18n.locale}/${link}`
-    }
-
-    Vue.use(VueI18n)
-  */
 
   /*
   todo:
@@ -81,7 +63,7 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
       store.commit('pleasure/setUser', null)
     })
 
-  if (!process.server) {
+  if (process.client) {
     const storageCache = new BrowserStorageCache()
 
     const sessionChanged = () => {
@@ -106,10 +88,19 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     Vue.mixin(CoercePropsMixin)
   }
 
+  const kebabKeyedComponents = mapKeys(ui, (value, key) => {
+    return kebabCase(key)
+  })
+
+  console.log({ kebabKeyedComponents })
+  const components = Object.assign({}, kebabKeyedComponents, {
+    pleasure
+  })
+
+  console.log({ components })
+
   Vue.mixin({
-    components: Object.assign({}, ui, {
-      pleasure
-    }),
+    components,
     filters: {
       lang (text) {
         // return app.i18n(text)
@@ -133,7 +124,8 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
           user: store.getters['pleasure/user'],
           setHeadbarTitle (title) {
             bus.$emit('pleasure-headbar', { exec: ['setTitle', title] })
-          }
+          },
+          bus
         }
       }
     }
@@ -149,7 +141,19 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
 
     // keep store synced
     pleasureApiClient.on('update', (payload) => {
+      // todo: move to a DropdownManager implementation
+      // and keep it fully synced
       store.dispatch('pleasure/dropdownChanged', payload)
+    })
+
+    pleasureApiClient.on('create', ({ entity }) => {
+      // todo: move to a DropdownManager implementation
+      store.dispatch('pleasure/syncDropdown', { entity, force: true })
+    })
+
+    pleasureApiClient.on('delete', ({ entity }) => {
+      // todo: move to a DropdownManager implementation
+      store.dispatch('pleasure/syncDropdown', { entity, force: true })
     })
   }
 }

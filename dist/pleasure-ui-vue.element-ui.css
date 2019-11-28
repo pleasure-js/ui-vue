@@ -39,6 +39,7 @@ Element UI customization for Pleasure
     background: #242424;
     color: #e7e7e7;
     border: none;
+    height: 40px;
   }
 
 .pleasure .el-input__inner {
@@ -46,6 +47,7 @@ Element UI customization for Pleasure
     background: #242424;
     color: #e7e7e7;
     border: none;
+    height: 40px;
   }
 
 .pleasure select {
@@ -53,6 +55,7 @@ Element UI customization for Pleasure
     background: #242424;
     color: #e7e7e7;
     border: none;
+    height: 40px;
   }
 
 .pleasure .el-textarea__inner {
@@ -60,6 +63,7 @@ Element UI customization for Pleasure
     background: #242424;
     color: #e7e7e7;
     border: none;
+    height: 40px;
   }
 
 .pleasure input::-webkit-input-placeholder {
@@ -790,6 +794,11 @@ Element UI customization for Pleasure
       color: #242424;
     }
 
+.el-button.plain {
+    background: transparent;
+    border: none;
+  }
+
 .el-message-box {
   border: none;
   background: #242424;
@@ -838,7 +847,10 @@ Element UI customization for Pleasure
   background: undefined !important;
   color: undefined !important;
   border: none;
+  -webkit-transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .delete-btn {
@@ -852,11 +864,15 @@ Element UI customization for Pleasure
   background: undefined !important;
   color: undefined !important;
   border: none;
+  -webkit-transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform .3s 0s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .add-btn:hover, .delete-btn:hover {
-    transform: scale(1.2)
+    -webkit-transform: scale(1.2);
+            transform: scale(1.2)
   }
 
 .add-btn.abs, .delete-btn.abs {
@@ -886,6 +902,7 @@ html.client-app .add-btn, html.client-app .delete-btn {
 
 .el-table__empty-text {
   margin-top: undefined;
+  line-height: inherit;
 }
 
 .el-form {
