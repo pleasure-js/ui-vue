@@ -34,6 +34,7 @@ module.exports = {
     colors,
     input: {
       border: 'none',
+      height: '40px',
       colorPlaceholder: colors.midBlack,
       color: {
         default: colors.grayPale,
@@ -132,27 +133,52 @@ module.exports = {
       }
     },
     layout: {
-      padding: '20px'
+      padding: '20px',
+      gap: '20px'
     }
   },
   menu: {
-    background: '#fc0',
+    background: palette.primary,
     width: '260px',
     bars: {
       topGap: '0px',
-      color: palette.primary
+      bottomGap: '20px',
+      color: {
+        default: palette.primary,
+        over: palette.white
+      }
+    },
+    item: {
+      color: {
+        default: palette.primary,
+        active: palette.primary
+      },
+      background: {
+        default: 'transparent',
+        over: 'transparent'
+      }
     }
   },
   headbar: {
     height: '60px',
-    background: '#fc0',
+    background: palette.primary,
     title: {
-      color: '#fff'
+      color: palette.secondary
     }
   },
   table: {
     edit: {
       search: {
+        background: palette.primary,
+        color: palette.secondary,
+      },
+      controls:{
+        width: '80px',
+        operations: {
+          background: palette.primary
+        }
+      },
+      prompt: {
         background: '#fc0'
       }
     }

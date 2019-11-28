@@ -2,6 +2,7 @@
   <div
     :class="{ pleasure: true, 'multiple-lines': multipleLines }"
   >
+    <slot name="header"></slot>
     <pleasure-form
       :disabled="disabled"
       :form-id="formId"
@@ -27,7 +28,7 @@
           />
         </pleasure-field-container>
       </template>
-      <slot />
+      <slot/>
       <pleasure-form-controls
         v-if="loaded && withControls"
         :v-bind="$props"
@@ -54,7 +55,7 @@
   import PleasureFieldContainer from './pleasure-field-container.vue'
   import PleasureField from './pleasure-field.vue'
   import PleasureFormControls from './pleasure-form-controls.vue'
-  import PleasureTableEdit from './ui/table-edit.vue'
+  import PleasureTableEdit from './ui/pleasure-table-edit.vue'
   import defaults from 'lodash/defaults'
   import get from 'lodash/get'
   import merge from 'deepmerge'
@@ -76,7 +77,6 @@
    * `${i18nScope}.label.${field.path}`, and last but not least, `${i18nScope}.${field.path}` and will auto replace the
    * values in `field.placeholder` and `field.label`.
    *
-   * @vue-prop {String[]} [omit] - Fields to omit from the entity schema.
    *
    * @vue-prop {String} [i18nScope] - Scope where to try to resolve i18n abbreviations from `label`, `placeholder` and
    * error messages. Defaults to the name of the `entity` if any.
@@ -116,6 +116,9 @@
       PleasureTableEdit
     },
     props: {
+      /**
+       * What to omit...
+       */
       omit: {
         type: Array,
         default () {
@@ -274,15 +277,16 @@
       this.entryRead = true
     },
     methods: {
-      onCancel () {
+      /**
+       * Dismisses any changes made and clear the form
+       */
+      dismiss () {
 
       },
+      onCancel () {
+        this.$emit('cancel')
+      },
       toPleasureField (field) {
-        /*
-                const isDeepKebabCased = v => {
-                  return /^[a-z][a-z.-]+[a-z]$/.test(v)
-                }
-        */
         const i18nLabel = kebabCase(field.path)
 
         const placeholder = [

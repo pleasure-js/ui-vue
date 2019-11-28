@@ -1,29 +1,74 @@
 <template>
-  <div :class="{ content: true, 'pleasure-table-edit': true, 'friendly-table': true, 'can-add': canAdd }">
-    <!--
-        <div
-          v-if="withSearch"
-          class="controls"
+  <div
+    :class="{ content: true, 'with-search': withSearch, 'pleasure-table-edit': true, 'friendly-table': true, 'can-add': canAdd }">
+    <!-- Controls (search, filters) -->
+    <div
+      class="controls"
+    >
+      <slot name="controls"/>
+      <el-row v-if="withSearch">
+        <el-col
+          class="search-col"
         >
-          <slot name="controls" />
-          <el-row>
-            <el-col
-              :xs="{ span: searchSpan }"
-              style="padding: 0"
-            >
-              <el-input
-                v-model="search"
-                spellcheck="false"
-                autocomplete="off"
-                class="search-input"
-                placeholder="Search"
-                suffix-icon="el-icon-search"
-                name="search"
-              />
-            </el-col>
-          </el-row>
+          <el-input
+            v-model="search"
+            :clearable="true"
+            spellcheck="false"
+            autocomplete="off"
+            class="search-input"
+            placeholder="Search"
+            name="search"
+            @input="searchHandler"
+          />
+        </el-col>
+        <el-col
+          class="controls-col"
+        >
+          <el-button
+            class="plain"
+            :icon="searching ? `el-icon-loading` : `el-icon-search`"
+            @click="advancedSearchControls = !advancedSearchControls"
+          ></el-button>
+          <el-button
+            class="plain"
+            icon="el-icon-s-operation"
+            @click="filterControls = !filterControls"
+          ></el-button>
+        </el-col>
+      </el-row>
+      <!-- Search Controls -->
+      <div class="search-controls">
+        <div class="advanced-search control" ref="advanced-search-controls" v-if="advancedSearchControls">
+          <template
+            v-for="fieldName in indexes"
+          >
+            {{ fieldName }}
+          </template>
         </div>
-    -->
+        <div
+          class="filters control"
+          ref="filter-controls"
+          v-if="filterControls">
+          <!-- Table Edit Filter -->
+          <table-edit-filter
+            v-for="fieldName in indexes"
+            :entity="entity"
+            :field-name="fieldName"
+            v-model="filterData[fieldName]"
+            :manager="manager"
+            @refresh-results="toggleSort(fieldName)"
+          ></table-edit-filter>
+        </div>
+        <div class="sort control" ref="sort-controls" v-if="sortControls">
+          <template
+            v-for="fieldName in indexes"
+          >
+            {{ fieldName }}
+          </template>
+        </div>
+      </div>
+    </div>
+    <!-- Actual table data -->
     <el-table
       ref="tb"
       class="the-table"
@@ -39,20 +84,23 @@
       @cell-click="handleCellClick"
       @row-click="handleRowClick"
       @selection-change="handleSelectionChange"
-      @sort-change="handleSortChange"
+      :empty-text="empty"
     >
 
       <el-table-column type="selection" width="35" v-if="canDelete"></el-table-column>
-            <el-table-column
-              v-for="field in fields"
-              :prop="field"
-              :label="guessLabel(field)"
-              min-width="180"
-              sortable="custom">
-              <template slot-scope="scope">{{ scope.row[field] }}</template>
-            </el-table-column>
-
+      <el-table-column
+        v-for="fieldName in fields"
+        :prop="fieldName"
+        :label="guessLabel(fieldName)"
+        min-width="180"
+        :column-key="fieldName"
+      >
+        <template slot-scope="scope">{{ isEnum(fieldName) ? guessLabel(scope.row[fieldName], `entities.enum`) :
+          scope.row[fieldName] }}
+        </template>
+      </el-table-column>
     </el-table>
+    <!-- Add / remove buttons -->
     <el-button
       v-if="canAdd"
       class="add-btn"
@@ -69,22 +117,18 @@
       circle
       @click="handleDeleteSelection"
     />
+    <!-- prompt to add -->
+    <pleasure
+      :class="{ prompt: true, on: promptAdd }"
+      :entity="entity"
+      method="create"
+      :key="id"
+      @cancel="promptAdd = false"
+    ></pleasure>
   </div>
 </template>
 <style lang="postcss">
-  .the-table {
-    table {
-      font-size: 1em;
-    }
-  }
-
   .pleasure-table-edit {
-    &:not(.can-add) {
-      .delete-btn {
-        left: 30px;
-      }
-    }
-
     position: absolute;
     overflow: hidden;
     top: var(--headbar-height);
@@ -92,12 +136,67 @@
     width: 100vw;
     bottom: 0;
 
+    &:not(.can-add) {
+      .delete-btn {
+        left: 30px;
+      }
+    }
+
     .controls {
+      min-height: 40px;
       position: absolute;
       display: block;
       top: 0;
       left: 0;
       width: 100%;
+
+      .search-col {
+        width: calc(100% - var(--table-edit-controls-width));
+      }
+
+      .controls-col {
+        background: var(--table-edit-controls-operations-background);
+        width: var(--table-edit-controls-width);
+
+        .el-button {
+          border-radius: 0;
+          padding: 0;
+          text-align: center;
+          height: var(--pleasure-input-height);
+          width: calc(var(--table-edit-controls-width) / 2);
+          float: left;
+        }
+      }
+
+      .search-controls {
+        .control {
+          padding: 20px;
+        }
+      }
+
+      .filters {
+        .el-row + .el-row {
+          margin-top: 10px;
+        }
+
+        .el-input--mini .el-input__inner {
+          line-height: inherit;
+        }
+      }
+    }
+
+    .search-input {
+      .el-input__inner {
+        border-radius: 0;
+        border: none;
+        color: var(--table-edit-search-color) !important;
+        background-color: var(--table-edit-search-background) !important;
+
+        &:focus {
+          color: var(--table-edit-search-color-focus) !important;
+          background-color: var(--table-edit-search-background-focus) !important;
+        }
+      }
     }
 
     .the-table {
@@ -107,6 +206,16 @@
       right: 0;
       bottom: 0;
       height: auto !important;
+
+      table {
+        font-size: 1em;
+      }
+    }
+
+    &.with-search {
+      .the-table {
+        top: 40px;
+      }
     }
 
     .el-table__body-wrapper {
@@ -114,24 +223,26 @@
         margin-bottom: 100px;
       }
     }
+
+    .prompt {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      bottom: 0;
+      box-sizing: border-box;
+      padding: var(--pleasure-layout-gap);
+      background: var(--table-edit-prompt-background);
+      transform: translateY(100%);
+      transition: all 0.4s ease-in-out;
+
+      &.on {
+        transform: translateY(0);
+      }
+    }
   }
 
   .friendly-table {
-
-    .search-input {
-      .el-input__inner {
-        border: none;
-        color: var(--table-edit-search-color) !important;
-        background-color: var(--table-edit-search-background) !important;
-        @include border-radius(0);
-
-        &:focus {
-          color: var(--table-edit-search-color-focus) !important;
-          background-color: var(--table-edit-search-background-focus) !important;
-        }
-      }
-    }
-
     .controls {
       height: 40px;
     }
@@ -308,7 +419,12 @@
 </style>
 <script>
   import uniq from 'lodash/uniq'
-  import startCase from 'lodash/startCase'
+  import PTE from '../lib/pleasure-table-edit'
+  import debounce from 'lodash/debounce'
+  import forOwn from 'lodash/forOwn'
+  import kebabCase from 'lodash/kebabCase'
+  import { DropdownManager } from '../lib/dropdown-manager.js'
+  import TableEditFilter from './pleasure-table-edit-filter.vue'
 
   const fnStub = {
     type: Function,
@@ -317,19 +433,28 @@
     }
   }
 
+  /**
+   * Lists all entries in an entity and allows the user (according to their permission)
+   * to search, find, sort, download in csv format, etc.
+   */
+
   export default {
+    components: {
+      TableEditFilter
+    },
+    mixins: [PTE],
     props: {
       customBehavior: {
         type: Boolean,
         default: false
       },
+      waitBeforeSearch: {
+        type: Number,
+        default: 300
+      },
       tableTop: {
         type: Number,
         default: 0
-      },
-      searchSpan: {
-        type: Number,
-        default: 24
       },
       searchBy: Array,
       searchStrict: {
@@ -355,13 +480,6 @@
         type: Boolean,
         default: false
       },
-      /**
-       * @vue-prop {String} entity - Entity name
-       */
-      entity: {
-        type: String,
-        required: true
-      },
       cellClick: fnStub,
       /**
        * @vue-prop {Function|Boolean} rowClick=true - A function to handle the row click. `true` to let pleasure handle
@@ -377,18 +495,57 @@
     },
     data () {
       return {
+        promptAdd: false,
+        eleMeta: {
+          advancedSearchControls: 0,
+          filterControls: 0,
+          sortControls: 0
+        },
+        filterData: {},
+        advancedSearchControls: false,
+        sortControls: false,
+        filterControls: false,
+        filter: {
+          advancedSearchControls: {
+            type: null,
+            value: null
+          },
+          sortControls: {
+            type: null,
+            value: null
+          },
+          filterControls: {
+            type: null,
+            value: null
+          }
+        },
         loadingMore: false,
         sort: null,
         tableScroll: null,
+        manager: null,
         searchResults: null,
         selections: [],
-        search: null
+        search: null,
+        searching: false,
+        /**
+         * @function searchHandler
+         * Handles input search performing
+         **/
+        searchHandler: debounce(() => {
+          this.doSearch(this.search)
+        }, this.waitBeforeSearch)
         // results: (this.dropdowns[this.entity] ? this.dropdowns[this.entity].slice() : [])
       }
     },
     computed: {
+      empty () {
+        if (this.searching) {
+          return `Looking for entries containing "${ this.search }" in ${ this.entity }`
+        }
+        return this.search ? `No entries matching "${ this.search }" found in ${ this.entity }` : `No entries found in ${ this.entity }`
+      },
       indexes () {
-        if (!this.$pleasure.entities[this.entity]) {
+        if (!this.$pleasure.entities[this.entity] || !this.$pleasure.entities[this.entity].$pleasure.index) {
           return []
         }
 
@@ -410,46 +567,119 @@
           top += 40
         }
 
-        return this.withSearch ? { top } : null
-      },
-      datatable () {
-        if (this.searchResults !== null) {
-          return this.searchResults
+        if (this.filterControls) {
+          top += this.eleMeta.filterControls
         }
 
-        return this.$pleasure.dropdown[this.entity] || []
+        // console.log({ top })
+
+        return this.withSearch ? { top: `${ top }px` } : null
+      },
+      datatable () {
+        return this.$store.getters['pleasure/dropdown'][this.entity] || []
       },
       safeLookUp () {
         return debounce(this.lookUp.bind(this), 150)
       }
     },
     mounted () {
-      console.log(`entity>>>`, this.$pleasure.entities[this.entity])
-      /*
-            this.tableScroll = this.$el.querySelector('.el-table__body-wrapper')
-            this.tableScroll.addEventListener('scroll', this.handleScroll)
+      // console.log(`store`, this.$store)
+      this.manager = new DropdownManager({ entity: this.entity, store: this.$store })
 
-            if (!this.defaultSort && !this.customBehavior && this.entity) {
-              // this.reload()
-              /!* this.$store.dispatch('db/dropdown', {
-                model: this.entity,
-                token: getToken()
-              }) *!/
-            }
-      */
+      this.indexes.forEach(index => {
+        this.$set(this.filterData, index, { type: null, value: null, sort: null })
+        this.$set(this.filterData, `$sort`, [])
+      })
+
+      const track = ['advancedSearchControls', 'sortControls', 'filterControls']
+
+      track.forEach(ele => {
+        // console.log(`turning on ${ ele }`)
+        this[ele] = true
+      })
+
+      this.$nextTick(() => {
+        track.forEach(ele => {
+          // console.log(`Checking offsetHeight of ${ kebabCase(ele) }`)
+          // console.log(`offsetHeight of ${ kebabCase(ele) } ${ this.$refs[kebabCase(ele)].offsetHeight }`)
+          try {
+            this.eleMeta[ele] = this.$refs[kebabCase(ele)].offsetHeight
+          } catch (err) {
+            console.log(ele, err)
+          }
+          this[ele] = false
+        })
+      })
+    },
+    watch: {
+      search (v) {
+        this.searching = !!v
+      }
     },
     methods: {
-      guessLabel(field) {
-        const requestedLabel = `entities.label.${field}`
-        const foundLabel = this.$t(requestedLabel)
-        return requestedLabel !== foundLabel ? foundLabel : startCase(field)
+      applyFilter () {
+        return this.syncManager()
+      },
+      toggleSort (fieldName) {
+        const newSort = this.filterData.$sort.filter((item) => {
+            return Object.keys(item)[0] !== fieldName
+          }
+        )
+
+        if (this.filterData[fieldName].sort !== null) {
+          newSort.push({
+            [fieldName]: this.filterData[fieldName].sort
+          })
+        }
+
+        console.log({ newSort })
+        this.$set(this.filterData, '$sort', newSort)
+        console.log(`this.filterData.$sort`, this.filterData.$sort)
+        return this.syncManager()
+      },
+      /**
+       * @function doSearch
+       * Uses pleasureApiClient to perform a search against the entity
+       * @param {String} keywords - The keywords
+       **/
+      doSearch (keywords) {
+        this.manager.search = keywords
+        return this.syncManager()
+      },
+      async syncManager () {
+        this.searching = true
+        const find = this.manager.find
+        if (Object.keys(this.filterData).length > 0) {
+          Object.keys(this.filterData).forEach(prop => {
+            // console.log(`checking ${ prop }`, this.filterData[prop])
+            if (this.filterData[prop].type && this.filterData[prop].value) {
+              try {
+                find[prop] = this.filterData[prop].type === 'equals' ? this.filterData[prop].value : new RegExp(this.filterData[prop].value, 'i')
+              } catch (err) {
+                find[prop] = this.filterData[prop].value
+              }
+              // console.log(`this.filterData[${ prop }]`, this.filterData[prop])
+            } else if (find[prop] && !this.isEnum(prop)) {
+              delete find[prop]
+            }
+          })
+        }
+        this.manager.find = find
+        this.manager.sort = this.filterData.$sort
+        await this.manager.sync()
+        this.searching = false
+      },
+      filterPropertyHandler (fieldName, e) {
+        this.searchHandler(e)
+        // console.log(`focus`, this.$refs[`field-${ fieldName }`])
       },
       async reload () {
         if (!this.entity) {
           return
         }
-        console.log(`reloading`, this.entity)
-        // this.$store.dispatch('db/clean', this.entity)
+        // console.log(`reloading`, this.entity)
+        // this.$store.dispatch([7 90
+        // 'db/clean', this.entity)
         return this.loadMore(true)
       },
       getSearch () {
@@ -472,71 +702,14 @@
 
         return search
       },
-      async handleSortChange (sort) {
-        if (!this.entity) {
-          return
-        }
-
-        this.sort = sort
-        this.$emit('sort-change', sort)
-        console.log(`table sort`)
-        /*
-                await this.$store.dispatch('db/dropdown', {
-                  model: this.entity,
-                  sort: { [sort.prop]: sort.order === 'descending' ? -1 : 1 },
-                  params: this.appendData,
-                  token: getToken()
-                })
-
-                this.$el.querySelector('.el-table__body-wrapper').scrollTop = 0
-                this.loadingMore = false
-        */
-      },
-      handleScroll () {
-        const { tableScroll } = this
-
-        const scrollHeight = tableScroll.scrollHeight - tableScroll.offsetHeight
-        const scrollTop = tableScroll.scrollTop
-
-        if (scrollTop >= scrollHeight) {
-          this.loadMore()
-        }
-      },
-      async loadMore (r) {
-        return console.log(`loadMore`)
-        if ((!r && this.loadingMore) || !this.entity) {
-          return
-        }
-
-        const { sortValue: sort } = this
-
-        this.loadingMore = true
-        let data
-
-        // todo: list
-        try {
-          ({ data } = await this.$store.dispatch('db/api', {
-            model: this.entity,
-            skip: this.datatable.length,
-            sort,
-            params: this.appendData,
-            ...this.getSearch()
-          }))
-        } catch (err) {
-          data = []
-        }
-
-        if (this.searchResults
-        ) {
-          this.searchResults.push(...data)
-        } else {
-          this.$store.commit('db/APPEND_DROPDOWN', { model: this.entity, data })
-        }
-
-        this.loadingMore = !r && data.length < 1
+      handleSortChange (sort) {
+        // console.log({ sort })
+        this.manager.sort = { [sort.prop]: sort.order === 'ascending' ? 1 : -1 }
+        return this.syncManager()
       },
       promptCreate () {
-        this.$router.push({ path: `/pleasure/create/${ this.entity }` })
+        this.promptAdd = !this.promptAdd
+        // this.$router.push({ path: `/pleasure/create/${ this.entity }` })
       },
       handleDeleteSelection () {
         this.$confirm(this.$t('confirm.remove.default'))
