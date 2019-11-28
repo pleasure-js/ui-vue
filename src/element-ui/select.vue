@@ -1,5 +1,5 @@
 <template>
-  <div :class="{'pleasure-select-container': true, focused: focused }">
+  <div :class="{ 'pleasure-select-container': true, focused: focused }">
     <template v-if="!readonly && !otherActive">
       <select
         :key="key"
@@ -43,6 +43,30 @@
     ></el-input>
   </div>
 </template>
+<style lang="postcss">
+  .pleasure-select-container {
+    .pleasure-select {
+      display: block;
+      position: relative;
+      width: 100%;
+      border: none;
+      height: 40px;
+      background: var(--pleasure-input-background);
+      box-sizing: border-box;
+      text-indent: 10px;
+      padding: 0 20px;
+      outline: none;
+    }
+
+    &.focused {
+      .el-input__suffix {
+        .el-input__icon {
+          color: var(--pleasure-input-color-icon) !important;
+        }
+      }
+    }
+  }
+</style>
 <script>
   import castArray from 'lodash/castArray'
   import find from 'lodash/find'
@@ -68,101 +92,7 @@
     return valid
   }
 
-  /**
-   * @module vue-pleasure/select
-   * @desc A component to render lists by providing `Arrays`, or values from other entities@.
-   * @vue-prop {String} [otherLabel=label.other] - Label to be displayed when 'other' value selected.
-   *
-   * @vue-prop {Object[]|String[]} [options] - List of available options. See property `optionsMap` for advanced use.
-   *
-   *  In case of a `String` it would look for a dropdown list with the name of `options`. See {@link store/dropdown}.
-   *
-   * In case of an `Array` of `String's`, all of the `String` values will be listed.
-   *
-   * In case of an `Array` of `Objects`, options would be rendered using the dropdown's `Array` value and parsed by
-   * `optionMap`
-   *
-   * @vue-prop {Object[]|String[]} [path] - List of available options. See property `optionsMap` for advanced use.
-   */
   export default {
-    props: {
-      i18nScope: {
-        type: String,
-        default: null
-      },
-      otherLabel: {
-        type: String,
-        default: 'label.other'
-      },
-      otherPlaceholder: {
-        type: String,
-        default: 'label.other'
-      },
-      otherAvailable: {
-        type: Boolean,
-        default: false
-      },
-      pleasureValues: {
-        type: Object,
-        default: null
-      },
-      find: {
-        type: Object,
-        default: null
-      },
-      readonly: {
-        type: Boolean,
-        default: false
-      },
-      sort: {
-        type: Boolean,
-        default: true
-      },
-      value: {
-        type: [Object, String, Number],
-        default: null
-      },
-      options: {
-        type: [String, Object, Array],
-        default: null
-      },
-      name: {
-        type: String,
-        default: null
-      },
-      placeholder: {
-        type: String,
-        default: null
-      },
-      labelResolve: {
-        type: Function,
-        default: null
-      },
-      optionsMap: {
-        type: Object,
-        default () {
-          console.log(typeof this.options, this.options)
-          return {
-            value: 'value',
-            label: typeof this.options === 'string' ? 'value' : 'label'
-          }
-        }
-      }
-    },
-    watch: {
-      selected (v) {
-        if (v === ':other:') {
-          this.otherActive = true
-          this.selected = null
-          this.$nextTick(() => {
-            this.$refs['manual-input'].focus()
-          })
-        }
-
-        this.$emit('input', this.isNumber ? Number(v) || 0 : this.theValue(v))
-        this.setReadOnlyLabel()
-      }
-    },
     methods: {
       theLabel (label) {
         const altLabels = [`labels.${label}`, label]
@@ -180,7 +110,7 @@
       },
       getRealOptions () {
         let options = this.options
-        let realOptions
+        let realOptions = [] // important to initialize variable for vuedoc
 
         const fixValues = v => {
           return {
@@ -318,27 +248,3 @@
     }
   }
 </script>
-<style lang="postcss">
-  .pleasure-select-container {
-    .pleasure-select {
-      display: block;
-      position: relative;
-      width: 100%;
-      border: none;
-      height: 40px;
-      background: var(--pleasure-input-background);
-      box-sizing: border-box;
-      text-indent: 10px;
-      padding: 0 20px;
-      outline: none;
-    }
-
-    &.focused {
-      .el-input__suffix {
-        .el-input__icon {
-          color: var(--pleasure-input-color-icon) !important;
-        }
-      }
-    }
-  }
-</style>
