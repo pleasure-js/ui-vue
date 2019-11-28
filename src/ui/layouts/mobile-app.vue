@@ -1,6 +1,6 @@
 <template>
-  <div class="pleasure-layout-mobile-app">
-    <slot />
+  <div :class="{ 'pleasure-layout-mobile-app': true, [headbarPosition]: true}">
+    <slot/>
   </div>
 </template>
 <style lang="postcss">
@@ -9,5 +9,19 @@
     box-sizing: border-box;
     padding: var(--pleasure-layout-padding);
     margin: var(--headbar-height) auto 0 auto;
+
+    &.bottom {
+      margin-top: 0;
+    }
   }
 </style>
+<script>
+  export default {
+    props: {
+      headbarPosition: {
+        type: String,
+        default: 'top'
+      }
+    }
+  }
+</script>

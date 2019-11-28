@@ -37,6 +37,20 @@
       display: block;
       position: relative;
       height: 100%;
+      color: var(--menu-item-color);
+      text-decoration: none;
+    }
+
+    .el-menu-item {
+      background-color: var(--menu-item-background);
+
+      &:hover, &:focus {
+        background-color: var(--menu-item-background-over);
+      }
+
+      a.nuxt-link-exact-active {
+        color: var(--menu-item-color-active);
+      }
     }
   }
 </style>

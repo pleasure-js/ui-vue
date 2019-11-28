@@ -1,6 +1,5 @@
 import pleasureApiClient from './client.js'
 import Vue from 'vue'
-import Cookies from 'cookies'
 import objectHash from 'object-hash'
 import defaults from 'lodash/defaults'
 import forOwn from 'lodash/forOwn'
@@ -18,7 +17,8 @@ export const state = () => {
     entitiesSync: 0, // 0 = not syncing, -1 = syncing, 1 = synced
     entitiesSchema: {},
     dropdown: {},
-    settings: process.env.$pleasure.settings || {},
+    dropdownMeta: {},
+    settings: process.env['$pleasure.settings'] || {},
     dropdownLoading: [],
     user: null,
     locales: ['en', 'es'],
@@ -55,8 +55,9 @@ export const mutations = {
     })
     Vue.set(state, 'entitiesSchema', entitiesSchema)
   },
-  setDropdown (state, { dropdownName, results }) {
+  setDropdown (state, { dropdownName, results, listOptions }) {
     Vue.set(state.dropdown, dropdownName, results)
+    Vue.set(state.dropdownMeta, dropdownName, listOptions)
   },
   updateDropdown (state, { entity, modified, id }) {
     const set = get(state, `dropdown.${ entity }`)
@@ -70,7 +71,11 @@ export const mutations = {
     Vue.set(set, set.indexOf(localEntry), final)
   },
   clearDropdowns (state) {
-    Vue.set(state, 'dropdown', {})
+    Object.keys(state.dropdown).forEach(dropdown => {
+      Vue.set(state.dropdown, dropdown, undefined)
+
+    })
+    // Vue.set(state, 'dropdown', {})
   }
 }
 
@@ -94,36 +99,38 @@ export const actions = {
   async dropdownChanged ({ commit }, payload = {}) {
     return commit('updateDropdown', payload)
   },
-  async loadDropdown ({ commit, state }, { entity, listOptions, name, force = false, req } = {}) {
-    if (req) {
+  async loadDropdown (store, { entity, listOptions, name, force = false, req } = {}) {
+    const { commit, state } = store
+
+    if (process.server && req) {
+      const Cookies = require('cookies')
       const accessToken = new Cookies(req).get('accessToken')
       pleasureApiClient.setCredentials({ accessToken })
     }
+
     const dropdownName = entity || name
     const id = objectHash({ entity, listOptions, dropdownName })
 
     if (state.dropdownLoading.indexOf(id) >= 0) {
-      // console.log(`already loading id ${ id }`)
       return
     }
 
-    // console.log(`load dropdown`)
-
     if (!force && state.dropdown[dropdownName]) {
-      // console.log(`dropdown ${ dropdownName } already existis`, state.dropdown[dropdownName])
       return state.dropdown[dropdownName]
     }
 
     commit('setDropdownLoading', id)
+
     let results
     let err
+
     try {
       results = await pleasureApiClient.list(entity, listOptions)
     } catch (e) {
       err = e
     }
 
-    commit('setDropdown', { dropdownName, results })
+    commit('setDropdown', { dropdownName, results, listOptions })
     commit('removeDropdownLoading', id)
 
     if (err) {
@@ -165,6 +172,9 @@ export const getters = {
   },
   dropdown (state) {
     return state.dropdown
+  },
+  dropdownMeta (state) {
+    return state.dropdownMeta
   },
   settings (state) {
     return state.settings

@@ -30,6 +30,7 @@ Element UI customization for Pleasure
     background: var(--pleasure-input-background);
     color: var(--pleasure-input-color);
     border: var(--pleasure-input-border);
+    height: var(--pleasure-input-height);
 
     &::placeholder {
       color: var(--pleasure-input-color-placeholder);
@@ -269,6 +270,11 @@ Element UI customization for Pleasure
       color: var(--pleasure-button-color-action-over);
     }
   }
+
+  &.plain {
+    background: transparent;
+    border: none;
+  }
 }
 
 .el-message-box {
@@ -359,6 +365,7 @@ Element UI customization for Pleasure
 
 .el-table__empty-text {
   margin-top: calc(-1 * var(--pleasure-headbar-height) + 43px);
+  line-height: inherit;
 }
 
 .el-form {

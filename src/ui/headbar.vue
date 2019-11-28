@@ -1,5 +1,5 @@
 <template>
-  <header class="headbar">
+  <header :class="{ headbar: true, [position]: true }">
     <slot name="default">
       <h1 v-if="title">
         {{ title }}
@@ -11,10 +11,16 @@
   .headbar {
     position: fixed;
     top: 0;
+    left: 0;
     width: 100vw;
     height: var(--headbar-height);
     background: var(--headbar-background);
     z-index: 90;
+
+    &.bottom {
+      top: auto;
+      bottom: 0;
+    }
 
     h1 {
       text-align: center;
@@ -36,6 +42,14 @@
       mainTitle: {
         type: String,
         default: ''
+      },
+      position: {
+        type: String,
+        default: 'top',
+        validator: function (value) {
+          // The value must match one of these strings
+          return ['top', 'bottom'].indexOf(value) !== -1
+        }
       }
     },
     data () {

@@ -3,8 +3,8 @@
     ref="bars"
     :class="cls"
   >
-    <div />
-    <div />
+    <div/>
+    <div/>
   </div>
 </template>
 <style lang="postcss">
@@ -26,6 +26,10 @@
     top: var(--menu-bars-top-gap);
     position: fixed;
     z-index: 110;
+    width: var(--box);
+    height: var(--box);
+    margin: 15px 20px;
+    cursor: pointer;
 
     &.side-navigation {
       transition-delay: .15s;
@@ -33,10 +37,24 @@
       transform: translateX(calc(var(--menu-width) - 60px));
     }
 
-    width: var(--box);
-    height: var(--box);
-    margin: 15px 20px;
-    cursor: pointer;
+    &.right {
+      left: auto;
+      right: 0;
+
+      &.side-navigation {
+        transform: translateX(calc((var(--menu-width) * -1) + 60px));
+      }
+    }
+
+    &.center {
+      left: 50%;
+      transform: translateX(calc((var(--box) * -1) - 10px));
+    }
+
+    &.bottom {
+      top: auto;
+      bottom: var(--menu-bars-bottom-gap);
+    }
 
     &.hide {
       opacity: 0 !important;
@@ -61,6 +79,12 @@
 
       &:nth-child(2) {
         top: calc(calc(var(--box) * 2 / 3) + calc(var(--line-height) / -2));
+      }
+    }
+
+    &:hover {
+      > div {
+        background-color: var(--menu-bars-color-over);
       }
     }
 
@@ -111,6 +135,22 @@
       state: {
         type: String,
         default: 'open'
+      },
+      xPosition: {
+        type: String,
+        default: 'left',
+        validator: function (value) {
+          // The value must match one of these strings
+          return ['left', 'right', 'center'].indexOf(value) !== -1
+        }
+      },
+      yPosition: {
+        type: String,
+        default: 'top',
+        validator: function (value) {
+          // The value must match one of these strings
+          return ['top', 'bottom'].indexOf(value) !== -1
+        }
       }
     },
     data () {
@@ -124,6 +164,8 @@
         return {
           'menu-bars': true,
           'side-navigation': this.theSideNavigation,
+          [this.xPosition]: true,
+          [this.yPosition]: true,
           [`state-${ this.theState }`]: true
         }
       },
