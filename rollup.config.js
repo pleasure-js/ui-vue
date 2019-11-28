@@ -1,4 +1,4 @@
-const { name, version, author } = require('./package.json')
+const { name, version, author, dependencies } = require('./package.json')
 const nodeResolve = require('rollup-plugin-node-resolve')
 const minify = require('rollup-plugin-babel-minify')
 const vue = require('rollup-plugin-vue')
@@ -16,7 +16,10 @@ const Dot = require('dot-object')
 const merge = require('deepmerge')
 const { kebabCase, mapKeys } = require('lodash')
 const PostCssExtract = require('pleasure-rollup-postcss-extract')
-
+const { RollupPlugin: PleasureVueDoc } = require('pleasure-ui-doc')
+const path = require('path')
+const json = require('rollup-plugin-json')
+const rollupReplace = require('rollup-plugin-replace')
 
 const banner = `/*!
  * ${ name } v${ version }
@@ -28,10 +31,13 @@ const dot = new Dot('-')
 
 const pcssVars = mapKeys(dot.dot(require('./postcss.variables.js')), (v, k) => kebabCase(k).replace(/-default$/, ''))
 
-const getPlugins = ({ exportCss = false, minified = false } = {}) => {
+const getPlugins = ({ exportCss = false, minified = false, minimum = true, deps } = {}) => {
   const plugs = []
+  const only = minimum ? ['js-cookie', 'cookieparser', 'vue-runtime-helpers', 'vue2-touch-events'] : deps || dependencies
+  console.log({ only })
+  plugs.push(json())
+  plugs.push(nodeResolve({ only }))
   plugs.push(commonjs())
-  plugs.push(nodeResolve({ only: ['js-cookie', 'cookieparser'] }))
 
   plugs.push(postCss({
       extract: exportCss,
@@ -151,5 +157,35 @@ module.exports = [
       }
     ],
     plugins: vuePleasureElementMin
+  },
+  {
+    input: 'src/pleasure-ui-vue.js',
+    output: [
+      {
+        file: 'docs/pleasure-ui-vue.js',
+        name: 'VuePleasure',
+        format: 'iife',
+        globals: {
+          'pleasure-api-client': 'PleasureApiClient'
+        },
+        banner
+      }
+    ],
+    plugins: getPlugins({
+      minimum: false,
+      deps: ['lodash', 'deepmerge', 'js-cookie', 'cookieparser', 'vue-coerce-props', 'vue-runtime-helpers']
+    }).concat(
+      rollupReplace({
+        'process.client': JSON.stringify(true),
+        'process.server': JSON.stringify(false),
+        'process.env.$pleasure.settings': JSON.stringify(false)
+      }),
+      PleasureVueDoc({
+        componentsSrc: path.join(__dirname, 'src'),
+        destination: 'docs',
+        jsDist: 'pleasure-ui-vue.js',
+
+        includeJs: [require.resolve('vue/dist/vue.js'), require.resolve('vuex/dist/vuex.min.js'), require.resolve('pleasure-api-client/dist/pleasure-api-client-deps.js'), 'pleasure-api-client']
+      }))
   }
 ]
