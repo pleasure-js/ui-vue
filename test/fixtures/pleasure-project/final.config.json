@@ -22,8 +22,10 @@
   },
   "css": [
     "@/assets/style.pcss",
-    "/Users/tin/projects/pleasure-suite-builder/node_modules/element-ui/lib/theme-chalk/display.css",
-    "/Users/tin/projects/pleasure-suite-builder/node_modules/element-ui/packages/theme-chalk/lib/index.css"
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.pleasure/pleasure.css",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/node_modules/element-ui/lib/theme-chalk/display.css",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/dist/element-ui-fa-icons.pcss",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.pleasure/element-ui.css"
   ],
   "modules": [
     [
@@ -38,15 +40,39 @@
                 "background": "green"
               }
             }
+          },
+          "api": {
+            "prefix": "/api",
+            "port": 3000,
+            "collectionListLimit": 100,
+            "collectionMaxListLimit": 300,
+            "createEntityTimeout": 3000,
+            "mongodb": {
+              "host": "localhost",
+              "port": 27017,
+              "database": "pleasure-dummy-project",
+              "username": null,
+              "password": null,
+              "driverOptions": {
+                "autoIndex": true,
+                "reconnectTries": 1.7976931348623157e+308,
+                "reconnectInterval": 500,
+                "poolSize": 5,
+                "useNewUrlParser": true
+              }
+            },
+            "entitiesPath": "api",
+            "entitiesUri": "/entities"
           }
         },
-        "pleasureRoot": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-api"
+        "pleasureRoot": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project"
       }
     ]
   ],
   "modulesDir": [
+    "/Users/tin/projects/pleasure-suite-builder/node_modules",
     "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/node_modules",
-    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt",
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-nuxt/node_modules",
     "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/node_modules",
     "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-api-client/node_modules",
     "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-cli/cli/node_modules",
@@ -61,6 +87,7 @@
   "__normalized__": true,
   "globalName": "nuxt",
   "rootDir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project",
+  "vueMeta": null,
   "fetch": {
     "server": true,
     "client": true
@@ -79,7 +106,8 @@
       "src": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt/lib.setup-element-ui.4092899d.js"
     }
   ],
-  "devModules": [
+  "extendPlugins": null,
+  "buildModules": [
     "@nuxt/loading-screen"
   ],
   "layouts": {},
@@ -114,9 +142,49 @@
     "name": "layout",
     "mode": "out-in"
   },
+  "features": {
+    "store": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "transitions": true,
+    "deprecations": true,
+    "validate": true,
+    "asyncData": true,
+    "fetch": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true
+  },
   "test": false,
   "debug": true,
   "env": {
+    "PLEASURE_CLIENT_APP_URL": "http://localhost:3000",
+    "PLEASURE_CLIENT_APP_SERVER_URL": "http://localhost:3000",
+    "PLEASURE_CLIENT_PREFIX": "/api",
+    "PLEASURE_CLIENT_ENTITIES_URI": "/entities",
+    "PLEASURE_CLIENT_AUTH_ENDPOINT": "/token",
+    "PLEASURE_CLIENT_REVOKE_ENDPOINT": "/revoke",
+    "PLEASURE_UI_POST_CSS_VARIABLES_THEME_PROFILE_BACKGROUND": "green",
+    "PLEASURE_API_PREFIX": "/api",
+    "PLEASURE_API_PORT": 3000,
+    "PLEASURE_API_COLLECTION_LIST_LIMIT": 100,
+    "PLEASURE_API_COLLECTION_MAX_LIST_LIMIT": 300,
+    "PLEASURE_API_CREATE_ENTITY_TIMEOUT": 3000,
+    "PLEASURE_API_MONGODB_HOST": "localhost",
+    "PLEASURE_API_MONGODB_PORT": 27017,
+    "PLEASURE_API_MONGODB_DATABASE": "pleasure-dummy-project",
+    "PLEASURE_API_MONGODB_USERNAME": null,
+    "PLEASURE_API_MONGODB_PASSWORD": null,
+    "PLEASURE_API_MONGODB_DRIVER_OPTIONS_AUTO_INDEX": true,
+    "PLEASURE_API_MONGODB_DRIVER_OPTIONS_RECONNECT_TRIES": 1.7976931348623157e+308,
+    "PLEASURE_API_MONGODB_DRIVER_OPTIONS_RECONNECT_INTERVAL": 500,
+    "PLEASURE_API_MONGODB_DRIVER_OPTIONS_POOL_SIZE": 5,
+    "PLEASURE_API_MONGODB_DRIVER_OPTIONS_USE_NEW_URL_PARSER": true,
+    "PLEASURE_API_ENTITIES_PATH": "api",
+    "PLEASURE_API_ENTITIES_URI": "/entities",
     "$pleasure": {
       "locales": {
         "en": {
@@ -140,13 +208,6 @@
     },
     "$pleasure.settings": {
       "ui": "element-ui"
-    },
-    "$pleasure.postCssVariables": {
-      "theme": {
-        "profile": {
-          "background": "green"
-        }
-      }
     }
   },
   "mode": "universal",
@@ -154,12 +215,14 @@
   "serverMiddleware": [
     {
       "path": "/_loading"
-    }
+    },
+    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/src/lib/server-middleware-load-session.js"
   ],
   "_nuxtConfigFile": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js",
   "buildDir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/.nuxt",
   "dir": {
     "assets": "assets",
+    "app": "app",
     "layouts": "layouts",
     "middleware": "middleware",
     "pages": "pages",
@@ -168,8 +231,7 @@
   },
   "extensions": [
     "js",
-    "mjs",
-    "ts"
+    "mjs"
   ],
   "styleExtensions": [
     "css",
@@ -208,7 +270,9 @@
     "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
   ],
   "watchers": {
-    "webpack": {},
+    "webpack": {
+      "aggregateTimeout": 1000
+    },
     "chokidar": {
       "ignoreInitial": true
     }
@@ -217,6 +281,7 @@
   "build": {
     "quiet": false,
     "analyze": false,
+    "indicator": false,
     "profile": false,
     "extractCSS": false,
     "cssSourceMap": true,
@@ -248,14 +313,18 @@
         "sourceMap": true
       },
       "cssModules": {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": {
+          "localIdentName": "[local]_[hash:base64:5]"
+        },
         "sourceMap": true
       },
       "less": {
         "sourceMap": true
       },
       "sass": {
-        "indentedSyntax": true,
+        "sassOptions": {
+          "indentedSyntax": true
+        },
         "sourceMap": true
       },
       "scss": {
@@ -264,25 +333,9 @@
       "stylus": {
         "sourceMap": true
       },
-      "ts": {
-        "transpileOnly": true,
-        "appendTsSuffixTo": [
-          {}
-        ]
-      },
-      "tsx": {
-        "transpileOnly": true,
-        "appendTsxSuffixTo": [
-          {}
-        ]
-      },
       "vueStyle": {
         "sourceMap": true
       }
-    },
-    "typescript": {
-      "typeCheck": true,
-      "ignoreNotFoundWarnings": false
     },
     "styleResources": {},
     "plugins": [],
@@ -306,7 +359,13 @@
     "babel": {
       "configFile": false,
       "babelrc": false,
-      "cacheDirectory": true
+      "cacheDirectory": true,
+      "include": [
+        "pleasure-ui-nuxt",
+        "pleasure-ui-vue",
+        "pleasure-api-client",
+        "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project"
+      ]
     },
     "transpile": [
       {}
@@ -322,9 +381,97 @@
         },
         "postcss-css-variables": {
           "variables": {
+            "pleasure-palette-primary": "#e23533",
+            "pleasure-palette-light": "#ccc",
+            "pleasure-palette-secondary": "#e7e7e7",
+            "pleasure-palette-warning": "#fc0",
+            "pleasure-palette-dark": "#242424",
+            "pleasure-colors-sony": "#e23533",
+            "pleasure-colors-green": "#27BAB4",
+            "pleasure-colors-gray-pale": "#e7e7e7",
+            "pleasure-colors-gray": "#999",
+            "pleasure-colors-strong-gray": "#666",
+            "pleasure-colors-mid-black": "#434344",
+            "pleasure-colors-strong-black": "#242424",
+            "pleasure-colors-black": "#343434",
+            "pleasure-colors-real-black": "#141414",
+            "pleasure-colors-gray-light": "#ccc",
+            "pleasure-colors-orange": "#fc0",
+            "pleasure-colors-sand": "#fef0c1",
+            "pleasure-colors-white": "#e7e7e7",
+            "pleasure-input-border": "none",
+            "pleasure-input-height": "40px",
+            "pleasure-input-color-placeholder": "#434344",
+            "pleasure-input-color": "#e7e7e7",
+            "pleasure-input-color-icon": "#e23533",
+            "pleasure-input-color-icon-over": "#e23533",
+            "pleasure-input-color-icon-focus": "#e23533",
+            "pleasure-input-color-label": "#666",
+            "pleasure-input-color-select": "#e7e7e7",
+            "pleasure-input-color-caret": "#e23533",
+            "pleasure-input-color-placeholder-over": "#434344",
+            "pleasure-input-color-placeholder-focus": "#434344",
+            "pleasure-input-color-placeholder-solid": "#242424",
+            "pleasure-input-color-over": "#e7e7e7",
+            "pleasure-input-color-focus": "#e7e7e7",
+            "pleasure-input-color-solid": "#242424",
+            "pleasure-input-background": "#242424",
+            "pleasure-input-background-select": "#e23533",
+            "pleasure-input-background-focus": "color(#242424 shade(10%))",
+            "pleasure-input-background-over": "color(#242424 shade(5%))",
+            "pleasure-input-background-solid": "#ccc",
+            "pleasure-input-gap-between": "20px",
+            "pleasure-dropdown-color-button": "#e7e7e7",
+            "pleasure-dropdown-color-button-over": "#e7e7e7",
+            "pleasure-dropdown-background": "#e23533",
+            "pleasure-dropdown-background-button": "transparent",
+            "pleasure-dropdown-background-button-over": "#141414",
+            "pleasure-calendar-background": "#242424",
+            "pleasure-button-color-cancel": "#999",
+            "pleasure-button-color-cancel-over": "#999",
+            "pleasure-button-color-cancel-focus": "#242424",
+            "pleasure-button-color-action": "#242424",
+            "pleasure-button-color-action-over": "#242424",
+            "pleasure-button-color-action-focus": "#242424",
+            "pleasure-button-color-disabled": "#666",
+            "pleasure-button-background-cancel": "#434344",
+            "pleasure-button-background-cancel-over": "color(#434344 tint(5%))",
+            "pleasure-button-background-cancel-focus": "color(#434344 tint(5%))",
+            "pleasure-button-background-action": "#e23533",
+            "pleasure-button-background-action-over": "color(#e23533 tint(10%))",
+            "pleasure-button-background-action-focus": "color(#e23533 tint(10%))",
+            "pleasure-button-background-disabled": "#999",
+            "pleasure-notification-button-color-close": "#e23533",
+            "pleasure-notification-button-color-cancel": "#999",
+            "pleasure-notification-button-color-action": "#e23533",
+            "pleasure-notification-button-background-cancel": "#434344",
+            "pleasure-notification-button-background-action": "#e23533",
+            "pleasure-notification-color-title": "#999",
+            "pleasure-notification-background": "#242424",
+            "pleasure-notification-background-title": "transparent",
+            "pleasure-layout-padding": "20px",
+            "pleasure-layout-gap": "20px",
+            "menu-background": "#e23533",
+            "menu-width": "260px",
+            "menu-bars-top-gap": "0px",
+            "menu-bars-bottom-gap": "20px",
+            "menu-bars-color": "#e23533",
+            "menu-item-color": "#e23533",
+            "menu-item-color-active": "#e23533",
+            "menu-item-background": "transparent",
+            "menu-item-background-over": "transparent",
+            "headbar-height": "60px",
+            "headbar-background": "#e23533",
+            "headbar-title-color": "#e7e7e7",
+            "table-edit-search-background": "#e23533",
+            "table-edit-search-color": "#e7e7e7",
+            "table-edit-controls-width": "80px",
+            "table-edit-controls-operations-background": "#e23533",
+            "table-edit-prompt-background": "#fc0",
             "theme-profile-background": "green"
           }
         },
+        "postcss-easings": true,
         "postcss-hexrgba": true,
         "postcss-color-function": true,
         "postcss-calc": true
@@ -372,6 +519,9 @@
       ]
     },
     "friendlyErrors": true,
+    "additionalExtensions": [],
+    "warningIgnoreFilters": [],
+    "followSymlinks": false,
     "_publicPath": "/_nuxt/"
   },
   "messages": {
@@ -408,6 +558,7 @@
     },
     "resourceHints": true,
     "ssr": true,
+    "ssrLog": true,
     "http2": {
       "push": false,
       "shouldPush": null,
@@ -443,7 +594,9 @@
     "base": "/",
     "routes": [],
     "routeNameSplitter": "-",
-    "middleware": [],
+    "middleware": [
+      "pleasure-middleware-load-session"
+    ],
     "linkActiveClass": "nuxt-link-active",
     "linkExactActiveClass": "nuxt-link-exact-active",
     "linkPrefetchedClass": false,
@@ -460,7 +613,8 @@
     "timing": false
   },
   "cli": {
-    "badgeMessages": []
+    "badgeMessages": [],
+    "bannerColor": "green"
   },
   "_nuxtConfigFiles": [
     "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/nuxt.config.js"
