@@ -595,32 +595,6 @@ body {
     bottom: 0;
 }
 
-/*
-  .pleasure-opener {
-    transition: all .3s easeOutBack;
-    transition-delay: 0s;
-
-    &.opened {
-      transform: translateX(var(--menu-width));
-      transition: transform 0.3s easeOutSine;
-      transition-delay: .45s;
-    }
-  }
-*/
-
-/*
-  .pleasure-headbar-opener {
-    transition: all .3s easeOutBack;
-    transition-delay: .2s;
-
-    &.opened {
-      transition-delay: .15s;
-      transition: all .45s easeInBack;
-      transform: translateX(var(--menu-width));
-    }
-  }
-*/
-
 .pleasure-layout-mobile-app {
   max-width: 480px;
   box-sizing: border-box;

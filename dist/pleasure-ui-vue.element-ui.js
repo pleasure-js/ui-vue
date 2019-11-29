@@ -50,258 +50,171 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
 
   //
 
-    function objExistsInAnotherObj (obj1, obj2) {
-      let valid = true;
-      forOwn(obj1, (v, k) => {
-        if (!isEqual(v, get(obj2, k))) {
-          valid = false;
-          return false
+  function objExistsInAnotherObj (obj1, obj2) {
+    let valid = true;
+    forOwn(obj1, (v, k) => {
+      if (!isEqual(v, get(obj2, k))) {
+        valid = false;
+        return false
+      }
+    });
+
+    return valid
+  }
+
+  var script = {
+    methods: {
+      theLabel (label) {
+        const altLabels = [`labels.${label}`, label];
+        if (this.i18nScope) {
+          altLabels.unshift(`${this.i18nScope}.label.${label}`);
         }
-      });
+        return this.plsi18n(altLabels, label)
+      },
+      theValue (value) {
+        if (typeof value === 'object') {
+          return get(value, this.optionsMap.value)
+        }
 
-      return valid
-    }
+        return value
+      },
+      getRealOptions () {
+        let options = this.options;
+        let realOptions = []; // important to initialize variable for vuedoc
 
-    var script = {
-  /*
-      props: {
-        i18nScope: {
-          type: String,
-          default: null
-        },
-        otherLabel: {
-          type: String,
-          default: 'label.other'
-        },
-        otherPlaceholder: {
-          type: String,
-          default: 'label.other'
-        },
-        otherAvailable: {
-          type: Boolean,
-          default: false
-        },
-        pleasureValues: {
-          type: Object,
-          default: null
-        },
-        find: {
-          type: Object,
-          default: null
-        },
-        readonly: {
-          type: Boolean,
-          default: false
-        },
-        sort: {
-          type: Boolean,
-          default: true
-        },
-        value: {
-          type: [Object, String, Number],
-          default: null
-        },
-        options: {
-          type: [String, Object, Array],
-          default: null
-        },
-        name: {
-          type: String,
-          default: null
-        },
-        placeholder: {
-          type: String,
-          default: null
-        },
-        labelResolve: {
-          type: Function,
-          default: null
-        },
-        optionsMap: {
-          type: Object,
-          default () {
-            return {
-              value: 'value',
-              label: typeof this.options === 'string' ? 'value' : 'label'
-            }
+        const fixValues = v => {
+          return {
+            value: this.getValue(v),
+            label: this.label(v)
+          }
+        };
+
+        if (typeof options === 'string') {
+          options = this.$store.getters['pleasure/dropdown'][options];
+
+          if (this.path) {
+            options = get(options, this.path);
           }
         }
-      },
-      watch: {
-        selected (v) {
-          if (v === ':other:') {
-            this.otherActive = true
-            this.selected = null
-            this.$nextTick(() => {
-              this.$refs['manual-input'].focus()
-            })
-          }
 
-          /!**
-           * @private
-           *!/
-          this.$emit('input', this.isNumber ? Number(v) || 0 : this.theValue(v))
-          this.setReadOnlyLabel()
+        realOptions = Array.isArray(options) ? options.map(fixValues) : map(options, fixValues);
+        // console.log({ realOptions })
+        // realOptions = options.map(fixValues)
+
+        let value = this.value;
+
+        if (typeof value === 'object') {
+          value = get(value, this.optionsMap ? this.optionsMap.value : '_id');
         }
-      },
-              */
-      methods: {
-        theLabel (label) {
-          const altLabels = [`labels.${label}`, label];
-          if (this.i18nScope) {
-            altLabels.unshift(`${this.i18nScope}.label.${label}`);
-          }
-          return this.plsi18n(altLabels, label)
-        },
-        theValue (value) {
-          if (typeof value === 'object') {
-            return get(value, this.optionsMap.value)
-          }
 
-          return value
-        },
-        getRealOptions () {
-          let options = this.options;
-          let realOptions = []; // important to initialize variable for vuedoc
-
-          const fixValues = v => {
-            return {
-              value: this.getValue(v),
-              label: this.label(v)
+        if (this.sort) {
+          realOptions.sort((a, b) => {
+            const { labelA = '' } = a;
+            const { labelB = '' } = b;
+            if (labelA.toLowerCase() < labelB.toLowerCase()) {
+              return -1
+            } else if (labelA.toLowerCase() > labelB.toLowerCase()) {
+              return 1
+            } else {
+              return 0
             }
-          };
-
-          if (typeof options === 'string') {
-            options = this.$store.getters['pleasure/dropdown'][options];
-
-            if (this.path) {
-              options = get(options, this.path);
-            }
-          }
-
-          realOptions = Array.isArray(options) ? options.map(fixValues) : map(options, fixValues);
-          // console.log({ realOptions })
-          // realOptions = options.map(fixValues)
-
-          let value = this.value;
-
-          if (typeof value === 'object') {
-            value = get(value, this.optionsMap ? this.optionsMap.value : '_id');
-          }
-
-          if (this.sort) {
-            realOptions.sort((a, b) => {
-              const { labelA = '' } = a;
-              const { labelB = '' } = b;
-              if (labelA.toLowerCase() < labelB.toLowerCase()) {
-                return -1
-              } else if (labelA.toLowerCase() > labelB.toLowerCase()) {
-                return 1
-              } else {
-                return 0
-              }
-            });
-          }
-
-          this.selected = value;
-
-          if (this.parsedFind) {
-            realOptions = filter(options, (option) => objExistsInAnotherObj(this.parsedFind, option)).map(fixValues);
-          }
-
-          return realOptions
-        },
-        setReadOnlyLabel () {
-          const { selected } = this;
-          // console.log({ selected })
-
-          if (typeof selected === 'string' && this.realOptions.length > 0) {
-            console.log(`here`, { selected });
-            // this.selectedLabel = this.$options.filters.none(this.$t(get(find(this.realOptions, { value: selected }), 'label', selected)))
-          }
-        },
-        findOptionByValue (value) {
-          return find(this.realOptions, { value })
-        },
-        getValue (row) {
-          if (typeof row !== 'object') {
-            return row
-          }
-
-          return get(row, this.optionsMap.value)
-        },
-        label (row) {
-          if (this.labelResolve) {
-            return this.labelResolve(row)
-          }
-
-          if (typeof row !== 'object') {
-            return row
-          }
-
-          if (this.optionsMap.label.indexOf('{') >= 0) {
-            return mustache.render(this.optionsMap.label, row)
-          }
-
-          console.log(`label name`, this.optionsMap.label);
-          return get(row, this.optionsMap.label, this.selected)
-        }
-      },
-      mounted () {
-        this.setReadOnlyLabel();
-
-
-        /**
-         * @private
-         */
-        this.$emit('input', this.theValue(this.value));
-      },
-      computed: {
-        isNumber () {
-          return typeof this.getValue(castArray(this.options)[0]) === 'number'
-        },
-        parsedFind () {
-          if (size(this.find) < 1) {
-            return null
-          }
-
-          return mapValues(this.find, (v) => {
-            if (/^\$/.test(v)) {
-              const prop = v.match(/^\$(.+)$/)[1];
-              return get(this, 'pleasureValues.' + prop)
-            }
-
-            return v
-          })
-        },
-        key () {
-          const labels = [];
-          this.realOptions.forEach(opt => {
-            labels.push(opt.label);
           });
-          return md5(labels.join('-'))
+        }
+
+        this.selected = value;
+
+        if (this.parsedFind) {
+          realOptions = filter(options, (option) => objExistsInAnotherObj(this.parsedFind, option)).map(fixValues);
+        }
+
+        return realOptions
+      },
+      setReadOnlyLabel () {
+        const { selected } = this;
+        // console.log({ selected })
+
+        if (typeof selected === 'string' && this.realOptions.length > 0) {
+          console.log(`here`, { selected });
+          // this.selectedLabel = this.$options.filters.none(this.$t(get(find(this.realOptions, { value: selected }), 'label', selected)))
         }
       },
-      data () {
-        let otherActive = false;
-        let selected = this.theValue(this.value);
-
-        if (this.value && this.otherAvailable) {
-          if (!this.findOptionByValue(this.value)) {
-            otherActive = true;
-            selected = this.value;
-          }
+      findOptionByValue (value) {
+        return find(this.realOptions, { value })
+      },
+      getValue (row) {
+        if (typeof row !== 'object') {
+          return row
         }
 
-        return {
-          selectedLabel: '',
-          focused: false,
-          otherActive,
-          selected,
-          realOptions: this.getRealOptions()
+        return get(row, this.optionsMap.value)
+      },
+      label (row) {
+        if (this.labelResolve) {
+          return this.labelResolve(row)
+        }
+
+        if (typeof row !== 'object') {
+          return row
+        }
+
+        if (this.optionsMap.label.indexOf('{') >= 0) {
+          return mustache.render(this.optionsMap.label, row)
+        }
+
+        console.log(`label name`, this.optionsMap.label);
+        return get(row, this.optionsMap.label, this.selected)
+      }
+    },
+    mounted () {
+      this.setReadOnlyLabel();
+      this.$emit('input', this.theValue(this.value));
+    },
+    computed: {
+      isNumber () {
+        return typeof this.getValue(castArray(this.options)[0]) === 'number'
+      },
+      parsedFind () {
+        if (size(this.find) < 1) {
+          return null
+        }
+
+        return mapValues(this.find, (v) => {
+          if (/^\$/.test(v)) {
+            const prop = v.match(/^\$(.+)$/)[1];
+            return get(this, 'pleasureValues.' + prop)
+          }
+
+          return v
+        })
+      },
+      key () {
+        const labels = [];
+        this.realOptions.forEach(opt => {
+          labels.push(opt.label);
+        });
+        return md5(labels.join('-'))
+      }
+    },
+    data () {
+      let otherActive = false;
+      let selected = this.theValue(this.value);
+
+      if (this.value && this.otherAvailable) {
+        if (!this.findOptionByValue(this.value)) {
+          otherActive = true;
+          selected = this.value;
         }
       }
-    };
+
+      return {
+        selectedLabel: '',
+        focused: false,
+        otherActive,
+        selected,
+        realOptions: this.getRealOptions()
+      }
+    }
+  };
 
   var css$1 = ".pleasure-select-container .pleasure-select {\n    display: block;\n    position: relative;\n    width: 100%;\n    border: none;\n    height: 40px;\n    background: #242424;\n    box-sizing: border-box;\n    text-indent: 10px;\n    padding: 0 20px;\n    outline: none;\n}\n.pleasure-select-container.focused .el-input__suffix .el-input__icon {\n        color: #e23533 !important;\n}\n";
   styleInject(css$1);
@@ -520,7 +433,7 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
     
 
     
-    var PleasureSelect = normalizeComponent(
+    const __vue_component__ = normalizeComponent(
       { render: __vue_render__, staticRenderFns: __vue_staticRenderFns__ },
       __vue_inject_styles__,
       __vue_script__,
@@ -616,7 +529,7 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
     
 
     
-    var PleasureMultipleSelect = normalizeComponent(
+    const __vue_component__$1 = normalizeComponent(
       { render: __vue_render__$1, staticRenderFns: __vue_staticRenderFns__$1 },
       __vue_inject_styles__$1,
       __vue_script__$1,
@@ -721,7 +634,7 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
     
 
     
-    var PleasureDateTime = normalizeComponent(
+    const __vue_component__$2 = normalizeComponent(
       { render: __vue_render__$2, staticRenderFns: __vue_staticRenderFns__$2 },
       __vue_inject_styles__$2,
       __vue_script__$2,
@@ -737,9 +650,9 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
   function install (Vue) {
     Vue.mixin({
       components: {
-        PleasureMultipleSelect,
-        PleasureSelect,
-        PleasureDateTime
+        PleasureMultipleSelect: __vue_component__$1,
+        PleasureSelect: __vue_component__,
+        PleasureDateTime: __vue_component__$2
       }
     });
   }
