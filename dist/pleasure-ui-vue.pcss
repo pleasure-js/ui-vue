@@ -4,11 +4,6 @@
 }
 
 
-.pleasure-field-container + .pleasure-field-container {
-  margin-top: var(--pleasure-input-gap-between);
-}
-
-
 .pleasure-form-controls {
   margin-top: var(--pleasure-input-gap-between);
 }
@@ -255,6 +250,11 @@ th.is-leaf, td {
 }
 
 
+.pleasure-field-container + .pleasure-field-container {
+  margin-top: var(--pleasure-input-gap-between);
+}
+
+
 .back-drop {
   display: block;
   position: fixed;
@@ -346,6 +346,12 @@ h1 {
     text-overflow: ellipsis;
     color: var(--headbar-title-color);
 }
+}
+
+
+.pleasure-full-height-container {
+  position: relative;
+  min-height: 100vh;
 }
 
 
@@ -446,6 +452,21 @@ h1 {
 }
 
 
+.headbar-background {
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  height: var(--headbar-height);
+  background: var(--headbar-background);
+  z-index: 89;
+  left: 0;
+&.bottom {
+    top: auto;
+    bottom: 0;
+}
+}
+
+
 .menu-item {
 a {
     display: block;
@@ -463,27 +484,6 @@ a.nuxt-link-exact-active {
       color: var(--menu-item-color-active);
 }
 }
-}
-
-
-.headbar-background {
-  position: fixed;
-  top: 0;
-  width: 100vw;
-  height: var(--headbar-height);
-  background: var(--headbar-background);
-  z-index: 89;
-  left: 0;
-&.bottom {
-    top: auto;
-    bottom: 0;
-}
-}
-
-
-.pleasure-full-height-container {
-  position: relative;
-  min-height: 100vh;
 }
 
 
