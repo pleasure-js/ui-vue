@@ -4207,9 +4207,4 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 }
 
-var pleasureUiVue = {
-  install
-};
-
-export default pleasureUiVue;
-export { pleasureApiClient };
+export { install, pleasureApiClient };

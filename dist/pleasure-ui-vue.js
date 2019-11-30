@@ -4278,11 +4278,7 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
     }
   }
 
-  var pleasureUiVue = {
-    install
-  };
-
-  exports.default = pleasureUiVue;
+  exports.install = install;
   exports.pleasureApiClient = pleasureApiClient;
 
   return exports;

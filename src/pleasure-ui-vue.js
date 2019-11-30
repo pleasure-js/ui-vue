@@ -14,8 +14,6 @@ import kebabCase from 'lodash/kebabCase'
 import mapKeys from 'lodash/mapKeys'
 import Vue2TouchEvents from 'vue2-touch-events'
 
-export { pleasureApiClient }
-
 // Vue.use(VueI18n)
 
 /**
@@ -158,6 +156,7 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 }
 
-export default {
-  install
+export {
+  install,
+  pleasureApiClient
 }
