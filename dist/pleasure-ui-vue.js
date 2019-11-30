@@ -2277,7 +2277,7 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
 
   const clientPayload = {};
 
-  console.log(`pleasure-ui-vue/client`);
+  // console.log(`pleasure-ui-vue/client`)
   if (process.client && js_cookie.get('accessToken')) {
     // auto load accessToken
     console.log(`auto loading access token`, js_cookie.get('accessToken'));
@@ -4278,7 +4278,11 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
     }
   }
 
-  exports.install = install;
+  var pleasureUiVue = {
+    install
+  };
+
+  exports.default = pleasureUiVue;
   exports.pleasureApiClient = pleasureApiClient;
 
   return exports;

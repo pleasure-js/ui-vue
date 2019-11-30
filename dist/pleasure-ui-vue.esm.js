@@ -2233,7 +2233,7 @@ var js_cookie = createCommonjsModule(function (module, exports) {
 
 const clientPayload = {};
 
-console.log(`pleasure-ui-vue/client`);
+// console.log(`pleasure-ui-vue/client`)
 if (process.client && js_cookie.get('accessToken')) {
   // auto load accessToken
   console.log(`auto loading access token`, js_cookie.get('accessToken'));
@@ -4207,4 +4207,9 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 }
 
-export { install, pleasureApiClient };
+var pleasureUiVue = {
+  install
+};
+
+export default pleasureUiVue;
+export { pleasureApiClient };
