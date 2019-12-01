@@ -4071,6 +4071,8 @@ var vueTouchEvents = {
 }
 });
 
+console.log(`>>>pleasure-ui-vue`);
+
 // Vue.use(VueI18n)
 
 /**
@@ -4212,7 +4214,6 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     });
   }
 }
-
 var pleasureUiVue = {
   install
 };

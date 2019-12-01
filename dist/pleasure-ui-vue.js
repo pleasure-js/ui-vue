@@ -4136,6 +4136,8 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
   }
   });
 
+  console.log(`>>>pleasure-ui-vue`);
+
   // Vue.use(VueI18n)
 
   /**
@@ -4277,7 +4279,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       });
     }
   }
-
   var pleasureUiVue = {
     install
   };
