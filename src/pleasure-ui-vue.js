@@ -158,7 +158,11 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 }
 
-export { pleasureApiClient }
-export default {
+const PleasureUiVue = {
   install
+}
+
+export {
+  pleasureApiClient,
+  PleasureUiVue
 }

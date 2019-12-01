@@ -4214,9 +4214,10 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     });
   }
 }
-var pleasureUiVue = {
+
+const PleasureUiVue = {
   install
 };
 
-exports.default = pleasureUiVue;
+exports.PleasureUiVue = PleasureUiVue;
 exports.pleasureApiClient = pleasureApiClient;
