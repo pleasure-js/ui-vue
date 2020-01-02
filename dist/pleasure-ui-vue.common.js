@@ -1,6 +1,6 @@
 /*!
- * pleasure-ui-vue v1.0.0
- * (c) 2018-2019 Martin Rafael Gonzalez <tin@devtin.io>
+ * @pleasure-js/ui-vue v1.0.0
+ * (c) 2018-2020 Martin Rafael Gonzalez <tin@devtin.io>
  * Released under the MIT License.
  */
 'use strict';
@@ -18,7 +18,7 @@ var uniq = _interopDefault(require('lodash/uniq'));
 var debounce = _interopDefault(require('lodash/debounce'));
 var isEqual = _interopDefault(require('lodash/isEqual'));
 var defaults = _interopDefault(require('lodash/defaults'));
-var pleasureApiClient$1 = require('pleasure-api-client');
+var apiClient = require('@pleasure-js/api-client');
 var Vue = _interopDefault(require('vue'));
 var objectHash = _interopDefault(require('object-hash'));
 var find = _interopDefault(require('lodash/find'));
@@ -2246,7 +2246,7 @@ if (process.client && js_cookie.get('accessToken')) {
   clientPayload.accessToken = js_cookie.get('accessToken');
 }
 
-var pleasureApiClient = pleasureApiClient$1.PleasureApiClient.instance(clientPayload);
+var pleasureApiClient = apiClient.PleasureApiClient.instance(clientPayload);
 
 pleasureApiClient.debug(true);
 
@@ -3755,14 +3755,14 @@ var vue2TouchEvents = createCommonjsModule(function (module) {
  */
 
 function touchX(event) {
-    if(event.type.indexOf("mouse") !== -1){
+    if(event.type.indexOf('mouse') !== -1){
         return event.clientX;
     }
     return event.touches[0].clientX;
 }
 
 function touchY(event) {
-    if(event.type.indexOf("mouse") !== -1){
+    if(event.type.indexOf('mouse') !== -1){
         return event.clientY;
     }
     return event.touches[0].clientY;
@@ -3788,28 +3788,30 @@ var vueTouchEvents = {
         // Set default options
         options = Object.assign({}, {
             disableClick: false,
-            tapTolerance: 10,
-            swipeTolerance: 30,
-            longTapTimeInterval: 400,
+            tapTolerance: 10,  // px
+            swipeTolerance: 30,  // px
+            touchHoldTolerance: 400,  // ms
+            longTapTimeInterval: 400,  // ms
             touchClass: ''
         }, options || {});
 
 
         function touchStartEvent(event) {
             var $this = this.$$touchObj,
-                isTouchEvent = event.type.indexOf("touch") >= 0,
-                isMouseEvent = event.type.indexOf("mouse") >= 0;
+                isTouchEvent = event.type.indexOf('touch') >= 0,
+                isMouseEvent = event.type.indexOf('mouse') >= 0,
+                $el = this;
 
             if (isTouchEvent) {
                 $this.lastTouchStartTime = event.timeStamp;
             }
 
             if (isMouseEvent && $this.lastTouchStartTime && event.timeStamp - $this.lastTouchStartTime < 350) {
-                return
+                return;
             }
 
             if ($this.touchStarted) {
-                return
+                return;
             }
 
             addTouchClass(this);
@@ -3827,6 +3829,11 @@ var vueTouchEvents = {
 
             $this.touchStartTime = event.timeStamp;
 
+            // Trigger touchhold event after `touchHoldTolerance`ms
+            $this.touchHoldTimer = setTimeout(function() {
+                triggerEvent(event, $el, 'touchhold');
+            }, options.touchHoldTolerance);
+
             triggerEvent(event, this, 'start');
         }
 
@@ -3843,6 +3850,7 @@ var vueTouchEvents = {
                     Math.abs($this.startY - $this.currentY) > tapTolerance;
 
                 if($this.touchMoved){
+                    cancelTouchHoldTimer($this);
                     triggerEvent(event, this, 'moved');
                 }
 
@@ -3861,6 +3869,7 @@ var vueTouchEvents = {
         function touchCancelEvent() {
             var $this = this.$$touchObj;
 
+            cancelTouchHoldTimer($this);
             removeTouchClass(this);
 
             $this.touchStarted = $this.touchMoved = false;
@@ -3869,15 +3878,17 @@ var vueTouchEvents = {
 
         function touchEndEvent(event) {
             var $this = this.$$touchObj,
-                isTouchEvent = event.type.indexOf("touch") >= 0,
-                isMouseEvent = event.type.indexOf("mouse") >= 0;
+                isTouchEvent = event.type.indexOf('touch') >= 0,
+                isMouseEvent = event.type.indexOf('mouse') >= 0;
 
             if (isTouchEvent) {
                 $this.lastTouchEndTime = event.timeStamp;
             }
 
+            cancelTouchHoldTimer($this);
+
             if (isMouseEvent && $this.lastTouchEndTime && event.timeStamp - $this.lastTouchEndTime < 350) {
-                return
+                return;
             }
 
             $this.touchStarted = false;
@@ -3899,13 +3910,14 @@ var vueTouchEvents = {
                 }
 
             } else if (!$this.swipeOutBounded) {
-                var swipeOutBounded = options.swipeTolerance, direction;
+                var swipeOutBounded = options.swipeTolerance,
+                    direction;
 
                 if (Math.abs($this.startX - $this.currentX) < swipeOutBounded) {
-                    direction = $this.startY > $this.currentY ? "top" : "bottom";
+                    direction = $this.startY > $this.currentY ? 'top' : 'bottom';
 
                 } else {
-                    direction = $this.startX > $this.currentX ? "left" : "right";
+                    direction = $this.startX > $this.currentX ? 'left' : 'right';
                 }
 
                 // Only emit the specified event when it has modifiers
@@ -3933,7 +3945,7 @@ var vueTouchEvents = {
             // get the callback list
             var callbacks = $this.callbacks[eventType] || [];
             if (callbacks.length === 0) {
-                return null
+                return null;
             }
 
             for (var i = 0; i < callbacks.length; i++) {
@@ -3949,7 +3961,7 @@ var vueTouchEvents = {
 
                 // handle `self` modifier`
                 if (binding.modifiers.self && e.target !== e.currentTarget) {
-                    continue
+                    continue;
                 }
 
                 if (typeof binding.value === 'function') {
@@ -3970,6 +3982,13 @@ var vueTouchEvents = {
         function removeTouchClass($el) {
             var className = $el.$$touchClass || options.touchClass;
             className && $el.classList.remove(className);
+        }
+
+        function cancelTouchHoldTimer($this) {
+            if ($this.touchHoldTimer) {
+                clearTimeout($this.touchHoldTimer);
+                $this.touchHoldTimer = null;
+            }
         }
 
         Vue.directive('touch', {
@@ -4001,7 +4020,7 @@ var vueTouchEvents = {
                             $el.$$touchObj.callbacks.swipe = $el.$$touchObj.callbacks.swipe || [];
                             $el.$$touchObj.callbacks.swipe.push(binding);
                         }
-                        break
+                        break;
 
                     default:
                         $el.$$touchObj.callbacks[eventType] = $el.$$touchObj.callbacks[eventType] || [];
@@ -4010,7 +4029,7 @@ var vueTouchEvents = {
 
                 // prevent bind twice
                 if ($el.$$touchObj.hasBindTouchEvents) {
-                    return
+                    return;
                 }
 
                 var passiveOpt = isPassiveSupported ? { passive: true } : false;

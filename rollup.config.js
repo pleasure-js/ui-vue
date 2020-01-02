@@ -15,8 +15,8 @@ const postCssPresetEnv = require('postcss-preset-env')
 const Dot = require('dot-object')
 const merge = require('deepmerge')
 const { kebabCase, mapKeys } = require('lodash')
-const PostCssExtract = require('pleasure-rollup-postcss-extract')
-const { RollupPlugin: PleasureVueDoc } = require('pleasure-ui-doc')
+const PostCssExtract = require('@pleasure-js/rollup-postcss-extract')
+const { RollupPlugin: PleasureVueDoc } = require('@pleasure-js/ui-doc')
 const path = require('path')
 const json = require('rollup-plugin-json')
 const rollupReplace = require('rollup-plugin-replace')
@@ -104,7 +104,7 @@ module.exports = [
         banner
       }
     ],
-    plugins: [PostCssExtract({ fileName: 'pleasure-ui-vue.pcss' })].concat(vuePleasureCss)
+    plugins: [PostCssExtract({ fileName: '@pleasure-js/ui-vue.pcss' })].concat(vuePleasureCss)
   },
   {
     input: 'src/element-ui/index.js',
@@ -132,7 +132,7 @@ module.exports = [
         banner
       }
     ],
-    plugins: [PostCssExtract({ fileName: 'pleasure-ui-vue-element.pcss' })].concat(vuePleasureElementCss)
+    plugins: [PostCssExtract({ fileName: '@pleasure-js/ui-vue-element.pcss' })].concat(vuePleasureElementCss)
   },
   {
     input: 'src/pleasure-ui-vue.js',
@@ -166,7 +166,7 @@ module.exports = [
         name: 'VuePleasure',
         format: 'iife',
         globals: {
-          'pleasure-api-client': 'PleasureApiClient'
+          '@pleasure-js/api-client': 'ApiClient'
         },
         banner
       }
@@ -183,9 +183,9 @@ module.exports = [
       PleasureVueDoc({
         componentsSrc: path.join(__dirname, 'src'),
         destination: 'docs',
-        jsDist: 'pleasure-ui-vue.js',
+        jsDist: '@pleasure-js/ui-vue.js',
 
-        includeJs: [require.resolve('vue/dist/vue.js'), require.resolve('vuex/dist/vuex.min.js'), require.resolve('pleasure-api-client/dist/pleasure-api-client-deps.js'), 'pleasure-api-client']
+        includeJs: [require.resolve('vue/dist/vue.js'), require.resolve('vuex/dist/vuex.min.js'), require.resolve('@pleasure-js/api-client/dist/api-client-deps.js'), '@pleasure-js/api-client']
       }))
   }
 ]

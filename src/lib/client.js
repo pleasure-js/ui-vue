@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie'
-import { PleasureApiClient } from 'pleasure-api-client'
+import { ApiClient } from '@pleasure-js/api-client'
 
 const clientPayload = {}
 
@@ -10,4 +10,4 @@ if (process.client && Cookies.get('accessToken')) {
   clientPayload.accessToken = Cookies.get('accessToken')
 }
 
-export default PleasureApiClient.instance(clientPayload)
+export default ApiClient.instance(clientPayload)

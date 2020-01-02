@@ -9,7 +9,7 @@
   ></pleasure>
 </template>
 <script>
-  import { pleasureApiClient } from 'pleasure-ui-vue'
+  import { pleasureApiClient } from '@pleasure-js/ui-vue'
 
   export default {
     async asyncData ({ route: { params: { entity, entry } } }) {

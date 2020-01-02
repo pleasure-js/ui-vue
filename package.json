@@ -1,5 +1,5 @@
 {
-  "name": "pleasure-ui-vue",
+  "name": "@pleasure-js/ui-vue",
   "version": "1.0.0",
   "main": "dist/pleasure-ui-vue.common.js",
   "module": "dist/pleasure-ui-vue.esm.js",
@@ -34,7 +34,6 @@
     "jsdoc": "^3.6.3",
     "jsdoc-vuejs": "^3.0.4",
     "nodemon": "^1.19.4",
-    "pleasure": "keepwondering/pleasure#v1-beta",
     "postcss-calc": "^7.0.1",
     "postcss-color-function": "^4.1.0",
     "postcss-css-variables": "^0.13.0",
@@ -65,7 +64,7 @@
     "md5": "^2.2.1",
     "mustache": "^3.1.0",
     "object-hash": "^2.0.0",
-    "pleasure-api-client": "keepwondering/pleasure-api-client#v1-beta",
+    "@pleasure-js/api-client": "git@github.com:pleasure-js/api-client.git#v1-beta",
     "vue": "^2.6.10",
     "vue-coerce-props": "^1.0.0",
     "vue-i18n": "^8.15.0",

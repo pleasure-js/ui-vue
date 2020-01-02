@@ -1,6 +1,6 @@
 /*!
- * pleasure-ui-vue v1.0.0
- * (c) 2018-2019 Martin Rafael Gonzalez <tin@devtin.io>
+ * @pleasure-js/ui-vue v1.0.0
+ * (c) 2018-2020 Martin Rafael Gonzalez <tin@devtin.io>
  * Released under the MIT License.
  */
 'use strict';
