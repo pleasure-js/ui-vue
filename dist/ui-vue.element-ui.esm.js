@@ -3,23 +3,17 @@
  * (c) 2018-2020 Martin Rafael Gonzalez <tin@devtin.io>
  * Released under the MIT License.
  */
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var castArray = _interopDefault(require('lodash/castArray'));
-var find = _interopDefault(require('lodash/find'));
-var map = _interopDefault(require('lodash/map'));
-var filter = _interopDefault(require('lodash/filter'));
-var isEqual = _interopDefault(require('lodash/isEqual'));
-var forOwn = _interopDefault(require('lodash/forOwn'));
-var get = _interopDefault(require('lodash/get'));
-var mapValues = _interopDefault(require('lodash/mapValues'));
-var size = _interopDefault(require('lodash/size'));
-var mustache = _interopDefault(require('mustache'));
-var md5 = _interopDefault(require('md5'));
+import castArray from 'lodash/castArray';
+import find from 'lodash/find';
+import map from 'lodash/map';
+import filter from 'lodash/filter';
+import isEqual from 'lodash/isEqual';
+import forOwn from 'lodash/forOwn';
+import get from 'lodash/get';
+import mapValues from 'lodash/mapValues';
+import size from 'lodash/size';
+import mustache from 'mustache';
+import md5 from 'md5';
 
 //
 
@@ -36,11 +30,18 @@ function objExistsInAnotherObj (obj1, obj2) {
 }
 
 var script = {
+  props: {
+    readonly: Boolean,
+    name: String,
+    placeholder: String,
+    field: Object,
+    otherAvailable: Boolean
+  },
   methods: {
     theLabel (label) {
-      const altLabels = [`labels.${label}`, label];
+      const altLabels = [`labels.${ label }`, label];
       if (this.i18nScope) {
-        altLabels.unshift(`${this.i18nScope}.label.${label}`);
+        altLabels.unshift(`${ this.i18nScope }.label.${ label }`);
       }
       return this.plsi18n(altLabels, label)
     },
@@ -143,6 +144,11 @@ var script = {
     this.$emit('input', this.theValue(this.value));
   },
   computed: {
+    options () {
+      return this.field.enumValues.map(v => {
+        return typeof v === 'object' ? v : { value: v, label: v }
+      })
+    },
     isNumber () {
       return typeof this.getValue(castArray(this.options)[0]) === 'number'
     },
@@ -172,7 +178,7 @@ var script = {
     let otherActive = false;
     let selected = this.theValue(this.value);
 
-    if (this.value && this.otherAvailable) {
+    if (this.value) {
       if (!this.findOptionByValue(this.value)) {
         otherActive = true;
         selected = this.value;
@@ -185,6 +191,12 @@ var script = {
       otherActive,
       selected,
       realOptions: this.getRealOptions()
+    }
+  },
+  watch: {
+    selected (v) {
+      console.log(`input`, v);
+      this.$emit('input', v);
     }
   }
 };
@@ -305,35 +317,19 @@ var __vue_render__ = function() {
                   )
                 ]),
                 _vm._v(" "),
-                _vm._l(_vm.realOptions, function(option) {
+                _vm._l(_vm.options, function(option) {
                   return _c(
                     "option",
                     {
                       key: option.value,
                       domProps: {
                         value: option.value,
-                        selected: _vm.selected === _vm.theValue(option.value)
+                        selected: _vm.selected === option.value
                       }
                     },
-                    [
-                      _vm._v(
-                        "\n        " +
-                          _vm._s(_vm.theLabel(option.label)) +
-                          "\n      "
-                      )
-                    ]
+                    [_vm._v("\n        " + _vm._s(option.label) + "\n      ")]
                   )
-                }),
-                _vm._v(" "),
-                _vm.otherAvailable
-                  ? _c("option", { attrs: { value: ":other:" } }, [
-                      _vm._v(
-                        "\n        " +
-                          _vm._s(_vm.$t(_vm.otherLabel)) +
-                          "\n      "
-                      )
-                    ])
-                  : _vm._e()
+                })
               ],
               2
             )
@@ -627,4 +623,4 @@ function install (Vue) {
   });
 }
 
-exports.install = install;
+export { install };

@@ -12,15 +12,12 @@
           [ {{ placeholder }} ]
         </option>
         <option
-          v-for="option in realOptions"
+          v-for="option in options"
           :key="option.value"
           :value="option.value"
-          :selected="selected === theValue(option.value)"
+          :selected="selected === option.value"
         >
-          {{ theLabel(option.label) }}
-        </option>
-        <option value=":other:" v-if="otherAvailable">
-          {{ $t(otherLabel) }}
+          {{ option.label }}
         </option>
       </select>
     </template>
@@ -93,11 +90,18 @@
   }
 
   export default {
+    props: {
+      readonly: Boolean,
+      name: String,
+      placeholder: String,
+      field: Object,
+      otherAvailable: Boolean
+    },
     methods: {
       theLabel (label) {
-        const altLabels = [`labels.${label}`, label]
+        const altLabels = [`labels.${ label }`, label]
         if (this.i18nScope) {
-          altLabels.unshift(`${this.i18nScope}.label.${label}`)
+          altLabels.unshift(`${ this.i18nScope }.label.${ label }`)
         }
         return this.plsi18n(altLabels, label)
       },
@@ -202,6 +206,11 @@
       this.$emit('input', this.theValue(this.value))
     },
     computed: {
+      options () {
+        return this.field.enumValues.map(v => {
+          return typeof v === 'object' ? v : { value: v, label: v }
+        })
+      },
       isNumber () {
         return typeof this.getValue(castArray(this.options)[0]) === 'number'
       },
@@ -231,7 +240,7 @@
       let otherActive = false
       let selected = this.theValue(this.value)
 
-      if (this.value && this.otherAvailable) {
+      if (this.value) {
         if (!this.findOptionByValue(this.value)) {
           otherActive = true
           selected = this.value
@@ -244,6 +253,12 @@
         otherActive,
         selected,
         realOptions: this.getRealOptions()
+      }
+    },
+    watch: {
+      selected (v) {
+        console.log(`input`, v)
+        this.$emit('input', v)
       }
     }
   }

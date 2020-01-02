@@ -4,6 +4,85 @@
 }
 
 
+.headbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: var(--headbar-height);
+  background: var(--headbar-background);
+  z-index: 90;
+&.bottom {
+    top: auto;
+    bottom: 0;
+}
+h1 {
+    text-align: center;
+    margin: 0;
+    height: var(--headbar-height);
+    line-height: var(--headbar-height);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--headbar-title-color);
+}
+}
+
+
+.menu {
+  top: 0;
+  left: 0;
+  position: fixed;
+  overflow: hidden;
+  height: 100vh;
+  background: var(--menu-background);
+  width: var(--menu-width);
+  transform: translateX(calc(var(--menu-width) * -1));
+  padding-top: var(--headbar-height);
+  box-sizing: border-box;
+  z-index: 100;
+  transition: transform 0.2s easeOutCubic;
+  transition-delay: 0s;
+  user-select: none;
+.el-menu {
+    background: transparent;
+}
+&.right {
+    left: auto;
+    right: 0;
+    transform: translateX(calc(var(--menu-width)));
+}
+&.center {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    max-height: 75vh;
+    transform: translateY(100%);
+    padding-top: 0;
+    padding-bottom: calc(var(--headbar-height) + var(--menu-bars-bottom-gap));
+&.open {
+      transform: translateY(0);
+      transition-delay: 0s;
+}
+}
+&.open {
+    transform: translateX(0);
+    transition: transform 0.3s easeOutSine;
+    transition-delay: .45s;
+}
+.el-menu {
+    border-right: none;
+}
+}
+
+
+.pleasure-full-height-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+
 .back-drop {
   display: block;
   position: fixed;
@@ -25,9 +104,23 @@
 }
 
 
-.pleasure-full-height-container {
-  position: relative;
-  min-height: 100vh;
+.menu-item {
+a {
+    display: block;
+    position: relative;
+    height: 100%;
+    color: var(--menu-item-color);
+    text-decoration: none;
+}
+.el-menu-item {
+    background-color: var(--menu-item-background);
+&:hover, &:focus {
+      background-color: var(--menu-item-background-over);
+}
+a.nuxt-link-exact-active {
+      color: var(--menu-item-color-active);
+}
+}
 }
 
 
@@ -128,47 +221,17 @@
 }
 
 
-.headbar {
+.headbar-background {
   position: fixed;
   top: 0;
-  left: 0;
   width: 100vw;
   height: var(--headbar-height);
   background: var(--headbar-background);
-  z-index: 90;
+  z-index: 89;
+  left: 0;
 &.bottom {
     top: auto;
     bottom: 0;
-}
-h1 {
-    text-align: center;
-    margin: 0;
-    height: var(--headbar-height);
-    line-height: var(--headbar-height);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--headbar-title-color);
-}
-}
-
-
-.menu-item {
-a {
-    display: block;
-    position: relative;
-    height: 100%;
-    color: var(--menu-item-color);
-    text-decoration: none;
-}
-.el-menu-item {
-    background-color: var(--menu-item-background);
-&:hover, &:focus {
-      background-color: var(--menu-item-background-over);
-}
-a.nuxt-link-exact-active {
-      color: var(--menu-item-color-active);
-}
 }
 }
 
@@ -421,69 +484,6 @@ th.is-leaf, td {
   margin: var(--headbar-height) auto 0 auto;
 &.bottom {
     margin-top: 0;
-}
-}
-
-
-.menu {
-  top: 0;
-  left: 0;
-  position: fixed;
-  overflow: hidden;
-  height: 100vh;
-  background: var(--menu-background);
-  width: var(--menu-width);
-  transform: translateX(calc(var(--menu-width) * -1));
-  padding-top: var(--headbar-height);
-  box-sizing: border-box;
-  z-index: 100;
-  transition: transform 0.2s easeOutCubic;
-  transition-delay: 0s;
-  user-select: none;
-.el-menu {
-    background: transparent;
-}
-&.right {
-    left: auto;
-    right: 0;
-    transform: translateX(calc(var(--menu-width)));
-}
-&.center {
-    top: auto;
-    bottom: 0;
-    width: 100%;
-    height: auto;
-    max-height: 75vh;
-    transform: translateY(100%);
-    padding-top: 0;
-    padding-bottom: calc(var(--headbar-height) + var(--menu-bars-bottom-gap));
-&.open {
-      transform: translateY(0);
-      transition-delay: 0s;
-}
-}
-&.open {
-    transform: translateX(0);
-    transition: transform 0.3s easeOutSine;
-    transition-delay: .45s;
-}
-.el-menu {
-    border-right: none;
-}
-}
-
-
-.headbar-background {
-  position: fixed;
-  top: 0;
-  width: 100vw;
-  height: var(--headbar-height);
-  background: var(--headbar-background);
-  z-index: 89;
-  left: 0;
-&.bottom {
-    top: auto;
-    bottom: 0;
 }
 }
 

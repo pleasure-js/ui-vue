@@ -2284,7 +2284,7 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
     clientPayload.accessToken = js_cookie.get('accessToken');
   }
 
-  var pleasureApiClient = apiClient.PleasureApiClient.instance(clientPayload);
+  var pleasureApiClient = apiClient.ApiClient.instance(clientPayload);
 
   pleasureApiClient.debug(true);
 
@@ -4299,11 +4299,11 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
     }
   }
 
-  const PleasureUiVue = {
+  const UiVue = {
     install
   };
 
-  exports.PleasureUiVue = PleasureUiVue;
+  exports.UiVue = UiVue;
   exports.pleasureApiClient = pleasureApiClient;
 
   return exports;

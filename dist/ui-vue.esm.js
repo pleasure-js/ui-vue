@@ -12,7 +12,7 @@ import uniq from 'lodash/uniq';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import defaults from 'lodash/defaults';
-import { PleasureApiClient } from '@pleasure-js/api-client';
+import { ApiClient } from '@pleasure-js/api-client';
 import Vue from 'vue';
 import objectHash from 'object-hash';
 import find from 'lodash/find';
@@ -2240,7 +2240,7 @@ if (process.client && js_cookie.get('accessToken')) {
   clientPayload.accessToken = js_cookie.get('accessToken');
 }
 
-var pleasureApiClient = PleasureApiClient.instance(clientPayload);
+var pleasureApiClient = ApiClient.instance(clientPayload);
 
 pleasureApiClient.debug(true);
 
@@ -4228,8 +4228,8 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 }
 
-const PleasureUiVue = {
+const UiVue = {
   install
 };
 
-export { PleasureUiVue, pleasureApiClient };
+export { UiVue, pleasureApiClient };

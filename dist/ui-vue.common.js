@@ -2246,7 +2246,7 @@ if (process.client && js_cookie.get('accessToken')) {
   clientPayload.accessToken = js_cookie.get('accessToken');
 }
 
-var pleasureApiClient = apiClient.PleasureApiClient.instance(clientPayload);
+var pleasureApiClient = apiClient.ApiClient.instance(clientPayload);
 
 pleasureApiClient.debug(true);
 
@@ -4234,9 +4234,9 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
   }
 }
 
-const PleasureUiVue = {
+const UiVue = {
   install
 };
 
-exports.PleasureUiVue = PleasureUiVue;
+exports.UiVue = UiVue;
 exports.pleasureApiClient = pleasureApiClient;

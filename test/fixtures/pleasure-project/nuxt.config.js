@@ -5,12 +5,12 @@ module.exports = {
   dev: isDev,
   srcDir: path.join(__dirname, 'client'),
   head: {
-    meta: {
+    meta: [{
       link: {
         rel: `stylesheet`,
         href: `https://fonts.googleapis.com/css?family=Open+Sans`
       }
-    }
+    }]
   },
   vue: {
     config: {

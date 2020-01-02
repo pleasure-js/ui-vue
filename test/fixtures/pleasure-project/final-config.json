@@ -1,13 +1,15 @@
 {
   "dev": true,
-  "srcDir": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project/client",
+  "srcDir": "/Users/tin/projects/pleasure-suite-builder/packages/ui-vue/test/fixtures/pleasure-project/client",
   "head": {
-    "meta": {
-      "link": {
-        "rel": "stylesheet",
-        "href": "https://fonts.googleapis.com/css?family=Open+Sans"
+    "meta": [
+      {
+        "link": {
+          "rel": "stylesheet",
+          "href": "https://fonts.googleapis.com/css?family=Open+Sans"
+        }
       }
-    }
+    ]
   },
   "vue": {
     "config": {
@@ -22,10 +24,10 @@
   ],
   "modules": [
     [
-      "pleasure-ui-nuxt",
+      "@pleasure-js/ui-nuxt",
       {
-        "root": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project",
-        "name": "pleasure-dummy-project",
+        "root": "/Users/tin/projects/pleasure-suite-builder/packages/ui-vue/test/fixtures/pleasure-project",
+        "name": "@pleasure-js/dummy-project",
         "config": {
           "postCssVariables": {
             "theme": {
@@ -43,7 +45,7 @@
             "mongodb": {
               "host": "localhost",
               "port": 27017,
-              "database": "pleasure-dummy-project",
+              "database": "pleasure-js-dummy-project",
               "username": null,
               "password": null,
               "driverOptions": {
@@ -58,13 +60,13 @@
             "entitiesUri": "/entities"
           }
         },
-        "pleasureRoot": "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-ui-vue/test/fixtures/pleasure-project"
+        "pleasureRoot": "/Users/tin/projects/pleasure-suite-builder/packages/ui-vue/test/fixtures/pleasure-project"
       }
     ]
   ],
   "modulesDir": [
-    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-cli/cli/node_modules",
-    "/Users/tin/projects/pleasure-suite-builder/packages/pleasure-cli/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/cli/cli/node_modules",
+    "/Users/tin/projects/pleasure-suite-builder/packages/cli/node_modules",
     "/Users/tin/projects/pleasure-suite-builder/packages/node_modules",
     "/Users/tin/projects/pleasure-suite-builder/node_modules",
     "/Users/tin/projects/node_modules",

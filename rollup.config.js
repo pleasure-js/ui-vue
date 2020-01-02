@@ -71,18 +71,18 @@ const getPlugins = ({ exportCss = false, minified = false, minimum = true, deps 
   return plugs
 }
 
-const vuePleasureCss = getPlugins({ exportCss: `dist/pleasure-ui-vue.css` })
-const vuePleasureMin = getPlugins({ exportCss: `dist/pleasure-ui-vue.min.css`, minified: true })
-const vuePleasureElementCss = getPlugins({ exportCss: `dist/pleasure-ui-vue.element-ui.css` })
-const vuePleasureElementMin = getPlugins({ exportCss: `dist/pleasure-ui-vue.element-ui.min.css`, minified: true })
+const vuePleasureCss = getPlugins({ exportCss: `dist/ui-vue.css` })
+const vuePleasureMin = getPlugins({ exportCss: `dist/ui-vue.min.css`, minified: true })
+const vuePleasureElementCss = getPlugins({ exportCss: `dist/ui-vue.element-ui.css` })
+const vuePleasureElementMin = getPlugins({ exportCss: `dist/ui-vue.element-ui.min.css`, minified: true })
 const plugins = getPlugins()
 
 module.exports = [
   {
-    input: 'src/pleasure-ui-vue.js',
+    input: 'src/ui-vue.js',
     output: [
       {
-        file: 'dist/pleasure-ui-vue.js',
+        file: 'dist/ui-vue.js',
         name: 'VuePleasure',
         format: 'iife',
         banner
@@ -91,26 +91,26 @@ module.exports = [
     plugins
   },
   {
-    input: 'src/pleasure-ui-vue.js',
+    input: 'src/ui-vue.js',
     output: [
       {
-        file: 'dist/pleasure-ui-vue.common.js',
+        file: 'dist/ui-vue.common.js',
         format: 'cjs',
         banner
       },
       {
-        file: 'dist/pleasure-ui-vue.esm.js',
+        file: 'dist/ui-vue.esm.js',
         format: 'esm',
         banner
       }
     ],
-    plugins: [PostCssExtract({ fileName: '@pleasure-js/ui-vue.pcss' })].concat(vuePleasureCss)
+    plugins: [PostCssExtract({ fileName: 'ui-vue.pcss' })].concat(vuePleasureCss)
   },
   {
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/pleasure-ui-vue.element-ui.js',
+        file: 'dist/ui-vue.element-ui.js',
         name: 'ElementUiPleasure',
         format: 'iife',
         banner
@@ -122,23 +122,23 @@ module.exports = [
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/pleasure-ui-vue.element-ui.common.js',
+        file: 'dist/ui-vue.element-ui.common.js',
         format: 'cjs',
         banner
       },
       {
-        file: 'dist/pleasure-ui-vue.element-ui.esm.js',
+        file: 'dist/ui-vue.element-ui.esm.js',
         format: 'esm',
         banner
       }
     ],
-    plugins: [PostCssExtract({ fileName: '@pleasure-js/ui-vue-element.pcss' })].concat(vuePleasureElementCss)
+    plugins: [PostCssExtract({ fileName: 'ui-vue-element.pcss' })].concat(vuePleasureElementCss)
   },
   {
-    input: 'src/pleasure-ui-vue.js',
+    input: 'src/ui-vue.js',
     output: [
       {
-        file: 'dist/pleasure-ui-vue.min.js',
+        file: 'dist/ui-vue.min.js',
         format: 'iife',
         name: 'VuePleasure',
         banner
@@ -150,7 +150,7 @@ module.exports = [
     input: 'src/element-ui/index.js',
     output: [
       {
-        file: 'dist/pleasure-ui-vue.element-ui.min.js',
+        file: 'dist/ui-vue.element-ui.min.js',
         format: 'iife',
         name: 'ElementUiPleasure',
         banner
@@ -159,10 +159,10 @@ module.exports = [
     plugins: vuePleasureElementMin
   },
   {
-    input: 'src/pleasure-ui-vue.js',
+    input: 'src/ui-vue.js',
     output: [
       {
-        file: 'docs/pleasure-ui-vue.js',
+        file: 'docs/ui-vue.js',
         name: 'VuePleasure',
         format: 'iife',
         globals: {
@@ -183,7 +183,7 @@ module.exports = [
       PleasureVueDoc({
         componentsSrc: path.join(__dirname, 'src'),
         destination: 'docs',
-        jsDist: '@pleasure-js/ui-vue.js',
+        jsDist: 'ui-vue.js',
 
         includeJs: [require.resolve('vue/dist/vue.js'), require.resolve('vuex/dist/vuex.min.js'), require.resolve('@pleasure-js/api-client/dist/api-client-deps.js'), '@pleasure-js/api-client']
       }))
