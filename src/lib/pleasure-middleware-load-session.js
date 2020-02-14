@@ -6,9 +6,16 @@ Could not find a way from the nuxt module to hook a middleware without placing t
 It would be nice to solve this for a cleaner implementation.
  */
 
-import { pleasureApiClient } from '@pleasure-js/ui-vue'
+import * as PleasureStore from '@pleasure-js/ui-vue/src/lib/pleasure-store.js'
+import client from '@pleasure-js/ui-vue/src/lib/client.js'
 
 export default async function ({ store, req }) {
+  if (process.server) {
+    store.registerModule('pleasure', PleasureStore, { preserveState: false })
+  }
+
+  const pleasureApiClient = client()
+
   if (process.server && req.$pleasure.cookies && req.$pleasure.cookies.accessToken) {
     pleasureApiClient.setCredentials({ accessToken: req.$pleasure.cookies.accessToken })
   }

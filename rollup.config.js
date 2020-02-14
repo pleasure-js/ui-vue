@@ -157,7 +157,7 @@ module.exports = [
       }
     ],
     plugins: vuePleasureElementMin
-  },
+  }/*,
   {
     input: 'src/ui-vue.js',
     output: [
@@ -187,5 +187,5 @@ module.exports = [
 
         includeJs: [require.resolve('vue/dist/vue.js'), require.resolve('vuex/dist/vuex.min.js'), require.resolve('@pleasure-js/api-client/dist/api-client-deps.js'), '@pleasure-js/api-client']
       }))
-  }
+  }*/
 ]

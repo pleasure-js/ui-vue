@@ -2,7 +2,7 @@
   <div
     :class="{ pleasure: true, 'multiple-lines': multipleLines }"
   >
-    <slot name="header"></slot>
+    <slot name="header" />
     <pleasure-form
       :disabled="disabled"
       :form-id="formId"
@@ -28,7 +28,7 @@
           />
         </pleasure-field-container>
       </template>
-      <slot/>
+      <slot />
       <pleasure-form-controls
         v-if="loaded && withControls"
         :v-bind="$props"

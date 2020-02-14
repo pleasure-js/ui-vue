@@ -1,15 +1,17 @@
 <template>
   <pleasure
+    :key="id"
     :entity="entity"
     :entry-id="entry"
     :value="value"
     method="update"
     :autoload="false"
-    :key="id"
-  ></pleasure>
+  />
 </template>
 <script>
-  import { pleasureApiClient } from '@pleasure-js/ui-vue'
+  import { ApiClient } from '@pleasure-js/api-client'
+
+  const pleasureApiClient = ApiClient.instance()
 
   export default {
     async asyncData ({ route: { params: { entity, entry } } }) {

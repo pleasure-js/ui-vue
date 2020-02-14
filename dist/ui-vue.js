@@ -131,9 +131,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       return script;
   }
 
-  const isOldIE = typeof navigator !== 'undefined' &&
-      /msie [6-9]\\b/.test(navigator.userAgent.toLowerCase());
-
   /* script */
   const __vue_script__ = script;
 
@@ -847,6 +844,22 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
 
   var script$4 = {
     mixins: [PTE],
+    props: {
+      fieldName: {
+        type: String,
+        required: true
+      },
+      manager: {
+        type: DropdownManager
+      },
+      value: {
+        required: true,
+        type: Object,
+        default () {
+          return {}
+        }
+      }
+    },
     data () {
       return {
         enumValue: [],
@@ -854,6 +867,19 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
         filterType: null,
         sort: this.value.sort,
       }
+    },
+    watch: {
+      filter: filterPropertyHandler,
+      filterType () {
+        filterPropertyHandler.call(this);
+        this.$nextTick(() => {
+          if (this.$refs['field']) {
+            console.log(`focusing`, this.$refs['field']);
+            this.$refs['field'].focus();
+          }
+        });
+      },
+      sort: filterPropertyHandler
     },
     methods: {
       filterHandler () {
@@ -883,35 +909,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
         }
         this.refreshInput();
       },
-    },
-    props: {
-      fieldName: {
-        type: String,
-        required: true
-      },
-      manager: {
-        type: DropdownManager
-      },
-      value: {
-        required: true,
-        type: Object,
-        default () {
-          return {}
-        }
-      }
-    },
-    watch: {
-      filter: filterPropertyHandler,
-      filterType () {
-        filterPropertyHandler.call(this);
-        this.$nextTick(() => {
-          if (this.$refs['field']) {
-            console.log(`focusing`, this.$refs['field']);
-            this.$refs['field'].focus();
-          }
-        });
-      },
-      sort: filterPropertyHandler
     }
   };
 
@@ -1217,6 +1214,11 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
         return debounce(this.lookUp.bind(this), 150)
       }
     },
+    watch: {
+      search (v) {
+        this.searching = !!v;
+      }
+    },
     mounted () {
       // console.log(`store`, this.$store)
       this.manager = new DropdownManager({ entity: this.entity, store: this.$store });
@@ -1245,11 +1247,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
           this[ele] = false;
         });
       });
-    },
-    watch: {
-      search (v) {
-        this.searching = !!v;
-      }
     },
     methods: {
       applyFilter () {
@@ -1626,14 +1623,16 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
                       fn: function(scope) {
                         return [
                           _vm._v(
-                            _vm._s(
-                              _vm.isEnum(fieldName)
-                                ? _vm.guessLabel(
-                                    scope.row[fieldName],
-                                    "entities.enum"
-                                  )
-                                : scope.row[fieldName]
-                            ) + "\n      "
+                            "\n        " +
+                              _vm._s(
+                                _vm.isEnum(fieldName)
+                                  ? _vm.guessLabel(
+                                      scope.row[fieldName],
+                                      "entities.enum"
+                                    )
+                                  : scope.row[fieldName]
+                              ) +
+                              "\n      "
                           )
                         ]
                       }
@@ -1665,7 +1664,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
           : _vm._e(),
         _vm._v(" "),
         _c("pleasure", {
-          key: _vm.id,
           class: { prompt: true, on: _vm.promptAdd },
           attrs: { entity: _vm.entity, method: "create" },
           on: {
@@ -2275,18 +2273,27 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
   }));
   });
 
-  const clientPayload = {};
+  function getClient () {
+  // console.log(`ui-vue/client`)
+    let accessToken;
+    const client = apiClient.ApiClient.instance();
 
-  // console.log(`pleasure-ui-vue/client`)
-  if (process.client && js_cookie.get('accessToken')) {
-    // auto load accessToken
-    console.log(`auto loading access token`, js_cookie.get('accessToken'));
-    clientPayload.accessToken = js_cookie.get('accessToken');
+    if (process.client && (accessToken = js_cookie.get('accessToken'))) {
+      if (!client.token) {
+        // auto load accessToken
+        console.log(`auto loading access token`, js_cookie.get('accessToken'));
+        // todo: load refreshToken
+        const { accessToken: savedAccessToken, refreshToken } = client.savedCredentials();
+
+        const clientPayload = {
+          accessToken: js_cookie.get('accessToken'),
+          refreshToken: savedAccessToken === accessToken ? refreshToken : null
+        };
+        client.setCredentials(clientPayload);
+      }
+    }
+    return client
   }
-
-  var pleasureApiClient = apiClient.ApiClient.instance(clientPayload);
-
-  pleasureApiClient.debug(true);
 
   const strict = true;
   const namespaced = true;
@@ -2335,6 +2342,7 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       Vue.set(state, 'entitiesSchema', entitiesSchema);
     },
     setDropdown (state, { dropdownName, results, listOptions }) {
+      console.log(`setDropdown`, JSON.stringify({ dropdownName, results, listOptions, state }, null, 2));
       Vue.set(state.dropdown, dropdownName, results);
       Vue.set(state.dropdownMeta, dropdownName, listOptions);
     },
@@ -2380,6 +2388,8 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
     },
     async loadDropdown (store, { entity, listOptions, name, force = false, req } = {}) {
       const { commit, state } = store;
+      const pleasureApiClient = getClient();
+      pleasureApiClient.debug(true);
 
       if (process.server && req) {
         const Cookies = require('cookies');
@@ -2405,6 +2415,7 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
 
       try {
         results = await pleasureApiClient.list(entity, listOptions);
+        console.log(`results = await pleasureApiClient.list(entity, listOptions)`, results);
       } catch (e) {
         err = e;
       }
@@ -2422,12 +2433,15 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       return commit('clearDropdowns')
     },
     logout () {
-      return pleasureApiClient.logout()
+      return getClient().logout()
     },
     async syncEntities ({ commit, state }, { force = false } = {}) {
       if (!force && state.entitiesSync !== 0) {
         return
       }
+
+      const pleasureApiClient = getClient();
+      pleasureApiClient.debug(true);
 
       commit('setEntitiesSync', -1);
       let entities;
@@ -3446,6 +3460,12 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
   //
   //
   //
+  //
+  //
+  //
+  //
+  //
+  //
 
   var script$c = {
     props: {
@@ -3484,17 +3504,17 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
         menuOpened: false
       }
     },
-    watch: {
-      $route () {
-        this.closeMenu();
-      }
-    },
     computed: {
       openMenuGesture () {
         return this.menuPosition === 'left' ? 'right' : (this.menuPosition === 'center' ? 'up' : 'left')
       },
       closeMenuGesture () {
         return this.menuPosition === 'left' ? 'left' : (this.menuPosition === 'center' ? 'bottom' : 'right')
+      }
+    },
+    watch: {
+      $route () {
+        this.closeMenu();
       }
     },
     mounted () {
@@ -4155,8 +4175,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
   }
   });
 
-  console.log(`>>>pleasure-ui-vue`);
-
   // Vue.use(VueI18n)
 
   /**
@@ -4165,10 +4183,13 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
    */
 
   function install (Vue, { app, store, noCoerce = false } = {}) {
+    const pleasureApiClient = getClient();
+    let storageCache;
+
     Vue.use(vue2TouchEvents);
 
     Vue.prototype.$pleasureApiClient = pleasureApiClient;
-    console.log(`store${ store ? '' : ' NOT' } provided`, { store });
+    console.log(`store${ store ? '' : ' NOT' } provided`/*, { store }*/);
     if (!store) {
       Vue.use(Vuex);
       store = new Vuex.Store({
@@ -4179,7 +4200,9 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       // throw new Error('Please provide vuex store.')
     } else {
       // register your own vuex module
-      store.registerModule('pleasure', PleasureStore, { preserveState: false });
+      if (process.client) {
+        store.registerModule('pleasure', PleasureStore, { preserveState: true });
+      }
     }
 
     /*
@@ -4205,23 +4228,11 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       });
 
     if (process.client) {
-      const storageCache = new BrowserStorageCache();
-
-      const sessionChanged = () => {
-        storageCache.clearAll();
-        store.dispatch('pleasure/clearDropdowns');
-        return store.dispatch('pleasure/syncEntities')
-      };
+      storageCache = new BrowserStorageCache();
 
       // Vue.$pleasure = pleasureApiClient
       pleasureApiClient
         .cache(storageCache);
-
-      pleasureApiClient
-        .on('logout', sessionChanged);
-
-      pleasureApiClient
-        .on('login', sessionChanged);
     }
 
     if (!noCoerce) {
@@ -4233,12 +4244,12 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
       return kebabCase(key)
     });
 
-    console.log({ kebabKeyedComponents });
+    // console.log({ kebabKeyedComponents })
     const components = Object.assign({}, kebabKeyedComponents, {
       pleasure: __vue_component__$6
     });
 
-    console.log({ components });
+    // console.log({ components })
 
     Vue.mixin({
       components,
@@ -4296,6 +4307,20 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
         // todo: move to a DropdownManager implementation
         store.dispatch('pleasure/syncDropdown', { entity, force: true });
       });
+
+      pleasureApiClient._refreshCredentials(); // re-trigger events
+
+      const sessionChanged = () => {
+        storageCache.clearAll();
+        store.dispatch('pleasure/clearDropdowns');
+        return store.dispatch('pleasure/syncEntities')
+      };
+
+      pleasureApiClient
+        .on('logout', sessionChanged);
+
+      pleasureApiClient
+        .on('login', sessionChanged);
     }
   }
 
@@ -4304,7 +4329,6 @@ var VuePleasure = (function (exports, forOwn, kebabCase, startCase, get$1, merge
   };
 
   exports.UiVue = UiVue;
-  exports.pleasureApiClient = pleasureApiClient;
 
   return exports;
 

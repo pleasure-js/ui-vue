@@ -7,7 +7,8 @@
         :name="name"
         @focus="focused = true"
         @blur="focused = false"
-        @change="selected = $event.target.value">
+        @change="selected = $event.target.value"
+      >
         <option value="">
           [ {{ placeholder }} ]
         </option>
@@ -32,12 +33,12 @@
       @keyup.esc="otherActive = false"
       @focus="focused = true"
       @blur="focused = false"
-    ></el-input>
+    />
     <el-input
       v-if="readonly"
       readonly
       :value="selectedLabel"
-    ></el-input>
+    />
   </div>
 </template>
 <style lang="postcss">
@@ -96,6 +97,66 @@
       placeholder: String,
       field: Object,
       otherAvailable: Boolean
+    },
+    data () {
+      let otherActive = false
+      let selected = this.theValue(this.value)
+
+      if (this.value) {
+        if (!this.findOptionByValue(this.value)) {
+          otherActive = true
+          selected = this.value
+        }
+      }
+
+      return {
+        selectedLabel: '',
+        focused: false,
+        otherActive,
+        selected,
+        realOptions: this.getRealOptions()
+      }
+    },
+    computed: {
+      options () {
+        return this.field.enumValues.map(v => {
+          return typeof v === 'object' ? v : { value: v, label: v }
+        })
+      },
+      isNumber () {
+        return typeof this.getValue(castArray(this.options)[0]) === 'number'
+      },
+      parsedFind () {
+        if (size(this.find) < 1) {
+          return null
+        }
+
+        return mapValues(this.find, (v) => {
+          if (/^\$/.test(v)) {
+            const prop = v.match(/^\$(.+)$/)[1]
+            return get(this, 'pleasureValues.' + prop)
+          }
+
+          return v
+        })
+      },
+      key () {
+        const labels = []
+        this.realOptions.forEach(opt => {
+          labels.push(opt.label)
+        })
+        return md5(labels.join('-'))
+      }
+    },
+    watch: {
+      selected (v) {
+        console.log(`input`, v)
+        this.$emit('input', v)
+      }
+    },
+    mounted () {
+      this.setReadOnlyLabel()
+      this.$emit('input', this.theValue(this.value))
     },
     methods: {
       theLabel (label) {
@@ -199,66 +260,6 @@
 
         console.log(`label name`, this.optionsMap.label)
         return get(row, this.optionsMap.label, this.selected)
-      }
-    },
-    mounted () {
-      this.setReadOnlyLabel()
-      this.$emit('input', this.theValue(this.value))
-    },
-    computed: {
-      options () {
-        return this.field.enumValues.map(v => {
-          return typeof v === 'object' ? v : { value: v, label: v }
-        })
-      },
-      isNumber () {
-        return typeof this.getValue(castArray(this.options)[0]) === 'number'
-      },
-      parsedFind () {
-        if (size(this.find) < 1) {
-          return null
-        }
-
-        return mapValues(this.find, (v) => {
-          if (/^\$/.test(v)) {
-            const prop = v.match(/^\$(.+)$/)[1]
-            return get(this, 'pleasureValues.' + prop)
-          }
-
-          return v
-        })
-      },
-      key () {
-        const labels = []
-        this.realOptions.forEach(opt => {
-          labels.push(opt.label)
-        })
-        return md5(labels.join('-'))
-      }
-    },
-    data () {
-      let otherActive = false
-      let selected = this.theValue(this.value)
-
-      if (this.value) {
-        if (!this.findOptionByValue(this.value)) {
-          otherActive = true
-          selected = this.value
-        }
-      }
-
-      return {
-        selectedLabel: '',
-        focused: false,
-        otherActive,
-        selected,
-        realOptions: this.getRealOptions()
-      }
-    },
-    watch: {
-      selected (v) {
-        console.log(`input`, v)
-        this.$emit('input', v)
       }
     }
   }

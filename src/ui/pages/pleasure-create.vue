@@ -1,9 +1,9 @@
 <template>
   <pleasure
+    :key="id"
     :entity="entity"
     method="create"
-    :key="id"
-  ></pleasure>
+  />
 </template>
 <script>
   export default {

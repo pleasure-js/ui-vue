@@ -1,4 +1,4 @@
-import pleasureApiClient from './client.js'
+import client from './client.js'
 import Vue from 'vue'
 import objectHash from 'object-hash'
 import defaults from 'lodash/defaults'
@@ -6,8 +6,6 @@ import forOwn from 'lodash/forOwn'
 import find from 'lodash/find'
 import get from 'lodash/get'
 import merge from 'deepmerge'
-
-pleasureApiClient.debug(true)
 
 export const strict = true
 export const namespaced = true
@@ -56,6 +54,7 @@ export const mutations = {
     Vue.set(state, 'entitiesSchema', entitiesSchema)
   },
   setDropdown (state, { dropdownName, results, listOptions }) {
+    console.log(`setDropdown`, JSON.stringify({ dropdownName, results, listOptions, state }, null, 2))
     Vue.set(state.dropdown, dropdownName, results)
     Vue.set(state.dropdownMeta, dropdownName, listOptions)
   },
@@ -101,6 +100,8 @@ export const actions = {
   },
   async loadDropdown (store, { entity, listOptions, name, force = false, req } = {}) {
     const { commit, state } = store
+    const pleasureApiClient = client()
+    pleasureApiClient.debug(true)
 
     if (process.server && req) {
       const Cookies = require('cookies')
@@ -126,6 +127,7 @@ export const actions = {
 
     try {
       results = await pleasureApiClient.list(entity, listOptions)
+      console.log(`results = await pleasureApiClient.list(entity, listOptions)`, results)
     } catch (e) {
       err = e
     }
@@ -143,12 +145,15 @@ export const actions = {
     return commit('clearDropdowns')
   },
   logout () {
-    return pleasureApiClient.logout()
+    return client().logout()
   },
   async syncEntities ({ commit, state }, { force = false } = {}) {
     if (!force && state.entitiesSync !== 0) {
       return
     }
+
+    const pleasureApiClient = client()
+    pleasureApiClient.debug(true)
 
     commit('setEntitiesSync', -1)
     let entities

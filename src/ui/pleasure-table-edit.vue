@@ -1,11 +1,12 @@
 <template>
   <div
-    :class="{ content: true, 'with-search': withSearch, 'pleasure-table-edit': true, 'friendly-table': true, 'can-add': canAdd }">
+    :class="{ content: true, 'with-search': withSearch, 'pleasure-table-edit': true, 'friendly-table': true, 'can-add': canAdd }"
+  >
     <!-- Controls (search, filters) -->
     <div
       class="controls"
     >
-      <slot name="controls"/>
+      <slot name="controls" />
       <el-row v-if="withSearch">
         <el-col
           class="search-col"
@@ -28,17 +29,21 @@
             class="plain"
             :icon="searching ? `el-icon-loading` : `el-icon-search`"
             @click="advancedSearchControls = !advancedSearchControls"
-          ></el-button>
+          />
           <el-button
             class="plain"
             icon="el-icon-s-operation"
             @click="filterControls = !filterControls"
-          ></el-button>
+          />
         </el-col>
       </el-row>
       <!-- Search Controls -->
       <div class="search-controls">
-        <div class="advanced-search control" ref="advanced-search-controls" v-if="advancedSearchControls">
+        <div
+          v-if="advancedSearchControls"
+          ref="advanced-search-controls"
+          class="advanced-search control"
+        >
           <template
             v-for="fieldName in indexes"
           >
@@ -46,20 +51,25 @@
           </template>
         </div>
         <div
-          class="filters control"
+          v-if="filterControls"
           ref="filter-controls"
-          v-if="filterControls">
+          class="filters control"
+        >
           <!-- Table Edit Filter -->
           <table-edit-filter
             v-for="fieldName in indexes"
+            v-model="filterData[fieldName]"
             :entity="entity"
             :field-name="fieldName"
-            v-model="filterData[fieldName]"
             :manager="manager"
             @refresh-results="toggleSort(fieldName)"
-          ></table-edit-filter>
+          />
         </div>
-        <div class="sort control" ref="sort-controls" v-if="sortControls">
+        <div
+          v-if="sortControls"
+          ref="sort-controls"
+          class="sort control"
+        >
           <template
             v-for="fieldName in indexes"
           >
@@ -81,13 +91,16 @@
       highlight-current-row
       row-class-name="pleasure-row"
       :row-class-name="rowClassName"
+      :empty-text="empty"
       @cell-click="handleCellClick"
       @row-click="handleRowClick"
       @selection-change="handleSelectionChange"
-      :empty-text="empty"
     >
-
-      <el-table-column type="selection" width="35" v-if="canDelete"></el-table-column>
+      <el-table-column
+        v-if="canDelete"
+        type="selection"
+        width="35"
+      />
       <el-table-column
         v-for="fieldName in fields"
         :prop="fieldName"
@@ -95,8 +108,9 @@
         min-width="180"
         :column-key="fieldName"
       >
-        <template slot-scope="scope">{{ isEnum(fieldName) ? guessLabel(scope.row[fieldName], `entities.enum`) :
-          scope.row[fieldName] }}
+        <template slot-scope="scope">
+          {{ isEnum(fieldName) ? guessLabel(scope.row[fieldName], `entities.enum`) :
+            scope.row[fieldName] }}
         </template>
       </el-table-column>
     </el-table>
@@ -122,9 +136,8 @@
       :class="{ prompt: true, on: promptAdd }"
       :entity="entity"
       method="create"
-      :key="id"
       @cancel="promptAdd = false"
-    ></pleasure>
+    />
   </div>
 </template>
 <style lang="postcss">
@@ -582,6 +595,11 @@
         return debounce(this.lookUp.bind(this), 150)
       }
     },
+    watch: {
+      search (v) {
+        this.searching = !!v
+      }
+    },
     mounted () {
       // console.log(`store`, this.$store)
       this.manager = new DropdownManager({ entity: this.entity, store: this.$store })
@@ -610,11 +628,6 @@
           this[ele] = false
         })
       })
-    },
-    watch: {
-      search (v) {
-        this.searching = !!v
-      }
     },
     methods: {
       applyFilter () {

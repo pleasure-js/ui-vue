@@ -6,7 +6,7 @@
       :disabled="field.$pleasure.disabled"
       :label="field.$pleasure.label"
     >
-      <slot/>
+      <slot />
     </component>
   </div>
 </template>

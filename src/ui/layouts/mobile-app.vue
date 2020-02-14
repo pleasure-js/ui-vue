@@ -1,6 +1,6 @@
 <template>
   <div :class="{ 'pleasure-layout-mobile-app': true, [headbarPosition]: true}">
-    <slot/>
+    <slot />
   </div>
 </template>
 <style lang="postcss">

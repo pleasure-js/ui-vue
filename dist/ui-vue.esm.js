@@ -129,9 +129,6 @@ function normalizeComponent(template, style, script, scopeId, isFunctionalTempla
     return script;
 }
 
-const isOldIE = typeof navigator !== 'undefined' &&
-    /msie [6-9]\\b/.test(navigator.userAgent.toLowerCase());
-
 /* script */
 const __vue_script__ = script;
 
@@ -812,6 +809,22 @@ function filterPropertyHandler () {
 
 var script$4 = {
   mixins: [PTE],
+  props: {
+    fieldName: {
+      type: String,
+      required: true
+    },
+    manager: {
+      type: DropdownManager
+    },
+    value: {
+      required: true,
+      type: Object,
+      default () {
+        return {}
+      }
+    }
+  },
   data () {
     return {
       enumValue: [],
@@ -819,6 +832,19 @@ var script$4 = {
       filterType: null,
       sort: this.value.sort,
     }
+  },
+  watch: {
+    filter: filterPropertyHandler,
+    filterType () {
+      filterPropertyHandler.call(this);
+      this.$nextTick(() => {
+        if (this.$refs['field']) {
+          console.log(`focusing`, this.$refs['field']);
+          this.$refs['field'].focus();
+        }
+      });
+    },
+    sort: filterPropertyHandler
   },
   methods: {
     filterHandler () {
@@ -848,35 +874,6 @@ var script$4 = {
       }
       this.refreshInput();
     },
-  },
-  props: {
-    fieldName: {
-      type: String,
-      required: true
-    },
-    manager: {
-      type: DropdownManager
-    },
-    value: {
-      required: true,
-      type: Object,
-      default () {
-        return {}
-      }
-    }
-  },
-  watch: {
-    filter: filterPropertyHandler,
-    filterType () {
-      filterPropertyHandler.call(this);
-      this.$nextTick(() => {
-        if (this.$refs['field']) {
-          console.log(`focusing`, this.$refs['field']);
-          this.$refs['field'].focus();
-        }
-      });
-    },
-    sort: filterPropertyHandler
   }
 };
 
@@ -1179,6 +1176,11 @@ var script$5 = {
       return debounce(this.lookUp.bind(this), 150)
     }
   },
+  watch: {
+    search (v) {
+      this.searching = !!v;
+    }
+  },
   mounted () {
     // console.log(`store`, this.$store)
     this.manager = new DropdownManager({ entity: this.entity, store: this.$store });
@@ -1207,11 +1209,6 @@ var script$5 = {
         this[ele] = false;
       });
     });
-  },
-  watch: {
-    search (v) {
-      this.searching = !!v;
-    }
   },
   methods: {
     applyFilter () {
@@ -1585,14 +1582,16 @@ var __vue_render__$5 = function() {
                     fn: function(scope) {
                       return [
                         _vm._v(
-                          _vm._s(
-                            _vm.isEnum(fieldName)
-                              ? _vm.guessLabel(
-                                  scope.row[fieldName],
-                                  "entities.enum"
-                                )
-                              : scope.row[fieldName]
-                          ) + "\n      "
+                          "\n        " +
+                            _vm._s(
+                              _vm.isEnum(fieldName)
+                                ? _vm.guessLabel(
+                                    scope.row[fieldName],
+                                    "entities.enum"
+                                  )
+                                : scope.row[fieldName]
+                            ) +
+                            "\n      "
                         )
                       ]
                     }
@@ -1624,7 +1623,6 @@ var __vue_render__$5 = function() {
         : _vm._e(),
       _vm._v(" "),
       _c("pleasure", {
-        key: _vm.id,
         class: { prompt: true, on: _vm.promptAdd },
         attrs: { entity: _vm.entity, method: "create" },
         on: {
@@ -2231,18 +2229,27 @@ var js_cookie = createCommonjsModule(function (module, exports) {
 }));
 });
 
-const clientPayload = {};
+function getClient () {
+// console.log(`ui-vue/client`)
+  let accessToken;
+  const client = ApiClient.instance();
 
-// console.log(`pleasure-ui-vue/client`)
-if (process.client && js_cookie.get('accessToken')) {
-  // auto load accessToken
-  console.log(`auto loading access token`, js_cookie.get('accessToken'));
-  clientPayload.accessToken = js_cookie.get('accessToken');
+  if (process.client && (accessToken = js_cookie.get('accessToken'))) {
+    if (!client.token) {
+      // auto load accessToken
+      console.log(`auto loading access token`, js_cookie.get('accessToken'));
+      // todo: load refreshToken
+      const { accessToken: savedAccessToken, refreshToken } = client.savedCredentials();
+
+      const clientPayload = {
+        accessToken: js_cookie.get('accessToken'),
+        refreshToken: savedAccessToken === accessToken ? refreshToken : null
+      };
+      client.setCredentials(clientPayload);
+    }
+  }
+  return client
 }
-
-var pleasureApiClient = ApiClient.instance(clientPayload);
-
-pleasureApiClient.debug(true);
 
 const strict = true;
 const namespaced = true;
@@ -2291,6 +2298,7 @@ const mutations = {
     Vue.set(state, 'entitiesSchema', entitiesSchema);
   },
   setDropdown (state, { dropdownName, results, listOptions }) {
+    console.log(`setDropdown`, JSON.stringify({ dropdownName, results, listOptions, state }, null, 2));
     Vue.set(state.dropdown, dropdownName, results);
     Vue.set(state.dropdownMeta, dropdownName, listOptions);
   },
@@ -2336,6 +2344,8 @@ const actions = {
   },
   async loadDropdown (store, { entity, listOptions, name, force = false, req } = {}) {
     const { commit, state } = store;
+    const pleasureApiClient = getClient();
+    pleasureApiClient.debug(true);
 
     if (process.server && req) {
       const Cookies = require('cookies');
@@ -2361,6 +2371,7 @@ const actions = {
 
     try {
       results = await pleasureApiClient.list(entity, listOptions);
+      console.log(`results = await pleasureApiClient.list(entity, listOptions)`, results);
     } catch (e) {
       err = e;
     }
@@ -2378,12 +2389,15 @@ const actions = {
     return commit('clearDropdowns')
   },
   logout () {
-    return pleasureApiClient.logout()
+    return getClient().logout()
   },
   async syncEntities ({ commit, state }, { force = false } = {}) {
     if (!force && state.entitiesSync !== 0) {
       return
     }
+
+    const pleasureApiClient = getClient();
+    pleasureApiClient.debug(true);
 
     commit('setEntitiesSync', -1);
     let entities;
@@ -3381,6 +3395,12 @@ __vue_render__$c._withStripped = true;
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 var script$c = {
   props: {
@@ -3419,17 +3439,17 @@ var script$c = {
       menuOpened: false
     }
   },
-  watch: {
-    $route () {
-      this.closeMenu();
-    }
-  },
   computed: {
     openMenuGesture () {
       return this.menuPosition === 'left' ? 'right' : (this.menuPosition === 'center' ? 'up' : 'left')
     },
     closeMenuGesture () {
       return this.menuPosition === 'left' ? 'left' : (this.menuPosition === 'center' ? 'bottom' : 'right')
+    }
+  },
+  watch: {
+    $route () {
+      this.closeMenu();
     }
   },
   mounted () {
@@ -4084,8 +4104,6 @@ var vueTouchEvents = {
 }
 });
 
-console.log(`>>>pleasure-ui-vue`);
-
 // Vue.use(VueI18n)
 
 /**
@@ -4094,10 +4112,13 @@ console.log(`>>>pleasure-ui-vue`);
  */
 
 function install (Vue, { app, store, noCoerce = false } = {}) {
+  const pleasureApiClient = getClient();
+  let storageCache;
+
   Vue.use(vue2TouchEvents);
 
   Vue.prototype.$pleasureApiClient = pleasureApiClient;
-  console.log(`store${ store ? '' : ' NOT' } provided`, { store });
+  console.log(`store${ store ? '' : ' NOT' } provided`/*, { store }*/);
   if (!store) {
     Vue.use(Vuex);
     store = new Vuex.Store({
@@ -4108,7 +4129,9 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     // throw new Error('Please provide vuex store.')
   } else {
     // register your own vuex module
-    store.registerModule('pleasure', PleasureStore, { preserveState: false });
+    if (process.client) {
+      store.registerModule('pleasure', PleasureStore, { preserveState: true });
+    }
   }
 
   /*
@@ -4134,23 +4157,11 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     });
 
   if (process.client) {
-    const storageCache = new BrowserStorageCache();
-
-    const sessionChanged = () => {
-      storageCache.clearAll();
-      store.dispatch('pleasure/clearDropdowns');
-      return store.dispatch('pleasure/syncEntities')
-    };
+    storageCache = new BrowserStorageCache();
 
     // Vue.$pleasure = pleasureApiClient
     pleasureApiClient
       .cache(storageCache);
-
-    pleasureApiClient
-      .on('logout', sessionChanged);
-
-    pleasureApiClient
-      .on('login', sessionChanged);
   }
 
   if (!noCoerce) {
@@ -4162,12 +4173,12 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     return kebabCase(key)
   });
 
-  console.log({ kebabKeyedComponents });
+  // console.log({ kebabKeyedComponents })
   const components = Object.assign({}, kebabKeyedComponents, {
     pleasure: __vue_component__$6
   });
 
-  console.log({ components });
+  // console.log({ components })
 
   Vue.mixin({
     components,
@@ -4225,6 +4236,20 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
       // todo: move to a DropdownManager implementation
       store.dispatch('pleasure/syncDropdown', { entity, force: true });
     });
+
+    pleasureApiClient._refreshCredentials(); // re-trigger events
+
+    const sessionChanged = () => {
+      storageCache.clearAll();
+      store.dispatch('pleasure/clearDropdowns');
+      return store.dispatch('pleasure/syncEntities')
+    };
+
+    pleasureApiClient
+      .on('logout', sessionChanged);
+
+    pleasureApiClient
+      .on('login', sessionChanged);
   }
 }
 
@@ -4232,4 +4257,4 @@ const UiVue = {
   install
 };
 
-export { UiVue, pleasureApiClient };
+export { UiVue };

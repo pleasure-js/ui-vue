@@ -1,6 +1,6 @@
 <template>
   <div :class="cls">
-    <slot name="head"></slot>
+    <slot name="head" />
     <el-menu>
       <pleasure-menu-item
         v-for="(item, itemIndex) in items"

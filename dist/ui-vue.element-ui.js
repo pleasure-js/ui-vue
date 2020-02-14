@@ -70,6 +70,66 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
       field: Object,
       otherAvailable: Boolean
     },
+    data () {
+      let otherActive = false;
+      let selected = this.theValue(this.value);
+
+      if (this.value) {
+        if (!this.findOptionByValue(this.value)) {
+          otherActive = true;
+          selected = this.value;
+        }
+      }
+
+      return {
+        selectedLabel: '',
+        focused: false,
+        otherActive,
+        selected,
+        realOptions: this.getRealOptions()
+      }
+    },
+    computed: {
+      options () {
+        return this.field.enumValues.map(v => {
+          return typeof v === 'object' ? v : { value: v, label: v }
+        })
+      },
+      isNumber () {
+        return typeof this.getValue(castArray(this.options)[0]) === 'number'
+      },
+      parsedFind () {
+        if (size(this.find) < 1) {
+          return null
+        }
+
+        return mapValues(this.find, (v) => {
+          if (/^\$/.test(v)) {
+            const prop = v.match(/^\$(.+)$/)[1];
+            return get(this, 'pleasureValues.' + prop)
+          }
+
+          return v
+        })
+      },
+      key () {
+        const labels = [];
+        this.realOptions.forEach(opt => {
+          labels.push(opt.label);
+        });
+        return md5(labels.join('-'))
+      }
+    },
+    watch: {
+      selected (v) {
+        console.log(`input`, v);
+        this.$emit('input', v);
+      }
+    },
+    mounted () {
+      this.setReadOnlyLabel();
+      this.$emit('input', this.theValue(this.value));
+    },
     methods: {
       theLabel (label) {
         const altLabels = [`labels.${ label }`, label];
@@ -171,66 +231,6 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
         console.log(`label name`, this.optionsMap.label);
         return get(row, this.optionsMap.label, this.selected)
       }
-    },
-    mounted () {
-      this.setReadOnlyLabel();
-      this.$emit('input', this.theValue(this.value));
-    },
-    computed: {
-      options () {
-        return this.field.enumValues.map(v => {
-          return typeof v === 'object' ? v : { value: v, label: v }
-        })
-      },
-      isNumber () {
-        return typeof this.getValue(castArray(this.options)[0]) === 'number'
-      },
-      parsedFind () {
-        if (size(this.find) < 1) {
-          return null
-        }
-
-        return mapValues(this.find, (v) => {
-          if (/^\$/.test(v)) {
-            const prop = v.match(/^\$(.+)$/)[1];
-            return get(this, 'pleasureValues.' + prop)
-          }
-
-          return v
-        })
-      },
-      key () {
-        const labels = [];
-        this.realOptions.forEach(opt => {
-          labels.push(opt.label);
-        });
-        return md5(labels.join('-'))
-      }
-    },
-    data () {
-      let otherActive = false;
-      let selected = this.theValue(this.value);
-
-      if (this.value) {
-        if (!this.findOptionByValue(this.value)) {
-          otherActive = true;
-          selected = this.value;
-        }
-      }
-
-      return {
-        selectedLabel: '',
-        focused: false,
-        otherActive,
-        selected,
-        realOptions: this.getRealOptions()
-      }
-    },
-    watch: {
-      selected (v) {
-        console.log(`input`, v);
-        this.$emit('input', v);
-      }
     }
   };
 
@@ -311,9 +311,6 @@ var ElementUiPleasure = (function (exports, castArray, find, map, filter, isEqua
       }
       return script;
   }
-
-  const isOldIE = typeof navigator !== 'undefined' &&
-      /msie [6-9]\\b/.test(navigator.userAgent.toLowerCase());
 
   /* script */
   const __vue_script__ = script;

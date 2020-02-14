@@ -2,41 +2,47 @@
   <div class="mobile-app">
     <pleasure-menu-bars
       ref="bars"
-      :x-position="menuPosition"
-      :y-position="headbarPosition"
       v-touch:swipe[openMenuGesture].prevent="openMenu"
       v-touch:swipe[closeMenuGesture].prevent="closeMenu"
       v-touch:tap.prevent="toggleMenu"
+      :x-position="menuPosition"
+      :y-position="headbarPosition"
     />
     <pleasure-menu
       ref="menu"
+      v-touch:swipe[closeMenuGesture].prevent="closeMenu"
       :items="menuItems"
       :position="menuPosition"
-      v-touch:swipe[closeMenuGesture].prevent="closeMenu"
       @opened="menuOpened = true"
       @closed="menuOpened = false"
     >
-      <slot name="menu-head" slot="head"></slot>
+      <slot
+        slot="head"
+        name="menu-head"
+      />
     </pleasure-menu>
     <pleasure-headbar
       :class="{ 'pleasure-headbar-opener': true, opened: menuOpened }"
       :position="headbarPosition"
     >
-      <slot name="menu-headbar" slot="head"></slot>
+      <slot
+        slot="head"
+        name="menu-headbar"
+      />
     </pleasure-headbar>
-    <div :class="{ 'headbar-background': true, [headbarPosition]: true }"/>
+    <div :class="{ 'headbar-background': true, [headbarPosition]: true }" />
     <div :class="{ 'mobile-app-body': true, 'pleasure-opener': true, opened: menuOpened }">
       <pleasure-layout-mobile-app :headbar-position="headbarPosition">
         <slot><h1>Always our Pleasure!</h1></slot>
       </pleasure-layout-mobile-app>
     </div>
     <pleasure-backdrop
-      class="menu-backdrop"
       ref="backdrop"
       v-touch:swipe[closeMenuGesture].prevent.stop="closeMenu"
       v-touch:swipe.top.prevent.stop
       v-touch:swipe.bottom.prevent.stop
       v-touch:tap.stop="closeMenu"
+      class="menu-backdrop"
     />
   </div>
 </template>
@@ -94,17 +100,17 @@
         menuOpened: false
       }
     },
-    watch: {
-      $route () {
-        this.closeMenu()
-      }
-    },
     computed: {
       openMenuGesture () {
         return this.menuPosition === 'left' ? 'right' : (this.menuPosition === 'center' ? 'up' : 'left')
       },
       closeMenuGesture () {
         return this.menuPosition === 'left' ? 'left' : (this.menuPosition === 'center' ? 'bottom' : 'right')
+      }
+    },
+    watch: {
+      $route () {
+        this.closeMenu()
       }
     },
     mounted () {

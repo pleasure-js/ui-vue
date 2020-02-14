@@ -9,12 +9,10 @@ import Cookies from 'js-cookie'
 import './pleasure.pcss'
 import * as ui from './ui/index.js'
 import { bus } from './lib/bus.js'
-import pleasureApiClient from './lib/client.js'
+import client from './lib/client.js'
 import kebabCase from 'lodash/kebabCase'
 import mapKeys from 'lodash/mapKeys'
 import Vue2TouchEvents from 'vue2-touch-events'
-
-console.log(`>>>ui-vue`)
 
 // Vue.use(VueI18n)
 
@@ -24,10 +22,13 @@ console.log(`>>>ui-vue`)
  */
 
 function install (Vue, { app, store, noCoerce = false } = {}) {
+  const pleasureApiClient = client()
+  let storageCache
+
   Vue.use(Vue2TouchEvents)
 
   Vue.prototype.$pleasureApiClient = pleasureApiClient
-  console.log(`store${ store ? '' : ' NOT' } provided`, { store })
+  console.log(`store${ store ? '' : ' NOT' } provided`/*, { store }*/)
   if (!store) {
     Vue.use(Vuex)
     store = new Vuex.Store({
@@ -38,7 +39,9 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     // throw new Error('Please provide vuex store.')
   } else {
     // register your own vuex module
-    store.registerModule('pleasure', PleasureStore, { preserveState: false })
+    if (process.client) {
+      store.registerModule('pleasure', PleasureStore, { preserveState: true })
+    }
   }
 
   /*
@@ -64,23 +67,11 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     })
 
   if (process.client) {
-    const storageCache = new BrowserStorageCache()
-
-    const sessionChanged = () => {
-      storageCache.clearAll()
-      store.dispatch('pleasure/clearDropdowns')
-      return store.dispatch('pleasure/syncEntities')
-    }
+    storageCache = new BrowserStorageCache()
 
     // Vue.$pleasure = pleasureApiClient
     pleasureApiClient
       .cache(storageCache)
-
-    pleasureApiClient
-      .on('logout', sessionChanged)
-
-    pleasureApiClient
-      .on('login', sessionChanged)
   }
 
   if (!noCoerce) {
@@ -92,12 +83,12 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
     return kebabCase(key)
   })
 
-  console.log({ kebabKeyedComponents })
+  // console.log({ kebabKeyedComponents })
   const components = Object.assign({}, kebabKeyedComponents, {
     pleasure
   })
 
-  console.log({ components })
+  // console.log({ components })
 
   Vue.mixin({
     components,
@@ -155,6 +146,20 @@ function install (Vue, { app, store, noCoerce = false } = {}) {
       // todo: move to a DropdownManager implementation
       store.dispatch('pleasure/syncDropdown', { entity, force: true })
     })
+
+    pleasureApiClient._refreshCredentials() // re-trigger events
+
+    const sessionChanged = () => {
+      storageCache.clearAll()
+      store.dispatch('pleasure/clearDropdowns')
+      return store.dispatch('pleasure/syncEntities')
+    }
+
+    pleasureApiClient
+      .on('logout', sessionChanged)
+
+    pleasureApiClient
+      .on('login', sessionChanged)
   }
 }
 
@@ -163,6 +168,5 @@ const UiVue = {
 }
 
 export {
-  pleasureApiClient,
   UiVue
 }

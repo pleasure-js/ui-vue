@@ -1,15 +1,19 @@
 <template>
   <el-row
     class="table-edit-filter"
-    :gutter="10">
-    <el-col :span="8" :gutter="10">
+    :gutter="10"
+  >
+    <el-col
+      :span="8"
+      :gutter="10"
+    >
       <el-button
         :icon="getSortIcon(sort)"
-        @click="toggleSort"
         size="mini"
         class="plain"
         circle
-      ></el-button>
+        @click="toggleSort"
+      />
       {{ guessLabel(fieldName) }}
     </el-col>
     <el-col :span="16">
@@ -18,43 +22,41 @@
         v-model="enumValue"
         placeholder="Select"
         size="mini"
-        @input="filterHandler"
         multiple
+        @input="filterHandler"
       >
         <el-option
           v-for="item in getFilter(fieldName)"
           :value="item.value"
           :label="item.label"
-        ></el-option>
+        />
       </el-select>
       <el-input
         v-else
-        :clearable="true"
+        :ref="`field`"
         v-model="filter"
+        :clearable="true"
         :disabled="!filterType"
         size="mini"
-        :ref="`field`"
       >
         <el-select
-          v-model="filterType"
           slot="prepend"
+          v-model="filterType"
           size="mini"
           style="width: 70px;"
         >
           <el-option
             label="--"
             :value="null"
-          >
-          </el-option>
+          />
           <el-option
             label="Equals"
             value="equals"
-          >
-          </el-option>
+          />
           <el-option
             label="Like"
-            value="like">
-          </el-option>
+            value="like"
+          />
         </el-select>
       </el-input>
     </el-col>
@@ -77,6 +79,22 @@
 
   export default {
     mixins: [PTE],
+    props: {
+      fieldName: {
+        type: String,
+        required: true
+      },
+      manager: {
+        type: DropdownManager
+      },
+      value: {
+        required: true,
+        type: Object,
+        default () {
+          return {}
+        }
+      }
+    },
     data () {
       return {
         enumValue: [],
@@ -84,6 +102,19 @@
         filterType: null,
         sort: this.value.sort,
       }
+    },
+    watch: {
+      filter: filterPropertyHandler,
+      filterType () {
+        filterPropertyHandler.call(this)
+        this.$nextTick(() => {
+          if (this.$refs['field']) {
+            console.log(`focusing`, this.$refs['field'])
+            this.$refs['field'].focus()
+          }
+        })
+      },
+      sort: filterPropertyHandler
     },
     methods: {
       filterHandler () {
@@ -113,35 +144,6 @@
         }
         this.refreshInput()
       },
-    },
-    props: {
-      fieldName: {
-        type: String,
-        required: true
-      },
-      manager: {
-        type: DropdownManager
-      },
-      value: {
-        required: true,
-        type: Object,
-        default () {
-          return {}
-        }
-      }
-    },
-    watch: {
-      filter: filterPropertyHandler,
-      filterType () {
-        filterPropertyHandler.call(this)
-        this.$nextTick(() => {
-          if (this.$refs['field']) {
-            console.log(`focusing`, this.$refs['field'])
-            this.$refs['field'].focus()
-          }
-        })
-      },
-      sort: filterPropertyHandler
     }
   }
 </script>

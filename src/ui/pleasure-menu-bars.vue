@@ -3,8 +3,8 @@
     ref="bars"
     :class="cls"
   >
-    <div/>
-    <div/>
+    <div />
+    <div />
   </div>
 </template>
 <style lang="postcss">
